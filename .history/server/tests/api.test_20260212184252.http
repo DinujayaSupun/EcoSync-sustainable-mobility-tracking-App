@@ -1,0 +1,70 @@
+// Test file for API endpoints
+// Use this with REST clients like Thunder Client, Postman, or VS Code REST Client extension
+
+### 1. Test Root Endpoint
+GET http://localhost:5000/
+Content-Type: application/json
+
+###
+
+### 2. Register a New User
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "password123",
+  "faculty": "Engineering"
+}
+
+###
+
+### 3. Login User
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+###
+
+### 4. Get User Profile (Protected - Requires Token)
+# First, copy the token from register/login response
+# Replace YOUR_TOKEN_HERE with the actual token
+GET http://localhost:5000/api/auth/profile
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+###
+
+### 5. Register Admin User (for testing)
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Admin User",
+  "email": "admin@example.com",
+  "password": "admin123",
+  "faculty": "Administration"
+}
+
+###
+
+### CURL Commands (Alternative Testing Method)
+
+# 1. Register
+# curl -X POST http://localhost:5000/api/auth/register \
+#   -H "Content-Type: application/json" \
+#   -d "{\"name\":\"Test User\",\"email\":\"test@example.com\",\"password\":\"password123\",\"faculty\":\"Engineering\"}"
+
+# 2. Login
+# curl -X POST http://localhost:5000/api/auth/login \
+#   -H "Content-Type: application/json" \
+#   -d "{\"email\":\"test@example.com\",\"password\":\"password123\"}"
+
+# 3. Get Profile (replace YOUR_TOKEN with actual token)
+# curl -X GET http://localhost:5000/api/auth/profile \
+#   -H "Authorization: Bearer YOUR_TOKEN"
