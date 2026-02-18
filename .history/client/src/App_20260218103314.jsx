@@ -9,6 +9,9 @@ import AdminDashboard from './pages/AdminDashboard'
 function App() {
   const { user, loading } = useContext(AuthContext);
 
+  console.log('App render - user:', user);
+  console.log('App render - loading:', loading);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -19,7 +22,9 @@ function App() {
 
   const getDefaultRoute = () => {
     if (!user) return '/login';
-    return user.role === 'admin' ? '/admin' : '/home';
+    const route = user.role === 'admin' ? '/admin' : '/home';
+    console.log(`getDefaultRoute() returning: ${route} (user.role = ${user.role})`);
+    return route;
   };
 
   return (
@@ -31,7 +36,7 @@ function App() {
         />
         <Route 
           path="/home" 
-          element={user && user.role === 'user' ? <Home /> : <Navigate to={getDefaultRoute()} />} 
+          element={user && user.role?.toLowerCase() === 'user' ? <Home /> : <Navigate to={getDefaultRoute()} />} 
         />
         <Route 
           path="/admin" 

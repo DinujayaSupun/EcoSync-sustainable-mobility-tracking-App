@@ -9,6 +9,9 @@ import AdminDashboard from './pages/AdminDashboard'
 function App() {
   const { user, loading } = useContext(AuthContext);
 
+  console.log('App render - user:', user);
+  console.log('App render - loading:', loading);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
