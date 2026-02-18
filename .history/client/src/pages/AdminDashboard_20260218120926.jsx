@@ -123,42 +123,8 @@ const AdminDashboard = () => {
           {/* Chart Section */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-xl font-bold mb-4 text-gray-800">Impact by Faculty</h3>
-            <div className="h-64">
-              {stats.facultyData && stats.facultyData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats.facultyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis 
-                      dataKey="faculty" 
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <YAxis 
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#fff', 
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                      }}
-                      cursor={{ fill: 'rgba(139, 92, 246, 0.1)' }}
-                    />
-                    <Bar 
-                      dataKey="students" 
-                      fill="#8b5cf6" 
-                      radius={[8, 8, 0, 0]}
-                      name="Students"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full bg-gray-50 flex items-center justify-center rounded border-2 border-dashed border-gray-200">
-                  <p className="text-gray-400">No faculty data available</p>
-                </div>
-              )}
+            <div className="h-64 bg-gray-50 flex items-center justify-center rounded border-2 border-dashed border-gray-200">
+              <p className="text-gray-400">Recharts Bar Graph will go here</p>
             </div>
           </div>
 

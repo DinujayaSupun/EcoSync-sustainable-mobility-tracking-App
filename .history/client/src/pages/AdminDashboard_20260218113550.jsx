@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { Users, Activity, BarChart3, Settings, LogOut, Wind, Map, Leaf } from 'lucide-react'
 import API from '../api/axios'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 const AdminDashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -81,6 +80,8 @@ const AdminDashboard = () => {
             </div>
           </div>
 
+          
+
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
             <div className="flex items-center justify-between">
               <div>
@@ -113,86 +114,6 @@ const AdminDashboard = () => {
               </div>
               <div className="bg-purple-100 p-3 rounded-full">
                 <Settings className="text-purple-600" size={24} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Charts and Live Feed Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Chart Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-xl font-bold mb-4 text-gray-800">Impact by Faculty</h3>
-            <div className="h-64">
-              {stats.facultyData && stats.facultyData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats.facultyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis 
-                      dataKey="faculty" 
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <YAxis 
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#fff', 
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                      }}
-                      cursor={{ fill: 'rgba(139, 92, 246, 0.1)' }}
-                    />
-                    <Bar 
-                      dataKey="students" 
-                      fill="#8b5cf6" 
-                      radius={[8, 8, 0, 0]}
-                      name="Students"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full bg-gray-50 flex items-center justify-center rounded border-2 border-dashed border-gray-200">
-                  <p className="text-gray-400">No faculty data available</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Live Feed Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-xl font-bold mb-4 text-gray-800">Live Commute Feed</h3>
-            <div className="space-y-3">
-              {/* Placeholder for recent trips */}
-              <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700">
-                    <strong>Computing:</strong> Saved 1.2kg via Bus
-                  </p>
-                </div>
-                <span className="text-xs text-gray-400">2 mins ago</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700">
-                    <strong>Engineering:</strong> Saved 0.8kg via Bike
-                  </p>
-                </div>
-                <span className="text-xs text-gray-400">5 mins ago</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg border-l-4 border-purple-500">
-                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700">
-                    <strong>Business:</strong> Saved 1.5kg via Train
-                  </p>
-                </div>
-                <span className="text-xs text-gray-400">8 mins ago</span>
               </div>
             </div>
           </div>
