@@ -29,7 +29,6 @@ const carbonRecordSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Index for faster analytics queries
-carbonRecordSchema.index({ userId: 1 });
+
 
 module.exports = mongoose.model("CarbonRecord", carbonRecordSchema);

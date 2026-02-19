@@ -3,8 +3,12 @@ const router = express.Router();
 
 const {
   createCarbonRecord,
-  getUserInsights,
-} = require("../controllers/carbon.controller");
+  getUserRecords,
+  getRecordById,
+  updateRecord,
+  deleteRecord,
+  getUserInsights
+} = require("../Controllers/carbon.controller");
 
 router.post("/calculate", createCarbonRecord);
 router.get("/records/:userId", getUserRecords);
