@@ -4,7 +4,7 @@ const router = express.Router();
 const {
   createCarbonRecord,
   getUserInsights,
-} = require("../Controllers/carbon.controller");
+} = require("../controllers/carbon.controller");
 
 router.post("/calculate", createCarbonRecord);
 router.get("/records/:userId", getUserRecords);

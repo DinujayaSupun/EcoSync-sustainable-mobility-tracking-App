@@ -1,4 +1,4 @@
-const CarbonRecord = require("../Models/carbonRecord");
+const CarbonRecord = require("../models/carbonRecord");
 
 // Total CO2 saved by user
 const getUserTotalSaved = async (userId) => {

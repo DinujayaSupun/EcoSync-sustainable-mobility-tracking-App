@@ -1,14 +1,14 @@
-const CarbonRecord = require("../Models/carbonRecord");
+const CarbonRecord = require("../models/carbonRecord");
 const {
   calculateEmissionSaved,
   getGreenestOption,
-} = require("../Services/carbon.service");
+} = require("../services/carbon.service");
 
 const {
   getUserTotalSaved,
   forecastMonthlySavings,
   getUserPercentile,
-} = require("../Services/analytics.service");
+} = require("../services/analytics.service");
 
 // CREATE
 const createCarbonRecord = async (req, res, next) => {
