@@ -1,15 +1,21 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const errorHandler = require("./middlewares/error.middleware");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(errorHandler);
 
 app.get("/", (req, res) => {
   res.send("Carbon Accounting Engine Backend Running 🚀");
 });
+
+
+
+
 
 mongoose
   .connect("mongodb+srv://admin:VQXl9MkCtgnyxDzg@merncluster.8dgv3ew.mongodb.net/")
