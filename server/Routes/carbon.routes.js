@@ -7,15 +7,45 @@ const {
   getRecordById,
   updateRecord,
   deleteRecord,
-  getUserInsights
-} = require("../Controllers/carbon.controller");
+  getUserInsights,
+} = require("../controllers/carbon.controller");
 
-router.post("/calculate", createCarbonRecord);
+const {
+  validateCarbonCreate,
+  validateObjectId,
+  handleValidation,
+} = require("../middlewires/validation.middlewire");
+
+router.post(
+  "/calculate",
+  validateCarbonCreate,
+  handleValidation,
+  createCarbonRecord
+);
+
 router.get("/records/:userId", getUserRecords);
-router.get("/record/:id", getRecordById);
-router.put("/record/:id", updateRecord);
-router.delete("/record/:id", deleteRecord);
-router.get("/insights/:userId", getUserInsights);
 
+router.get(
+  "/record/:id",
+  validateObjectId,
+  handleValidation,
+  getRecordById
+);
+
+router.put(
+  "/record/:id",
+  validateObjectId,
+  handleValidation,
+  updateRecord
+);
+
+router.delete(
+  "/record/:id",
+  validateObjectId,
+  handleValidation,
+  deleteRecord
+);
+
+router.get("/insights/:userId", getUserInsights);
 
 module.exports = router;
