@@ -1,0 +1,111 @@
+### Commute API Test File
+### Use with REST Client extension in VS Code
+
+@baseUrl = http://localhost:5000/api
+@token = YOUR_JWT_TOKEN_HERE
+
+### 1. Register a new user (to get a token)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "testuser@example.com",
+  "password": "password123",
+  "faculty": "Engineering"
+}
+
+### 2. Login to get token
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "password123"
+}
+
+### 3. Log a commute (Short distance - Car)
+POST {{baseUrl}}/commute/log
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "startLocation": "Times Square, New York",
+  "destination": "Central Park, New York",
+  "transportType": "Car"
+}
+
+### 4. Log a commute (Short distance - Walk)
+POST {{baseUrl}}/commute/log
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "startLocation": "White House, Washington DC",
+  "destination": "Lincoln Memorial, Washington DC",
+  "transportType": "Walk"
+}
+
+### 5. Log a commute (Medium distance - Bus)
+POST {{baseUrl}}/commute/log
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "startLocation": "Boston, MA",
+  "destination": "Cambridge, MA",
+  "transportType": "Bus"
+}
+
+### 6. Log a commute (Long distance - Train)
+POST {{baseUrl}}/commute/log
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "startLocation": "New York, NY",
+  "destination": "Philadelphia, PA",
+  "transportType": "Train"
+}
+
+### 7. Log a commute (Bike)
+POST {{baseUrl}}/commute/log
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "startLocation": "Golden Gate Bridge, San Francisco",
+  "destination": "Fisherman's Wharf, San Francisco",
+  "transportType": "Bike"
+}
+
+### 8. Get commute history
+GET {{baseUrl}}/commute/history
+Authorization: Bearer {{token}}
+
+### 9. Get emission summary
+GET {{baseUrl}}/commute/emission-summary
+Authorization: Bearer {{token}}
+
+### 10. Test with invalid transport type (should fail)
+POST {{baseUrl}}/commute/log
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "startLocation": "Los Angeles, CA",
+  "destination": "San Diego, CA",
+  "transportType": "Airplane"
+}
+
+### 11. Test without authentication (should fail)
+GET {{baseUrl}}/commute/history
+
+### 12. Test with missing fields (should fail)
+POST {{baseUrl}}/commute/log
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "startLocation": "Seattle, WA"
+}
