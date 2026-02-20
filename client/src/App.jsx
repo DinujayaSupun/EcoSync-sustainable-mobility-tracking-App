@@ -5,6 +5,8 @@ import { AuthContext } from './context/AuthContext'
 import Login from './pages/Login'
 import Home from './pages/Home'
 import AdminDashboard from './pages/AdminDashboard'
+import CommuteLogger from './pages/CommuteLogger'
+import CommuteHistory from './pages/CommuteHistory'
 
 function App() {
   const { user, loading } = useContext(AuthContext);
@@ -32,6 +34,14 @@ function App() {
         <Route 
           path="/home" 
           element={user && user.role === 'user' ? <Home /> : <Navigate to={getDefaultRoute()} />} 
+        />
+        <Route 
+          path="/commute-logger" 
+          element={user ? <CommuteLogger /> : <Navigate to="/login" />} 
+        />
+        <Route 
+          path="/commute-history" 
+          element={user ? <CommuteHistory /> : <Navigate to="/login" />} 
         />
         <Route 
           path="/admin" 
