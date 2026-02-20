@@ -16,8 +16,7 @@ const {
   handleValidation,
 } = require("../middlewires/validation.middlewire");
 
-router.post(
-  "/calculate",
+router.post("/calculate",
   validateCarbonCreate,
   handleValidation,
   createCarbonRecord
@@ -25,22 +24,19 @@ router.post(
 
 router.get("/records/:userId", getUserRecords);
 
-router.get(
-  "/record/:id",
+router.get("/record/:id",
   validateObjectId,
   handleValidation,
   getRecordById
 );
 
-router.put(
-  "/record/:id",
+router.put("/record/:id",
   validateObjectId,
   handleValidation,
   updateRecord
 );
 
-router.delete(
-  "/record/:id",
+router.delete("/record/:id",
   validateObjectId,
   handleValidation,
   deleteRecord
