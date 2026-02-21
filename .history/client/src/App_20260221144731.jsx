@@ -65,18 +65,6 @@ function AppRoutes() {
         </UserProtectedRoute>
       } />
 
-      <Route path="/commute-logger" element={
-        <UserProtectedRoute>
-          <CommuteLogger />
-        </UserProtectedRoute>
-      } />
-
-      <Route path="/commute-history" element={
-        <UserProtectedRoute>
-          <CommuteHistory />
-        </UserProtectedRoute>
-      } />
-
       {/* 🏛️ Admin Routes (Your Primary Work) */}
       <Route path="/admin" element={
         <AdminProtectedRoute>
@@ -101,6 +89,32 @@ function AppRoutes() {
 function App() {
   return (
     <Router>
+      <Routes>
+        <Route 
+          path="/login" 
+          element={!user ? <Login /> : <Navigate to={getDefaultRoute()} />} 
+        />
+        <Route 
+          path="/home" 
+          element={user && user.role === 'user' ? <Home /> : <Navigate to={getDefaultRoute()} />} 
+        />
+        <Route 
+          path="/commute-logger" 
+          element={user ? <CommuteLogger /> : <Navigate to="/login" />} 
+        />
+        <Route 
+          path="/commute-history" 
+          element={user ? <CommuteHistory /> : <Navigate to="/login" />} 
+        />
+        <Route 
+          path="/admin" 
+          element={user && user.role === 'admin' ? <AdminDashboard /> : <Navigate to={getDefaultRoute()} />} 
+        />
+        <Route 
+          path="/" 
+          element={<Navigate to={getDefaultRoute()} />} 
+        />
+      </Routes>
       <AppRoutes />
     </Router>
   );

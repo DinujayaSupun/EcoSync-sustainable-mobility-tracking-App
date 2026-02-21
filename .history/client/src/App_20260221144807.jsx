@@ -65,18 +65,6 @@ function AppRoutes() {
         </UserProtectedRoute>
       } />
 
-      <Route path="/commute-logger" element={
-        <UserProtectedRoute>
-          <CommuteLogger />
-        </UserProtectedRoute>
-      } />
-
-      <Route path="/commute-history" element={
-        <UserProtectedRoute>
-          <CommuteHistory />
-        </UserProtectedRoute>
-      } />
-
       {/* 🏛️ Admin Routes (Your Primary Work) */}
       <Route path="/admin" element={
         <AdminProtectedRoute>
