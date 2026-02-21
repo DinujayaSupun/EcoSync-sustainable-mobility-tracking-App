@@ -1,3 +1,12 @@
+import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { useContext } from 'react'
+import { AuthContext } from './context/AuthContext'
+import Login from './pages/Login'
+import Home from './pages/Home'
+import AdminDashboard from './pages/AdminDashboard'
+import CommuteLogger from './pages/CommuteLogger'
+import CommuteHistory from './pages/CommuteHistory'
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
@@ -89,6 +98,32 @@ function AppRoutes() {
 function App() {
   return (
     <Router>
+      <Routes>
+        <Route 
+          path="/login" 
+          element={!user ? <Login /> : <Navigate to={getDefaultRoute()} />} 
+        />
+        <Route 
+          path="/home" 
+          element={user && user.role === 'user' ? <Home /> : <Navigate to={getDefaultRoute()} />} 
+        />
+        <Route 
+          path="/commute-logger" 
+          element={user ? <CommuteLogger /> : <Navigate to="/login" />} 
+        />
+        <Route 
+          path="/commute-history" 
+          element={user ? <CommuteHistory /> : <Navigate to="/login" />} 
+        />
+        <Route 
+          path="/admin" 
+          element={user && user.role === 'admin' ? <AdminDashboard /> : <Navigate to={getDefaultRoute()} />} 
+        />
+        <Route 
+          path="/" 
+          element={<Navigate to={getDefaultRoute()} />} 
+        />
+      </Routes>
       <AppRoutes />
     </Router>
   );

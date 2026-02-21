@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const commuteRoutes = require("./routes/commuteRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
@@ -38,6 +39,7 @@ app.use("/api/", limiter);
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/commute", commuteRoutes);
 app.use("/api/admin", adminRoutes);
 
 // Basic route for testing
@@ -50,6 +52,11 @@ app.get("/", (req, res) => {
         register: "POST /api/auth/register",
         login: "POST /api/auth/login",
         profile: "GET /api/auth/profile (Protected)",
+      },
+      commute: {
+        log: "POST /api/commute/log (Protected)",
+        history: "GET /api/commute/history (Protected)",
+        summary: "GET /api/commute/emission-summary (Protected)",
       },
     },
   });
