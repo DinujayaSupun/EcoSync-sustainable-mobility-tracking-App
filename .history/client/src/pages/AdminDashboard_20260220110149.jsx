@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { Users, Activity, BarChart3, Settings, LogOut, Wind, Map, Leaf } from 'lucide-react'
 import API from '../api/axios'
@@ -222,11 +222,14 @@ const AdminDashboard = () => {
           <h2 className="text-2xl font-bold mb-4 text-gray-800">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link 
-              to="/admin/users" 
-              className="p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition text-left block">
+  to="/admin/users" 
+  className="p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition text-left block"
+>
+            <button className="p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition text-left">
               <Users className="text-blue-600 mb-2" size={28} />
               <h3 className="font-semibold text-gray-800">Manage Users</h3>
               <p className="text-sm text-gray-600">View and manage user accounts</p>
+            </button>
             </Link>
             <button className="p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition text-left">
               <Activity className="text-green-600 mb-2" size={28} />

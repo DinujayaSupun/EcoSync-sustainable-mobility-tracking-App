@@ -224,6 +224,7 @@ const AdminDashboard = () => {
             <Link 
               to="/admin/users" 
               className="p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition text-left block">
+            <button className="p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition text-left">
               <Users className="text-blue-600 mb-2" size={28} />
               <h3 className="font-semibold text-gray-800">Manage Users</h3>
               <p className="text-sm text-gray-600">View and manage user accounts</p>
