@@ -135,6 +135,7 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+
 exports.getUserProfile = async (req, res) => {
   try {
     // 1. Fetch user using the ID attached by the 'protect' middleware
