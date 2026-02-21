@@ -1,0 +1,54 @@
+import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { useContext } from 'react'
+import { AuthContext } from './context/AuthContext'
+import Login from './pages/Login'
+import Home from './pages/Home'
+import AdminDashboard from './pages/AdminDashboard'
+
+function App() {
+  const { user, loading } = useContext(AuthContext);
+
+  console.log('App render - user:', user);
+  console.log('App render - loading:', loading);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  const getDefaultRoute = () => {
+    if (!user) return '/login';
+    const route = user.role === 'admin' ? '/admin' : '/home';
+    console.log(`getDefaultRoute() returning: ${route} (user.role = ${user.role})`);
+    return route;
+  };
+
+  return (
+    <Router>
+      <Routes>
+        <Route 
+          path="/login" 
+          element={!user ? <Login /> : <Navigate to={getDefaultRoute()} />} 
+        />
+        <Route 
+          path="/home" 
+          element={user && user.role === 'user' ? <Home /> : <Navigate to={getDefaultRoute()} />} 
+        />
+        <Route 
+          path="/admin" 
+          element={user && user.role === 'admin' ? <AdminDashboard /> : <Navigate to={getDefaultRoute()} />} 
+        />
+        <Route 
+          path="/" 
+          element={<Navigate to={getDefaultRoute()} />} 
+        />
+      </Routes>
+    </Router>
+  )
+}
+
+export default App
