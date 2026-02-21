@@ -1,5 +1,12 @@
 const Commute = require("../models/Commute");
 const axios = require("axios");
+const mongoose = require("mongoose");
+const { 
+  calculateLinearRegression, 
+  calculateMonthlyProjection, 
+  calculateDailyProjection, 
+  categorizeRisk 
+} = require("../utils/prediction");
 
 // Emission factors (kg CO2 per km)
 const EMISSION_FACTORS = {
@@ -301,3 +308,126 @@ exports.getEmissionSummary = async (req, res) => {
     });
   }
 };
+
+// @desc    Predict next month emissions using adaptive prediction strategies
+// @route   GET /api/commute/predict
+// @access  Private
+exports.predictEmission = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Aggregate monthly emission totals for the user
+    const monthlyEmissions = await Commute.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
+          totalEmission: { $sum: "$emissionEstimate" },
+          daysWithCommutes: { $sum: 1 }, // Count commute entries
+        },
+      },
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1,
+        },
+      },
+    ]);
+
+    let predictionResult;
+    let historicalData = [];
+
+    // Case 1: User has 2 or more complete months - Use Linear Regression
+    if (monthlyEmissions.length >= 2) {
+      historicalData = monthlyEmissions.map((entry, index) => ({
+        month: index + 1,
+        emission: parseFloat(entry.totalEmission.toFixed(2)),
+        yearMonth: `${entry._id.year}-${String(entry._id.month).padStart(2, "0")}`,
+      }));
+
+      predictionResult = calculateLinearRegression(historicalData);
+    } 
+    // Case 2: User has exactly 1 complete month - Use Monthly Projection
+    else if (monthlyEmissions.length === 1) {
+      const singleMonthEmission = monthlyEmissions[0].totalEmission;
+      
+      historicalData = [{
+        month: 1,
+        emission: parseFloat(singleMonthEmission.toFixed(2)),
+        yearMonth: `${monthlyEmissions[0]._id.year}-${String(monthlyEmissions[0]._id.month).padStart(2, "0")}`,
+      }];
+
+      predictionResult = calculateMonthlyProjection(singleMonthEmission);
+    } 
+    // Case 3: User has less than 1 month (partial data) - Use Daily Projection
+    else {
+      // Get all commutes to calculate daily average
+      const allCommutes = await Commute.find({ userId });
+
+      if (allCommutes.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "No commute data available. Please log at least one commute to see predictions.",
+        });
+      }
+
+      // Calculate total emissions and unique days
+      const totalEmission = allCommutes.reduce(
+        (sum, commute) => sum + commute.emissionEstimate,
+        0
+      );
+
+      // Get unique days with commutes
+      const uniqueDays = new Set(
+        allCommutes.map((commute) => 
+          new Date(commute.createdAt).toISOString().split('T')[0]
+        )
+      );
+      const daysLogged = uniqueDays.size;
+
+      predictionResult = calculateDailyProjection(totalEmission, daysLogged);
+
+      historicalData = [{
+        daysLogged,
+        totalEmission: parseFloat(totalEmission.toFixed(2)),
+        dailyAverage: parseFloat((totalEmission / daysLogged).toFixed(2)),
+      }];
+    }
+
+    // Categorize risk level
+    const riskLevel = categorizeRisk(predictionResult.nextMonthPrediction);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        predictedEmission: predictionResult.nextMonthPrediction,
+        trend: predictionResult.trend,
+        riskLevel,
+        predictionType: predictionResult.predictionType,
+        historicalData,
+      },
+    });
+  } catch (error) {
+    console.error("Predict emission error:", error.message);
+    
+    if (error.message.includes("Insufficient data")) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to predict emissions",
+    });
+  }
+};
+
