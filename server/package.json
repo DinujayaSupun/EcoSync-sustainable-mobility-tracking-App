@@ -1,28 +1,20 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
   "description": "Sustainability Project Backend API",
   "main": "index.js",
-  "directories": {
-    "test": "tests"
-  },
+  "type": "commonjs",
   "scripts": {
-    "test": "jest",
-    "start": "nodemon server.js"
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [
     "sustainability",
     "backend",
     "api"
   ],
-  "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
@@ -32,21 +24,16 @@
     "express-validator": "^7.3.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.6",
-    "nodemon": "^3.1.11"
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0"
   },
   "devDependencies": {
     "jest": "^30.2.0",
-    "supertest": "^7.2.2"
+    "supertest": "^7.2.2",
+    "nodemon": "^3.1.11"
   },
   "jest": {
     "testEnvironment": "node"
-    "express-mongo-sanitize": "^2.2.0",
-    "express-rate-limit": "^8.2.1",
-    "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.1.6"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.0"
   }
 }
