@@ -186,10 +186,7 @@ exports.logCommute = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Commute logged successfully",
-      data: {
-        ...commute.toObject(),
-        co2Saved: co2Saved
-      }
+      data: commute,
     });
   } catch (error) {
     console.error("Commute logging error:", error.message);
