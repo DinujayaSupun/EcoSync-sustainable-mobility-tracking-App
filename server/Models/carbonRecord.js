@@ -25,10 +25,15 @@ const carbonRecordSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    emissionProduced: {
+      type: Number,
+    },
+    efficiencyScore: {
+      type: Number,
+      default: 0,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
-
-
 
 module.exports = mongoose.model("CarbonRecord", carbonRecordSchema);

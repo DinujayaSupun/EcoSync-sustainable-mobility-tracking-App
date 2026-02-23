@@ -60,6 +60,7 @@ const getUserPercentile = async (userId) => {
   const sorted = allUsers.sort((a, b) => a.total - b.total);
 
   const rank = sorted.findIndex((u) => u._id === userId);
+  
 
   if (rank === -1) return 0;
 
