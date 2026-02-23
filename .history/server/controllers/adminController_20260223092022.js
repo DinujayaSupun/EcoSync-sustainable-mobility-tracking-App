@@ -28,25 +28,24 @@ exports.getAdminStats = async (req, res) => {
     today.setHours(0, 0, 0, 0); // Start of today
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
-
+    
     const activeTodayResult = await Trip.aggregate([
       {
         $match: {
-          createdAt: { $gte: today, $lt: tomorrow },
-        },
+          createdAt: { $gte: today, $lt: tomorrow }
+        }
       },
       {
         $group: {
-          _id: "$user",
-        },
+          _id: "$user"
+        }
       },
       {
-        $count: "uniqueUsers",
-      },
+        $count: "uniqueUsers"
+      }
     ]);
-
-    const activeToday =
-      activeTodayResult.length > 0 ? activeTodayResult[0].uniqueUsers : 0;
+    
+    const activeToday = activeTodayResult.length > 0 ? activeTodayResult[0].uniqueUsers : 0;
 
     // 5. Faculty breakdown data
     const facultyData = await User.aggregate([
@@ -95,39 +94,5 @@ exports.deleteUser = async (req, res) => {
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Delete failed" });
-  }
-};
-
-// GET recent trips for live feed
-exports.getRecentTrips = async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit) || 10;
-
-    const recentTrips = await Trip.find()
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .populate("user", "faculty name")
-      .lean();
-
-    const formattedTrips = recentTrips.map((trip) => ({
-      _id: trip._id,
-      faculty: trip.user?.faculty || "Unknown",
-      userName: trip.user?.name || "Anonymous",
-      co2Saved: parseFloat(trip.co2Saved.toFixed(2)),
-      transportMode: trip.transportMode,
-      createdAt: trip.createdAt,
-    }));
-
-    res.status(200).json({
-      success: true,
-      trips: formattedTrips,
-    });
-  } catch (error) {
-    console.error("Recent trips error:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch recent trips",
-      trips: [],
-    });
   }
 };
