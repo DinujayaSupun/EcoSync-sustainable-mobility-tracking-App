@@ -4,7 +4,7 @@ const {
   getUserTotalSaved,
   forecastMonthlySavings,
   getUserPercentile,
-} = require("../services/analytics.service");
+} = require("../Services/analytics.service");
 
 // CREATE
 const {
@@ -13,7 +13,7 @@ const {
   calculateEfficiencyScore,
   generateRecommendation,
   compareAllOptions,
-} = require("../services/carbon.service"); 
+} = require("../Services/carbon.service"); 
 
 // CREATE + CALCULATE
 const createCarbonRecord = async (req, res, next) => {
