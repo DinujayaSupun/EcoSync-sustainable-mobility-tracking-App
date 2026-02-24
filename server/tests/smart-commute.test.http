@@ -1,0 +1,341 @@
+###############################################
+# Smart Commute & Logistics API Test Suite
+# 
+# Use this file with REST Client extension in VS Code
+# or import into Postman/Thunder Client
+###############################################
+
+@baseUrl = http://localhost:5000/api
+@userId = 60d5ec49f1b2c72b8c8e4a1b
+
+###############################################
+# HEALTH CHECK
+###############################################
+
+### Check Smart Commute Module Health
+GET {{baseUrl}}/smart-commute/health
+
+###############################################
+# FEATURE 1: Weather-Based Green Suggestion
+###############################################
+
+### Create Weather Suggestion
+POST {{baseUrl}}/weather-suggestion
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "origin": "New York",
+  "destination": "Boston"
+}
+
+### Get Current Weather Suggestion (without saving)
+GET {{baseUrl}}/weather-suggestion/current/London
+
+### Get Weather Suggestions for User
+GET {{baseUrl}}/weather-suggestion/{{userId}}?limit=10&page=1
+
+### Update Weather Suggestion
+PUT {{baseUrl}}/weather-suggestion/SUGGESTION_ID_HERE
+Content-Type: application/json
+
+{
+  "suggestedTransport": "Bus"
+}
+
+### Delete Weather Suggestion
+DELETE {{baseUrl}}/weather-suggestion/SUGGESTION_ID_HERE
+
+###############################################
+# FEATURE 2: Route Analysis & Traffic
+###############################################
+
+### Create Route Analysis (with save)
+POST {{baseUrl}}/route-analysis
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "origin": "Times Square, New York",
+  "destination": "Central Park, New York"
+}
+
+### Compare Routes (without saving)
+POST {{baseUrl}}/route-analysis/compare
+Content-Type: application/json
+
+{
+  "origin": "Empire State Building, New York",
+  "destination": "Statue of Liberty, New York"
+}
+
+### Get Route Analyses for User
+GET {{baseUrl}}/route-analysis/{{userId}}?limit=10&page=1
+
+### Get Traffic Statistics
+GET {{baseUrl}}/route-analysis/stats/{{userId}}?days=30
+
+### Get Single Route Analysis
+GET {{baseUrl}}/route-analysis/single/ANALYSIS_ID_HERE
+
+### Delete Route Analysis
+DELETE {{baseUrl}}/route-analysis/ANALYSIS_ID_HERE
+
+###############################################
+# FEATURE 3: Transport History & Prediction
+###############################################
+
+### Create Transport History Entry
+POST {{baseUrl}}/transport-history
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "transportMode": "Bus",
+  "distance": 15.5,
+  "origin": "Home",
+  "destination": "University",
+  "date": "2024-02-20"
+}
+
+### Bulk Create Transport History
+POST {{baseUrl}}/transport-history/bulk
+Content-Type: application/json
+
+{
+  "entries": [
+    {
+      "userId": "{{userId}}",
+      "transportMode": "Bus",
+      "distance": 12.5,
+      "date": "2024-02-15"
+    },
+    {
+      "userId": "{{userId}}",
+      "transportMode": "Cycling",
+      "distance": 8.0,
+      "date": "2024-02-16"
+    },
+    {
+      "userId": "{{userId}}",
+      "transportMode": "Bus",
+      "distance": 13.2,
+      "date": "2024-02-17"
+    },
+    {
+      "userId": "{{userId}}",
+      "transportMode": "Walking",
+      "distance": 2.5,
+      "date": "2024-02-18"
+    },
+    {
+      "userId": "{{userId}}",
+      "transportMode": "Bus",
+      "distance": 11.8,
+      "date": "2024-02-19"
+    }
+  ]
+}
+
+### Get Transport History
+GET {{baseUrl}}/transport-history/{{userId}}?limit=30&page=1
+
+### Get Transport History with Filters
+GET {{baseUrl}}/transport-history/{{userId}}?transportMode=Bus&startDate=2024-02-01&endDate=2024-02-28
+
+### Get Transport Prediction (AI-based)
+GET {{baseUrl}}/transport-history/prediction/{{userId}}
+
+### Get Transport Statistics
+GET {{baseUrl}}/transport-history/stats/{{userId}}?days=30
+
+### Update Transport History Entry
+PUT {{baseUrl}}/transport-history/HISTORY_ID_HERE
+Content-Type: application/json
+
+{
+  "distance": 20.5,
+  "transportMode": "Carpool"
+}
+
+### Delete Transport History Entry
+DELETE {{baseUrl}}/transport-history/HISTORY_ID_HERE
+
+###############################################
+# FEATURE 4: Carbon Heat Map
+###############################################
+
+### Create Heat Map Entry
+POST {{baseUrl}}/heatmap
+Content-Type: application/json
+
+{
+  "latitude": 40.7128,
+  "longitude": -74.0060,
+  "totalCO2": 150.5,
+  "greenTrips": 25,
+  "totalTrips": 100,
+  "locationName": "Manhattan"
+}
+
+### Bulk Create Heat Map Entries
+POST {{baseUrl}}/heatmap/bulk
+Content-Type: application/json
+
+{
+  "entries": [
+    {
+      "latitude": 40.7589,
+      "longitude": -73.9851,
+      "totalCO2": 200.0,
+      "greenTrips": 30,
+      "totalTrips": 120,
+      "locationName": "Times Square"
+    },
+    {
+      "latitude": 40.7614,
+      "longitude": -73.9776,
+      "totalCO2": 180.5,
+      "greenTrips": 35,
+      "totalTrips": 110,
+      "locationName": "Central Park South"
+    },
+    {
+      "latitude": 40.7484,
+      "longitude": -73.9857,
+      "totalCO2": 250.0,
+      "greenTrips": 20,
+      "totalTrips": 150,
+      "locationName": "Empire State Building"
+    }
+  ]
+}
+
+### Get All Heat Map Entries
+GET {{baseUrl}}/heatmap?limit=100
+
+### Get Heat Map Entries with Filters
+GET {{baseUrl}}/heatmap?minCO2=100&maxCO2=500&limit=50
+
+### Get Aggregated Heat Map Data
+GET {{baseUrl}}/heatmap/aggregate/data?radius=0.01
+
+### Get High Emission Zones
+GET {{baseUrl}}/heatmap/zones/high-emission?threshold=100&limit=10
+
+### Get High Green Zones
+GET {{baseUrl}}/heatmap/zones/high-green?limit=10
+
+### Get Single Heat Map Entry
+GET {{baseUrl}}/heatmap/HEATMAP_ID_HERE
+
+### Update Heat Map Entry
+PUT {{baseUrl}}/heatmap/HEATMAP_ID_HERE
+Content-Type: application/json
+
+{
+  "totalCO2": 175.0,
+  "greenTrips": 30,
+  "totalTrips": 110
+}
+
+### Delete Heat Map Entry
+DELETE {{baseUrl}}/heatmap/HEATMAP_ID_HERE
+
+###############################################
+# FEATURE 5: Campus Parking Impact
+###############################################
+
+### Create Parking Impact Entry
+POST {{baseUrl}}/parking-impact
+Content-Type: application/json
+
+{
+  "campusName": "Main Campus",
+  "totalParkingCapacity": 500,
+  "dailyCarEntries": 350,
+  "reducedCarEntries": 50,
+  "avgTripDistance": 12,
+  "date": "2024-02-20"
+}
+
+### Get All Parking Impact Entries
+GET {{baseUrl}}/parking-impact?limit=30&page=1
+
+### Get Parking Impact for Specific Campus
+GET {{baseUrl}}/parking-impact?campusName=Main Campus&limit=30
+
+### Get Parking Impact with Date Range
+GET {{baseUrl}}/parking-impact?startDate=2024-02-01&endDate=2024-02-28
+
+### Get Campus Statistics
+GET {{baseUrl}}/parking-impact/stats/Main Campus?days=30
+
+### Get All Campuses List
+GET {{baseUrl}}/parking-impact/campuses/list
+
+### Compare Multiple Campuses
+POST {{baseUrl}}/parking-impact/compare
+Content-Type: application/json
+
+{
+  "campusNames": ["Main Campus", "North Campus", "South Campus"]
+}
+
+### Project Future Savings
+POST {{baseUrl}}/parking-impact/project
+Content-Type: application/json
+
+{
+  "campusName": "Main Campus",
+  "targetReduction": 100,
+  "avgTripDistance": 12
+}
+
+### Update Parking Impact Entry
+PUT {{baseUrl}}/parking-impact/PARKING_ID_HERE
+Content-Type: application/json
+
+{
+  "dailyCarEntries": 320,
+  "reducedCarEntries": 80
+}
+
+### Delete Parking Impact Entry
+DELETE {{baseUrl}}/parking-impact/PARKING_ID_HERE
+
+###############################################
+# SAMPLE TEST SCENARIOS
+###############################################
+
+### Scenario 1: Complete User Journey
+# 1. Check weather and get suggestion
+GET {{baseUrl}}/weather-suggestion/current/Boston
+
+# 2. Analyze best route
+POST {{baseUrl}}/route-analysis/compare
+Content-Type: application/json
+
+{
+  "origin": "Harvard University",
+  "destination": "MIT"
+}
+
+# 3. Log the trip taken
+POST {{baseUrl}}/transport-history
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "transportMode": "Cycling",
+  "distance": 3.2,
+  "origin": "Harvard University",
+  "destination": "MIT"
+}
+
+# 4. Get prediction for next trip
+GET {{baseUrl}}/transport-history/prediction/{{userId}}
+
+###############################################
+# END OF TEST FILE
+###############################################
