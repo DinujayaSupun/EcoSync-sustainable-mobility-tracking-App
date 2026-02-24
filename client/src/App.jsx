@@ -6,7 +6,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import CommuteLogger from './pages/CommuteLogger'
 import CommuteHistory from './pages/CommuteHistory'
 import UserManagement from './pages/UserManagement';
-import Reports from './pages/Reports';
+import SmartCommuteRoutes from './pages/smartCommute/routes';
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
  
@@ -75,6 +75,13 @@ function AppRoutes() {
       <Route path="/commute-history" element={
         <UserProtectedRoute>
           <CommuteHistory />
+        </UserProtectedRoute>
+      } />
+
+      {/* 🚀 Smart Commute & Logistics Module */}
+      <Route path="/smart-commute/*" element={
+        <UserProtectedRoute>
+          <SmartCommuteRoutes />
         </UserProtectedRoute>
       } />
 

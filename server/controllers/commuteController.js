@@ -245,8 +245,11 @@ exports.autocompleteLocation = async (req, res) => {
         params: {
           q: query,
           format: "json",
-          limit: 5,
+          limit: 8,
           addressdetails: 1,
+          countrycodes: "lk",                          // Sri Lanka only
+          viewbox: "79.5213,9.8315,81.8794,5.9169",   // Sri Lanka bounding box
+          bounded: 0,                                  // prefer but don't strictly bound
         },
         headers: {
           "User-Agent": "SmartCommuteLogger/1.0",
@@ -258,6 +261,8 @@ exports.autocompleteLocation = async (req, res) => {
       display_name: place.display_name,
       lat: place.lat,
       lon: place.lon,
+      type: place.type,
+      class: place.class,
     }));
 
     res.status(200).json({
