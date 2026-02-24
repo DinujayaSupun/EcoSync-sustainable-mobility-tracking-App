@@ -143,15 +143,11 @@ exports.logCommute = async (req, res) => {
 
     // Calculate emissions
     const emissionEstimate = routeData.distance * EMISSION_FACTORS[transportType];
-    
-    // Calculate CO2 saved compared to driving a car
-    const carEmission = routeData.distance * EMISSION_FACTORS.Car;
-    const co2Saved = Math.max(0, carEmission - emissionEstimate);
 
     // Generate eco suggestion
     const ecoSuggestion = generateEcoSuggestion(transportType, routeData.distance);
 
-    // Save commute to database
+    // Save to database
     const commute = await Commute.create({
       userId,
       startLocation,
@@ -165,31 +161,10 @@ exports.logCommute = async (req, res) => {
       ecoSuggestion,
     });
 
-    // Also create a Trip record for admin statistics
-    const transportModeMap = {
-      Car: 'car',
-      Bus: 'bus',
-      Train: 'train',
-      Bike: 'shuttle', // Map bike to shuttle for Trip model
-      Walk: 'walking'
-    };
-
-    await Trip.create({
-      user: userId,
-      origin: startLocation,
-      destination: destination,
-      distance: routeData.distance,
-      transportMode: transportModeMap[transportType],
-      co2Saved: co2Saved
-    });
-
     res.status(201).json({
       success: true,
       message: "Commute logged successfully",
-      data: {
-        ...commute.toObject(),
-        co2Saved: co2Saved
-      }
+      data: commute,
     });
   } catch (error) {
     console.error("Commute logging error:", error.message);
@@ -245,11 +220,8 @@ exports.autocompleteLocation = async (req, res) => {
         params: {
           q: query,
           format: "json",
-          limit: 8,
+          limit: 5,
           addressdetails: 1,
-          countrycodes: "lk",                          // Sri Lanka only
-          viewbox: "79.5213,9.8315,81.8794,5.9169",   // Sri Lanka bounding box
-          bounded: 0,                                  // prefer but don't strictly bound
         },
         headers: {
           "User-Agent": "SmartCommuteLogger/1.0",
@@ -261,8 +233,6 @@ exports.autocompleteLocation = async (req, res) => {
       display_name: place.display_name,
       lat: place.lat,
       lon: place.lon,
-      type: place.type,
-      class: place.class,
     }));
 
     res.status(200).json({

@@ -1,0 +1,132 @@
+const User = require("../models/User");
+const Trip = require("../models/Trip");
+
+exports.getAdminStats = async (req, res) => {
+  try {
+    // 1. Total users count
+    const totalUsers = await User.countDocuments();
+
+    // 2. Get trip statistics
+    const tripStats = await Trip.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalDistance: { $sum: "$distance" },
+          totalCO2: { $sum: "$co2Saved" },
+        },
+      },
+    ]);
+
+    const stats = tripStats[0] || { totalDistance: 0, totalCO2: 0 };
+
+    // 3. Count unique faculties
+    const faculties = await User.distinct("faculty");
+    const facultyCount = faculties.filter((f) => f && f.trim() !== "").length;
+
+    // 4. Count users active today (users who logged trips today)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
+    
+    const activeTodayResult = await Trip.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: today, $lt: tomorrow }
+        }
+      },
+      {
+        $group: {
+          _id: "$user"
+        }
+      },
+      {
+        $count: "uniqueUsers"
+      }
+    ]);
+    
+    const activeToday = activeTodayResult.length > 0 ? activeTodayResult[0].uniqueUsers : 0;
+
+    // 5. Faculty breakdown data
+    const facultyData = await User.aggregate([
+      { $match: { faculty: { $ne: null, $ne: "" } } },
+      { $group: { _id: "$faculty", count: { $sum: 1 } } },
+      { $project: { faculty: "$_id", students: "$count", _id: 0 } },
+      { $sort: { students: -1 } },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      totalUsers,
+      totalCO2: parseFloat(stats.totalCO2.toFixed(2)),
+      activeToday,
+      faculties: facultyCount,
+      facultyData,
+    });
+  } catch (error) {
+    console.error("Admin stats error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch admin statistics",
+      totalUsers: 0,
+      totalCO2: 0,
+      activeToday: 0,
+      faculties: 0,
+      facultyData: [],
+    });
+  }
+};
+
+// GET all users
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select("-password"); // Security: Don't send passwords!
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// DELETE a user
+exports.deleteUser = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Delete failed" });
+  }
+};
+
+// GET recent trips for live feed
+exports.getRecentTrips = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const recentTrips = await Trip.find()
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .populate('user', 'faculty name')
+      .lean();
+    
+    const formattedTrips = recentTrips.map(trip => ({
+      _id: trip._id,
+      faculty: trip.user?.faculty || 'Unknown',
+      userName: trip.user?.name || 'Anonymous',
+      co2Saved: parseFloat(trip.co2Saved.toFixed(2)),
+      transportMode: trip.transportMode,
+      createdAt: trip.createdAt
+    }));
+    
+    res.status(200).json({
+      success: true,
+      trips: formattedTrips
+    });
+  } catch (error) {
+    console.error("Recent trips error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch recent trips",
+      trips: []
+    });
+  }
+};
