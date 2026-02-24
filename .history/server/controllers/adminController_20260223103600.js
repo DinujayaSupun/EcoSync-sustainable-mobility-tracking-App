@@ -162,17 +162,9 @@ exports.getReportData = async (req, res) => {
 
     // Overall statistics
     const totalTrips = filteredTrips.length;
-    const totalCO2Saved = filteredTrips.reduce(
-      (sum, trip) => sum + trip.co2Saved,
-      0,
-    );
-    const totalDistance = filteredTrips.reduce(
-      (sum, trip) => sum + trip.distance,
-      0,
-    );
-    const uniqueUsers = new Set(
-      filteredTrips.map((trip) => trip.user?._id?.toString()),
-    ).size;
+    const totalCO2Saved = filteredTrips.reduce((sum, trip) => sum + trip.co2Saved, 0);
+    const totalDistance = filteredTrips.reduce((sum, trip) => sum + trip.distance, 0);
+    const uniqueUsers = new Set(filteredTrips.map((trip) => trip.user?._id?.toString())).size;
 
     // Transport mode breakdown
     const transportBreakdown = {};
@@ -209,15 +201,13 @@ exports.getReportData = async (req, res) => {
     });
 
     // Convert Sets to counts and format
-    const facultyStats = Object.entries(facultyBreakdown).map(
-      ([name, data]) => ({
-        faculty: name,
-        trips: data.trips,
-        co2Saved: parseFloat(data.co2Saved.toFixed(2)),
-        distance: parseFloat(data.distance.toFixed(2)),
-        users: data.users.size,
-      }),
-    );
+    const facultyStats = Object.entries(facultyBreakdown).map(([name, data]) => ({
+      faculty: name,
+      trips: data.trips,
+      co2Saved: parseFloat(data.co2Saved.toFixed(2)),
+      distance: parseFloat(data.distance.toFixed(2)),
+      users: data.users.size,
+    }));
 
     // Daily trends
     const dailyData = {};
@@ -245,7 +235,7 @@ exports.getReportData = async (req, res) => {
     filteredTrips.forEach((trip) => {
       const userId = trip.user?._id?.toString();
       if (!userId) return;
-
+      
       if (!userStats[userId]) {
         userStats[userId] = {
           name: trip.user.name,
@@ -284,14 +274,12 @@ exports.getReportData = async (req, res) => {
           },
           faculty: faculty || "All faculties",
         },
-        transportBreakdown: Object.entries(transportBreakdown).map(
-          ([mode, data]) => ({
-            mode,
-            count: data.count,
-            co2Saved: parseFloat(data.co2Saved.toFixed(2)),
-            distance: parseFloat(data.distance.toFixed(2)),
-          }),
-        ),
+        transportBreakdown: Object.entries(transportBreakdown).map(([mode, data]) => ({
+          mode,
+          count: data.count,
+          co2Saved: parseFloat(data.co2Saved.toFixed(2)),
+          distance: parseFloat(data.distance.toFixed(2)),
+        })),
         facultyStats,
         dailyTrends,
         topUsers,

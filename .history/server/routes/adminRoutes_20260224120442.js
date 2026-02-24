@@ -7,7 +7,7 @@ const {
   getRecentTrips,
   getReportData,
 } = require("../controllers/adminController");
-const { protect, isAdmin } = require("../middleware/authMiddleware");
+const { protect, isAdmin } = require("../middlewires/authMiddleware");
 
 // Secure Route: Only Admins can hit this
 router.get("/stats", protect, isAdmin, getAdminStats);
