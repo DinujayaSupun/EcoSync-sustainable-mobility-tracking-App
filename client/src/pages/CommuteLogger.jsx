@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import API from '../api/axios';
 import LocationAutocomplete from '../components/LocationAutocomplete';
+import CommuteMap from '../components/CommuteMap';
+import { weatherAPI } from '../api/smartCommute';
 
 const CommuteLogger = () => {
   const [formData, setFormData] = useState({
@@ -9,15 +11,50 @@ const CommuteLogger = () => {
     transportType: 'Car',
   });
 
+  const [startCoords, setStartCoords] = useState(null);
+  const [endCoords, setEndCoords] = useState(null);
+
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Weather suggestion state
+  const [weather, setWeather] = useState(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState('');
+
+  const weatherIcons = { Clear: '☀️', Rain: '🌧️', Clouds: '☁️', Snow: '❄️', Drizzle: '🌦️', Thunderstorm: '⛈️', Mist: '🌫️', Fog: '🌫️' };
+  const transportIcons = { Bus: '🚌', Cycling: '🚴', Walking: '🚶', Carpool: '🚗', Train: '🚂', Metro: '🚇' };
+
+  const fetchWeather = async (location) => {
+    if (!location) return;
+    setWeatherLoading(true);
+    setWeatherError('');
+    setWeather(null);
+    try {
+      const params = startCoords ? { lat: startCoords[0], lon: startCoords[1] } : {};
+      const res = await weatherAPI.getCurrentWeather(location, params);
+      setWeather(res.data);
+    } catch (e) {
+      setWeatherError('Could not fetch weather. Please try again.');
+    } finally {
+      setWeatherLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleCoordSelect = (fieldName, lat, lon) => {
+    if (fieldName === 'startLocation') {
+      setStartCoords([lat, lon]);
+    } else if (fieldName === 'destination') {
+      setEndCoords([lat, lon]);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -35,6 +72,8 @@ const CommuteLogger = () => {
         destination: '',
         transportType: 'Car',
       });
+      setStartCoords(null);
+      setEndCoords(null);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to log commute. Please try again.');
     } finally {
@@ -45,13 +84,26 @@ const CommuteLogger = () => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">🚗 Smart Commute Logger</h2>
+
+      {/* Interactive Map */}
+      <div className="mb-5">
+        <p className="text-sm text-gray-500 mb-2">📍 Search and select locations below to pin them on the map</p>
+        <CommuteMap
+          startCoords={startCoords}
+          endCoords={endCoords}
+          startLabel={formData.startLocation}
+          endLabel={formData.destination}
+          transportType={formData.transportType}
+        />
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <LocationAutocomplete
           name="startLocation"
           value={formData.startLocation}
           onChange={handleChange}
-          placeholder="e.g., New York, NY"
+          onCoordSelect={handleCoordSelect}
+          placeholder="e.g., Colombo, Sri Lanka"
           label="Start Location"
           required
         />
@@ -60,7 +112,8 @@ const CommuteLogger = () => {
           name="destination"
           value={formData.destination}
           onChange={handleChange}
-          placeholder="e.g., Boston, MA"
+          onCoordSelect={handleCoordSelect}
+          placeholder="e.g., Kandy, Sri Lanka"
           label="Destination"
           required
         />
@@ -98,6 +151,87 @@ const CommuteLogger = () => {
           {error}
         </div>
       )}
+
+      {/* ── Weather-Based Transport Suggestion ── */}
+      <div className="mt-6 border border-blue-100 rounded-xl overflow-hidden">
+        <div className="bg-linear-to-r from-blue-600 to-blue-500 px-5 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">☁️</span>
+            <h3 className="text-white font-semibold text-base">Weather-Based Transport Suggestion</h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => fetchWeather(formData.startLocation)}
+            disabled={weatherLoading || !formData.startLocation}
+            className="text-xs bg-white text-blue-700 font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            {weatherLoading ? 'Checking…' : 'Check Weather'}
+          </button>
+        </div>
+
+        <div className="bg-blue-50 px-5 py-4">
+          {!formData.startLocation && !weather && (
+            <p className="text-sm text-blue-500 text-center py-2">
+              Enter a start location above, then click <strong>Check Weather</strong> for live transport suggestions.
+            </p>
+          )}
+
+          {weatherError && (
+            <p className="text-sm text-red-600 text-center py-2">{weatherError}</p>
+          )}
+
+          {weatherLoading && (
+            <div className="flex items-center justify-center gap-2 py-4">
+              <svg className="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              <span className="text-sm text-blue-600">Fetching live weather…</span>
+            </div>
+          )}
+
+          {weather && !weatherLoading && (
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Weather card */}
+              <div className="flex-1 bg-white rounded-xl border border-blue-200 p-4 flex items-center gap-4 shadow-sm">
+                <span className="text-5xl">{weatherIcons[weather.weatherCondition] || '🌤️'}</span>
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{weather.temperature?.toFixed(1)}°C</p>
+                  <p className="text-sm text-gray-500">{weather.weatherCondition}</p>
+                  {weather.humidity != null && (
+                    <p className="text-xs text-gray-400 mt-1">💧 Humidity: {weather.humidity}%</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Suggestion card */}
+              <div className="flex-1 bg-white rounded-xl border border-green-200 p-4 shadow-sm">
+                <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Recommended Transport</p>
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl">{transportIcons[weather.suggestedTransport] || '🚗'}</span>
+                  <div>
+                    <p className="text-xl font-bold text-green-700">{weather.suggestedTransport}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Best for current conditions</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* How it works */}
+          {!weather && !weatherLoading && (
+            <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[['🌧️ Rain / Snow', 'Bus'], ['☀️ Clear Sky', 'Cycling'], ['☁️ Cloudy', 'Carpool'], ['⛈️ Storm', 'Train']]
+                .map(([cond, mode]) => (
+                  <div key={cond} className="bg-white rounded-lg border border-blue-100 px-3 py-2 text-center text-xs text-gray-600">
+                    <div className="font-medium">{cond}</div>
+                    <div className="text-green-600 font-semibold mt-0.5">→ {mode}</div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       {result && (
         <div className="mt-6 space-y-4">
