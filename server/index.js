@@ -5,6 +5,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const commuteRoutes = require("./routes/commuteRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const smartCommuteRoutes = require("./routes/smartCommute.routes");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 
@@ -41,6 +42,7 @@ app.use("/api/", limiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/commute", commuteRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/smart-commute", smartCommuteRoutes);
 
 // Basic route for testing
 app.get("/", (req, res) => {
