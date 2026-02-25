@@ -7,6 +7,7 @@ const {
   deleteUser,
   getRecentTrips,
   getReportData,
+  emailReport,
 } = require("../controllers/adminController");
 const { protect, isAdmin } = require("../middleware/authMiddleware");
 
@@ -23,5 +24,7 @@ router.get("/recent-trips", protect, isAdmin, getRecentTrips);
 
 // Report Generation
 router.get("/report", protect, isAdmin, getReportData);
+
+router.post("/email-report", protect, isAdmin, emailReport);
 
 module.exports = router;

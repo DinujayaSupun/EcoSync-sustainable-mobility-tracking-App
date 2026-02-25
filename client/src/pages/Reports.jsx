@@ -12,7 +12,8 @@ import {
   Filter,
   BarChart3,
   Award,
-  Leaf
+  Leaf,
+  Mail
 } from 'lucide-react';
 import {
   BarChart,
@@ -34,6 +35,7 @@ const Reports = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState(null);
+  const [emailLoading, setEmailLoading] = useState(false);
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -105,6 +107,28 @@ const Reports = () => {
     window.print();
   };
 
+  const handleEmailReport = async () => {
+    setEmailLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.startDate) params.append('startDate', filters.startDate);
+      if (filters.endDate) params.append('endDate', filters.endDate);
+      if (filters.faculty) params.append('faculty', filters.faculty);
+
+      const res = await API.post(`/admin/email-report?${params.toString()}`);
+      
+      if (res.data.success) {
+        alert(`✅ ${res.data.message}`);
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      const errorMsg = error.response?.data?.message || 'Failed to send email report';
+      alert(`❌ ${errorMsg}`);
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
   if (loading && !reportData) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -137,6 +161,27 @@ const Reports = () => {
               </div>
             </div>
             <div className="flex gap-2 print:hidden">
+              <button
+                onClick={handleEmailReport}
+                disabled={emailLoading}
+                className="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Email report to your registered email"
+              >
+                {emailLoading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Mail size={18} />
+                    Email Report
+                  </>
+                )}
+              </button>
               <button
                 onClick={handlePrint}
                 className="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition flex items-center gap-2"
