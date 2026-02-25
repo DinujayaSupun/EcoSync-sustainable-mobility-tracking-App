@@ -13,6 +13,8 @@ const CommuteLogger = () => {
 
   const [startCoords, setStartCoords] = useState(null);
   const [endCoords, setEndCoords] = useState(null);
+  const [liveCoords, setLiveCoords] = useState(null);
+  const [liveLocating, setLiveLocating] = useState(false);
 
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -57,6 +59,46 @@ const CommuteLogger = () => {
     }
   };
 
+  // Live GPS location — sets origin with reverse-geocoded address
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    setLiveLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        setLiveCoords([lat, lon]);
+        setStartCoords([lat, lon]);
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+          );
+          const data = await res.json();
+          const name = data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+          setFormData((prev) => ({ ...prev, startLocation: name }));
+        } catch {
+          setFormData((prev) => ({ ...prev, startLocation: `${lat.toFixed(5)}, ${lon.toFixed(5)}` }));
+        }
+        setLiveLocating(false);
+      },
+      (err) => {
+        console.error('Geolocation error:', err);
+        alert('Unable to retrieve your location. Please allow location access.');
+        setLiveLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  // Callback from LocateControl button inside the map
+  const handleMapLocate = (lat, lon, name) => {
+    setLiveCoords([lat, lon]);
+    setStartCoords([lat, lon]);
+    setFormData((prev) => ({ ...prev, startLocation: name }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -94,19 +136,37 @@ const CommuteLogger = () => {
           startLabel={formData.startLocation}
           endLabel={formData.destination}
           transportType={formData.transportType}
+          liveCoords={liveCoords}
+          onLocate={handleMapLocate}
         />
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        <LocationAutocomplete
-          name="startLocation"
-          value={formData.startLocation}
-          onChange={handleChange}
-          onCoordSelect={handleCoordSelect}
-          placeholder="e.g., Colombo, Sri Lanka"
-          label="Start Location"
-          required
-        />
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-gray-700 font-medium">Start Location</label>
+            <button
+              type="button"
+              onClick={handleLocateMe}
+              disabled={liveLocating}
+              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition-colors"
+            >
+              {liveLocating ? (
+                <><span className="animate-spin">⏳</span> Locating...</>
+              ) : (
+                <><span>📍</span> Use My Location</>
+              )}
+            </button>
+          </div>
+          <LocationAutocomplete
+            name="startLocation"
+            value={formData.startLocation}
+            onChange={handleChange}
+            onCoordSelect={handleCoordSelect}
+            placeholder="e.g., Colombo, Sri Lanka"
+            required
+          />
+        </div>
 
         <LocationAutocomplete
           name="destination"
