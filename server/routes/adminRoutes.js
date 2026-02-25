@@ -8,6 +8,7 @@ const {
   getRecentTrips,
   getReportData,
   emailReport,
+  getAIInsights,
 } = require("../controllers/adminController");
 const { protect, isAdmin } = require("../middleware/authMiddleware");
 
@@ -26,5 +27,7 @@ router.get("/recent-trips", protect, isAdmin, getRecentTrips);
 router.get("/report", protect, isAdmin, getReportData);
 
 router.post("/email-report", protect, isAdmin, emailReport);
+
+router.post("/ai-insights", getAIInsights);
 
 module.exports = router;

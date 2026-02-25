@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Trip = require("../models/Trip");
 const nodemailer = require("nodemailer");
 const axios = require("axios");
+const OpenAI = require('openai');
 
 exports.getAdminStats = async (req, res) => {
   try {
@@ -553,6 +554,168 @@ exports.emailReport = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || "Failed to send email report",
+    });
+  }
+};
+
+
+/**
+ * @desc    Generate AI-powered insights from report data
+ * @route   POST /api/admin/ai-insights
+ * @access  Admin only
+ */
+exports.getAIInsights = async (req, res) => {
+  try {
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        message: "OpenAI API key not configured. Please add OPENAI_API_KEY to .env file"
+      });
+    }
+
+    // Get report data (same logic as getReportData)
+    const { startDate, endDate, faculty } = req.query;
+    
+    let dateFilter = {};
+    if (startDate || endDate) {
+      dateFilter.createdAt = {};
+      if (startDate) dateFilter.createdAt.$gte = new Date(startDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        dateFilter.createdAt.$lte = end;
+      }
+    }
+
+    const trips = await Trip.find(dateFilter)
+      .populate("user", "faculty name email")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const filteredTrips = faculty
+      ? trips.filter((trip) => trip.user?.faculty === faculty)
+      : trips;
+
+    // Calculate statistics for AI analysis
+    const totalTrips = filteredTrips.length;
+    const totalCO2Saved = filteredTrips.reduce((sum, trip) => sum + trip.co2Saved, 0);
+    const totalDistance = filteredTrips.reduce((sum, trip) => sum + trip.distance, 0);
+    const uniqueUsers = new Set(filteredTrips.map((trip) => trip.user?._id?.toString())).size;
+
+    // Transport mode breakdown
+    const transportBreakdown = {};
+    filteredTrips.forEach((trip) => {
+      const mode = trip.transportMode;
+      if (!transportBreakdown[mode]) {
+        transportBreakdown[mode] = { count: 0, co2Saved: 0, distance: 0 };
+      }
+      transportBreakdown[mode].count += 1;
+      transportBreakdown[mode].co2Saved += trip.co2Saved;
+      transportBreakdown[mode].distance += trip.distance;
+    });
+
+    // Faculty breakdown
+    const facultyBreakdown = {};
+    filteredTrips.forEach((trip) => {
+      const fac = trip.user?.faculty || 'Unknown';
+      if (!facultyBreakdown[fac]) {
+        facultyBreakdown[fac] = { trips: 0, co2Saved: 0, users: new Set() };
+      }
+      facultyBreakdown[fac].trips += 1;
+      facultyBreakdown[fac].co2Saved += trip.co2Saved;
+      facultyBreakdown[fac].users.add(trip.user?._id?.toString());
+    });
+
+    const facultyStats = Object.entries(facultyBreakdown).map(([fac, data]) => ({
+      faculty: fac,
+      trips: data.trips,
+      co2Saved: parseFloat(data.co2Saved.toFixed(2)),
+      users: data.users.size
+    }));
+
+    // Prepare data summary for AI
+    const dataSummary = {
+      totalTrips,
+      totalCO2Saved: parseFloat(totalCO2Saved.toFixed(2)),
+      totalDistance: parseFloat(totalDistance.toFixed(2)),
+      uniqueUsers,
+      avgCO2PerTrip: totalTrips > 0 ? parseFloat((totalCO2Saved / totalTrips).toFixed(2)) : 0,
+      avgDistancePerTrip: totalTrips > 0 ? parseFloat((totalDistance / totalTrips).toFixed(2)) : 0,
+      transportModes: Object.entries(transportBreakdown).map(([mode, data]) => ({
+        mode,
+        count: data.count,
+        percentage: parseFloat(((data.count / totalTrips) * 100).toFixed(1)),
+        co2Saved: parseFloat(data.co2Saved.toFixed(2)),
+        avgDistance: parseFloat((data.distance / data.count).toFixed(2))
+      })),
+      faculties: facultyStats,
+      dateRange: {
+        start: startDate || 'All time',
+        end: endDate || 'Present'
+      }
+    };
+
+    // Initialize OpenAI
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+
+    // Create AI prompt
+    const prompt = `You are a sustainability analyst for a university campus commute tracking system. 
+Analyze the following data and provide actionable insights for the administration team.
+
+DATA SUMMARY:
+${JSON.stringify(dataSummary, null, 2)}
+
+Please provide a comprehensive analysis with:
+1. Performance Analysis: Overall assessment of sustainability performance
+2. Key Findings: 3-5 most important insights from the data
+3. Strategic Recommendations: Specific actionable steps to improve outcomes
+4. Trend Analysis: Patterns and trends you observe
+5. Areas Needing Attention: Specific concerns or underperforming areas
+
+Format your response in clear sections with bullet points. Be specific and data-driven.
+Keep it professional and suitable for presentation to university administrators.`;
+
+    // Call OpenAI API
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo", // Fast and cost-effective
+      messages: [
+        {
+          role: "system",
+          content: "You are a sustainability analytics expert specializing in campus transportation and environmental impact analysis."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 1000
+    });
+
+    const aiInsights = completion.choices[0].message.content;
+
+    console.log(`🤖 AI Insights generated successfully`);
+
+    res.status(200).json({
+      success: true,
+      insights: aiInsights,
+      dataSummary,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error("AI Insights error:", error.message);
+    
+    if (error.response) {
+      console.error("OpenAI error:", error.response.data);
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to generate AI insights'
     });
   }
 };
