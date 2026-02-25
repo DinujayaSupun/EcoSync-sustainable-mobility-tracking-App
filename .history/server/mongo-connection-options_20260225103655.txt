@@ -1,0 +1,21 @@
+# Alternative MongoDB Connection Strings to Try
+
+# Try these one at a time in your .env file. After each change, run: node test-mongo-connection.js
+
+# Option 1: Simplest - No database name
+MONGO_URI=mongodb+srv://afNew:afNew@cluster0.fz1a1au.mongodb.net/?retryWrites=true&w=majority
+
+# Option 2: With database name
+MONGO_URI=mongodb+srv://afNew:afNew@cluster0.fz1a1au.mongodb.net/sustainabilityDB?retryWrites=true&w=majority
+
+# Option 3: Standard format from Atlas
+MONGO_URI=mongodb+srv://afNew:afNew@cluster0.fz1a1au.mongodb.net/test
+
+# Option 4: With all connection options
+MONGO_URI=mongodb+srv://afNew:afNew@cluster0.fz1a1au.mongodb.net/sustainabilityDB?retryWrites=true&w=majority&maxPoolSize=10
+
+# Option 5: If password has special characters, URL encode it
+# If your password contains @, #, /, ?, :, or other special chars, encode them:
+# @ becomes %40
+# # becomes %23
+# Example: MONGO_URI=mongodb+srv://afNew:afNew%40123@cluster0.fz1a1au.mongodb.net/sustainabilityDB
