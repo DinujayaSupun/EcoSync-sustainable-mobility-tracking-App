@@ -26,7 +26,7 @@ Transport mode: ${params.transportMode}
 Emission reduction target: ${params.emissionTarget} kg CO2
 Duration: ${params.durationDays} days
 Difficulty: ${params.difficulty}
-Type: ${params.type}
+Type: ${params.type} 
 
 Return ONLY valid JSON:
 { "title": "string", "tagline": "string", "description": "string" }

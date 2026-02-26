@@ -36,7 +36,7 @@ exports.createChallenge = async (req, res) => {
       type,
       deadline,
       // createdBy: req.user.id
-      createdBy: ""
+      createdBy: "64f123abc4567890abcdef12"
     });
 
     res.status(201).json(challenge);
@@ -118,6 +118,7 @@ exports.updateChallenge = async (req, res) => {
       "emissionTarget",
       "deadline",
       "status",
+      "durationDays",
       "rewardPoints"
     ];
 
@@ -156,19 +157,24 @@ exports.deleteChallenge = async (req, res) => {
   }
 };
 
+// if user info isn't available we simply return the most
+// recent active challenges (or you could randomize / paginate)
 exports.getRecommendedChallenges = async (req, res) => {
   try {
-    const userPreferredMode = req.user.preferredTransportMode; 
-    // assume stored in user profile for now
+    let filter = { status: "ACTIVE", isDeleted: false };
 
-    const challenges = await Challenge.find({
-      transportMode: { $ne: userPreferredMode },
-      status: "ACTIVE",
-      isDeleted: false
-    }).limit(5);
+    // optional query param `excludeMode` can be supplied by client
+    // to emulate previous behaviour where we filtered out a user's
+    // preferred transport mode.  eg.  /recommended?excludeMode=Bus
+    if (req.query.excludeMode) {
+      filter.transportMode = { $ne: req.query.excludeMode };
+    }
+
+    const challenges = await Challenge.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(5);
 
     res.json(challenges);
-
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

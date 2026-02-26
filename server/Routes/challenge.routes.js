@@ -2,24 +2,23 @@ const express = require("express");
 const router = express.Router();
 
 const controller = require("../Controllers/challenge.controller");
-const { requireAdmin } = require("../middleware/role.middleware");
+// NOTE: All challenge endpoints are intentionally exposed publicly.
+// the token/authorization requirement has been removed for CRUD operations.
 
 const { validateCreateChallenge } = require("../validators/challenge.validator");
 const { validate } = require("../middleware/validate.middleware");
 
-const { protect, isAdmin } = require("../middleware/authMiddleware");
-
-// Admin only route
+// Create a new challenge (previously admin-only)
 router.post(
   "/",
-  protect,           // <-- this populates req.user
-  isAdmin,           // <-- now req.user exists
   validateCreateChallenge,
   validate,
   controller.createChallenge
 );
-router.put("/:id", requireAdmin, controller.updateChallenge);
-router.delete("/:id", requireAdmin, controller.deleteChallenge);
+
+// Update / delete no longer require authentication
+router.put("/:id", controller.updateChallenge);
+router.delete("/:id", controller.deleteChallenge);
 
 // Public reads
 router.get("/", controller.getChallenges);
