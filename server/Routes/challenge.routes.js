@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../Controllers/challenge.controller");
+const controller = require("../Controllers/Challenges/challenge.controller");
 // NOTE: All challenge endpoints are intentionally exposed publicly.
 // the token/authorization requirement has been removed for CRUD operations.
 

@@ -1,7 +1,7 @@
 const OpenAI = require("openai");
 
 exports.generateChallengeContent = async (params) => {
-  // DEV MOCK: skip API if no key or USE_MOCK=true
+  
   if (!process.env.OPENAI_API_KEY || process.env.USE_MOCK === "true") {
     return {
       title: `${params.transportMode} Challenge`,
@@ -10,12 +10,11 @@ exports.generateChallengeContent = async (params) => {
     };
   }
 
-  // Initialize OpenAI client
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4", // or gpt-4-turbo if your key supports
+      model: "gpt-4",
       messages: [
         { role: "system", content: "You are a backend service that ONLY returns valid JSON." },
         {
@@ -36,12 +35,12 @@ Return ONLY valid JSON:
       temperature: 0.7
     });
 
-    // Parse AI response
+    
     return JSON.parse(response.choices[0].message.content);
 
   } catch (err) {
     console.error("OpenAI API error:", err);
-    // fallback so your server doesn’t crash
+    
     return {
       title: `${params.transportMode} Challenge`,
       tagline: "Go greener today!",

@@ -1,5 +1,5 @@
-const Challenge = require("../Models/challenges");
-const { generateChallengeContent } = require("../services/chatgpt.service");
+const Challenge = require("../../Models/challenges");
+const { generateChallengeContent } = require("../../services/chatgpt.service");
 
 exports.createChallenge = async (req, res) => {
   try {
