@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, useMap, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, useMap, useMapEvents, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -42,6 +42,37 @@ const endPinIcon = L.divIcon({
   className: '',
 });
 
+// Pulsing blue dot for live GPS location
+const liveDotIcon = L.divIcon({
+  html: `
+    <div style="position:relative;width:24px;height:24px;">
+      <div style="
+        position:absolute;inset:0;
+        background:rgba(26,115,232,0.25);
+        border-radius:50%;
+        animation:pulse-ring 1.6s ease-out infinite;
+      "></div>
+      <div style="
+        position:absolute;top:50%;left:50%;
+        transform:translate(-50%,-50%);
+        width:12px;height:12px;
+        background:#1a73e8;
+        border:2px solid #fff;
+        border-radius:50%;
+        box-shadow:0 2px 6px rgba(0,0,0,0.4);
+      "></div>
+    </div>
+    <style>
+      @keyframes pulse-ring{
+        0%{transform:scale(0.5);opacity:1}
+        100%{transform:scale(2.2);opacity:0}
+      }
+    </style>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+  className: '',
+});
+
 // Auto-fit map bounds
 const FitBounds = ({ startCoords, endCoords, routePoints }) => {
   const map = useMap();
@@ -61,6 +92,74 @@ const FitBounds = ({ startCoords, endCoords, routePoints }) => {
   return null;
 };
 
+// Locate-me button rendered inside the Leaflet map
+const LocateControl = ({ onLocate }) => {
+  const map = useMap();
+  const [locating, setLocating] = useState(false);
+
+  const handleLocate = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        map.setView([lat, lon], 15);
+        // Reverse geocode with Nominatim
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`
+          );
+          const data = await res.json();
+          const name = data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+          if (onLocate) onLocate(lat, lon, name);
+        } catch {
+          if (onLocate) onLocate(lat, lon, `${lat.toFixed(5)}, ${lon.toFixed(5)}`);
+        }
+        setLocating(false);
+      },
+      (err) => {
+        console.error('Geolocation error:', err);
+        alert('Unable to retrieve your location. Please allow location access.');
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  return (
+    <div
+      className="leaflet-top leaflet-right"
+      style={{ marginTop: '80px', zIndex: 1000 }}
+    >
+      <div className="leaflet-control">
+        <button
+          onClick={handleLocate}
+          disabled={locating}
+          title="Use my live location"
+          style={{
+            background: '#fff',
+            border: '2px solid rgba(0,0,0,0.2)',
+            borderRadius: '4px',
+            width: '34px',
+            height: '34px',
+            cursor: locating ? 'wait' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '18px',
+            boxShadow: '0 1px 5px rgba(0,0,0,0.25)',
+          }}
+        >
+          {locating ? '⏳' : '📍'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // Format seconds → "X min" or "X hr Y min"
 const formatDuration = (seconds) => {
   const mins = Math.round(seconds / 60);
@@ -76,7 +175,7 @@ const formatDistance = (meters) => {
   return `${Math.round(meters)} m`;
 };
 
-const CommuteMap = ({ startCoords, endCoords, startLabel, endLabel, transportType = 'Car' }) => {
+const CommuteMap = ({ startCoords, endCoords, startLabel, endLabel, transportType = 'Car', liveCoords, onLocate }) => {
   const [routePoints, setRoutePoints] = useState(null);
   const [routeInfo, setRouteInfo] = useState(null);
   const [routeLoading, setRouteLoading] = useState(false);
@@ -212,6 +311,20 @@ const CommuteMap = ({ startCoords, endCoords, startLabel, endLabel, transportTyp
             </Popup>
           </Marker>
         )}
+
+        {/* Live location pulsing dot */}
+        {liveCoords && (
+          <Marker position={liveCoords} icon={liveDotIcon}>
+            <Popup>
+              <div className="text-sm">
+                <strong className="text-blue-600">📍 Your Live Location</strong>
+              </div>
+            </Popup>
+          </Marker>
+        )}
+
+        {/* Locate-me button inside map */}
+        <LocateControl onLocate={onLocate} />
 
         <FitBounds startCoords={startCoords} endCoords={endCoords} routePoints={routePoints} />
       </MapContainer>
