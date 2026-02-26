@@ -9,6 +9,8 @@ const CommuteLogger = () => {
     startLocation: '',
     destination: '',
     transportType: 'Car',
+    faculty: '',
+    dayType: 'Weekday',
   });
 
   const [startCoords, setStartCoords] = useState(null);
@@ -113,6 +115,8 @@ const CommuteLogger = () => {
         startLocation: '',
         destination: '',
         transportType: 'Car',
+        faculty: '',
+        dayType: 'Weekday',
       });
       setStartCoords(null);
       setEndCoords(null);
@@ -195,6 +199,56 @@ const CommuteLogger = () => {
             <option value="Bike">🚴 Bike</option>
             <option value="Walk">🚶 Walk</option>
           </select>
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Faculty</label>
+          <select
+            name="faculty"
+            value={formData.faculty}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            required
+          >
+            <option value="">-- Select Faculty --</option>
+            <option value="Faculty of Computing">🖥️ Faculty of Computing</option>
+            <option value="Faculty of Engineering">⚙️ Faculty of Engineering</option>
+            <option value="Faculty of Business">💼 Faculty of Business</option>
+            <option value="Faculty of Science">🔬 Faculty of Science</option>
+            <option value="Faculty of Arts">🎨 Faculty of Arts</option>
+            <option value="Faculty of Medicine">🏥 Faculty of Medicine</option>
+            <option value="Faculty of Law">⚖️ Faculty of Law</option>
+            <option value="Faculty of Education">📚 Faculty of Education</option>
+            <option value="Other">🏫 Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Day Type</label>
+          <div className="flex gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="dayType"
+                value="Weekday"
+                checked={formData.dayType === 'Weekday'}
+                onChange={handleChange}
+                className="accent-green-600 w-4 h-4"
+              />
+              <span className="text-gray-700">📅 Weekday</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="dayType"
+                value="Weekend"
+                checked={formData.dayType === 'Weekend'}
+                onChange={handleChange}
+                className="accent-green-600 w-4 h-4"
+              />
+              <span className="text-gray-700">🛋️ Weekend</span>
+            </label>
+          </div>
         </div>
 
         <button
@@ -334,6 +388,16 @@ const CommuteLogger = () => {
             <p className="text-sm text-gray-600">
               <strong>Transport:</strong> {result.transportType}
             </p>
+            {result.faculty && (
+              <p className="text-sm text-gray-600">
+                <strong>Faculty:</strong> {result.faculty}
+              </p>
+            )}
+            {result.dayType && (
+              <p className="text-sm text-gray-600">
+                <strong>Day Type:</strong> {result.dayType}
+              </p>
+            )}
           </div>
         </div>
       )}
