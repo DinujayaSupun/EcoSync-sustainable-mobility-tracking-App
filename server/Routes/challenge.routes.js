@@ -14,4 +14,15 @@ router.get("/", controller.getChallenges);
 router.get("/recommended", controller.getRecommendedChallenges);
 router.get("/:id", controller.getChallengeById);
 
+const { validateCreateChallenge } = require("../validators/challenge.validator");
+const { validate } = require("../middleware/validate.middleware");
+
+router.post(
+  "/",
+  requireAdmin,
+  validateCreateChallenge,
+  validate,
+  controller.createChallenge
+);
+
 module.exports = router;
