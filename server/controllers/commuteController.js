@@ -159,15 +159,14 @@ const generateEcoSuggestion = (transportType, distance) => {
 // @access  Private
 exports.logCommute = async (req, res) => {
   try {
-    const { startLocation, destination, transportType } = req.body;
+    const { startLocation, destination, transportType, faculty, dayType } = req.body;
     const userId = req.user.id;
 
     // Validation
-    if (!startLocation || !destination || !transportType) {
+    if (!startLocation || !destination || !transportType || !faculty || !dayType) {
       return res.status(400).json({
         success: false,
-        message:
-          "Please provide start location, destination, and transport type",
+        message: "Please provide start location, destination, transport type, faculty, and day type",
       });
     }
 
@@ -211,6 +210,8 @@ exports.logCommute = async (req, res) => {
       startCoords,
       destinationCoords: destCoords,
       transportType,
+      faculty,
+      dayType,
       distance: routeData.distance,
       duration: routeData.duration,
       emissionEstimate,
