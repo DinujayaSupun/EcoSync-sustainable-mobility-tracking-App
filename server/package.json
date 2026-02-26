@@ -35,6 +35,8 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.6",
     "openai": "^6.25.0"
+    "mongodb": "^7.1.0",
+    "mongoose": "^9.1.6"
   },
   "devDependencies": {
     "jest": "^30.2.0",

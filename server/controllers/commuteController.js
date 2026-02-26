@@ -520,3 +520,56 @@ exports.predictEmission = async (req, res) => {
     });
   }
 };
+
+// @desc  Delete a single commute trip
+// @route DELETE /api/commute/:id
+// @access Private
+exports.deleteCommute = async (req, res) => {
+  try {
+    const trip = await Commute.findById(req.params.id);
+    if (!trip) {
+      return res.status(404).json({ success: false, message: 'Trip not found' });
+    }
+    // Only the owner can delete
+    if (trip.userId.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorised' });
+    }
+    await Commute.findByIdAndDelete(req.params.id);
+    res.status(200).json({ success: true, message: 'Trip deleted successfully' });
+  } catch (error) {
+    console.error('Delete commute error:', error.message);
+    res.status(500).json({ success: false, message: 'Failed to delete trip' });
+  }
+};
+
+// @desc  Update transport type of a commute trip
+// @route PUT /api/commute/:id
+// @access Private
+exports.updateCommute = async (req, res) => {
+  try {
+    const { transportType } = req.body;
+    const validTypes = ['Car', 'Bus', 'Train', 'Bike', 'Walk'];
+    if (!transportType || !validTypes.includes(transportType)) {
+      return res.status(400).json({ success: false, message: 'Invalid transport type' });
+    }
+
+    const trip = await Commute.findById(req.params.id);
+    if (!trip) {
+      return res.status(404).json({ success: false, message: 'Trip not found' });
+    }
+    if (trip.userId.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorised' });
+    }
+
+    // Recalculate emission with updated transport type
+    const newEmission = EMISSION_FACTORS[transportType] * trip.distance;
+    trip.transportType = transportType;
+    trip.emissionEstimate = newEmission;
+    await trip.save();
+
+    res.status(200).json({ success: true, message: 'Trip updated successfully', data: trip });
+  } catch (error) {
+    console.error('Update commute error:', error.message);
+    res.status(500).json({ success: false, message: 'Failed to update trip' });
+  }
+};
