@@ -1,4 +1,4 @@
-const Challenge = require("../models/challenge.model");
+const Challenge = require("../Models/challenges");
 const { generateChallengeContent } = require("../services/chatgpt.service");
 
 exports.createChallenge = async (req, res) => {
@@ -35,12 +35,14 @@ exports.createChallenge = async (req, res) => {
       rewardPoints,
       type,
       deadline,
-      createdBy: req.user.id
+      // createdBy: req.user.id
+      createdBy: ""
     });
 
     res.status(201).json(challenge);
 
   } catch (error) {
+    console.error("Create challenge failed:", error);
     res.status(500).json({ message: error.message });
   }
 };
