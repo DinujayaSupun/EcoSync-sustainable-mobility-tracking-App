@@ -1,31 +1,37 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../Controllers/Challenges/challenge.controller");
-// NOTE: All challenge endpoints are intentionally exposed publicly.
-// the token/authorization requirement has been removed for CRUD operations.
+const challengeController = require("../Controllers/challenge.controller");
 
 const { validateCreateChallenge } = require("../validators/challenge.validator");
 const { validate } = require("../middleware/validate.middleware");
 
-// Create a new challenge (previously admin-only)
+const { protect } = require("../middleware/authMiddleware");
+
+
 router.post(
   "/",
   validateCreateChallenge,
   validate,
-  controller.createChallenge
+  challengeController.createChallenge
 );
 
-// Update / delete no longer require authentication
-router.put("/:id", controller.updateChallenge);
-router.delete("/:id", controller.deleteChallenge);
 
-// Public reads
-router.get("/", controller.getChallenges);
-router.get("/recommended", controller.getRecommendedChallenges);
-router.get("/:id", controller.getChallengeById);
+router.put("/:id", challengeController.updateChallenge);
+router.delete("/:id", challengeController.deleteChallenge);
+
+router.get("/", challengeController.getChallenges);
+router.get("/recommended", challengeController.getRecommendedChallenges);
+router.get("/:id", challengeController.getChallengeById);
 
 
+router.post("/:id/join", protect, challengeController.joinChallenge);
+
+router.get("/me", protect, challengeController.getMyChallenges);
+
+router.put("/:id/progress", protect, challengeController.updateProgress);
+
+router.delete("/:id/leave", protect, challengeController.leaveChallenge);
 
 
 

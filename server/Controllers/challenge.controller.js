@@ -1,5 +1,8 @@
-const Challenge = require("../../Models/challenges");
-const { generateChallengeContent } = require("../../services/chatgpt.service");
+const Challenge = require("../Models/Challenges/challenges");
+const { generateChallengeContent } = require("../Services/chatgpt.service");
+
+const Participation = require("../Models/Challenges/participation.model");
+
 
 exports.createChallenge = async (req, res) => {
   try {
@@ -175,6 +178,93 @@ exports.getRecommendedChallenges = async (req, res) => {
       .limit(5);
 
     res.json(challenges);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.joinChallenge = async (req, res) => {
+  try {
+    const challenge = await Challenge.findById(req.params.id);
+
+    if (!challenge || challenge.status !== "ACTIVE") {
+      return res.status(404).json({ message: "Challenge not available" });
+    }
+
+    const participation = await Participation.create({
+      user: req.user.id,
+      challenge: challenge._id
+    });
+
+    res.status(201).json(participation);
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "Already joined this challenge" });
+    }
+
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getMyChallenges = async (req, res) => {
+  try {
+    const participations = await Participation.find({
+      user: req.user.id,
+      status: "ACTIVE"
+    }).populate("challenge");
+
+    res.status(200).json(participations);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.updateProgress = async (req, res) => {
+  try {
+    const { progress } = req.body;
+
+    const participation = await Participation.findOne({
+      user: req.user.id,
+      challenge: req.params.id,
+      status: "ACTIVE"
+    });
+
+    if (!participation) {
+      return res.status(404).json({ message: "Participation not found" });
+    }
+
+    participation.progress += progress;
+
+    const challenge = await Challenge.findById(req.params.id);
+
+    if (participation.progress >= challenge.emissionTarget) {
+      participation.status = "COMPLETED";
+    }
+
+    await participation.save();
+
+    res.status(200).json(participation);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.leaveChallenge = async (req, res) => {
+  try {
+    const participation = await Participation.findOne({
+      user: req.user.id,
+      challenge: req.params.id,
+      status: "ACTIVE"
+    });
+
+    if (!participation) {
+      return res.status(404).json({ message: "Participation not found" });
+    }
+
+    participation.status = "LEFT";
+    await participation.save();
+
+    res.status(200).json({ message: "Left challenge successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
