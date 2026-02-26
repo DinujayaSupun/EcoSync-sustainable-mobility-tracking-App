@@ -2,7 +2,7 @@ const User = require("../models/User");
 const Trip = require("../models/Trip");
 const nodemailer = require("nodemailer");
 const axios = require("axios");
-const OpenAI = require('openai');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 exports.getAdminStats = async (req, res) => {
   try {
@@ -558,7 +558,6 @@ exports.emailReport = async (req, res) => {
   }
 };
 
-
 /**
  * @desc    Generate AI-powered insights from report data
  * @route   POST /api/admin/ai-insights
@@ -566,17 +565,18 @@ exports.emailReport = async (req, res) => {
  */
 exports.getAIInsights = async (req, res) => {
   try {
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
+    // Check if Gemini API key is configured
+    if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
         success: false,
-        message: "OpenAI API key not configured. Please add OPENAI_API_KEY to .env file"
+        message:
+          "Gemini API key not configured. Please add GEMINI_API_KEY to .env file. Get your free key at: https://aistudio.google.com/app/apikey",
       });
     }
 
     // Get report data (same logic as getReportData)
     const { startDate, endDate, faculty } = req.query;
-    
+
     let dateFilter = {};
     if (startDate || endDate) {
       dateFilter.createdAt = {};
@@ -599,9 +599,17 @@ exports.getAIInsights = async (req, res) => {
 
     // Calculate statistics for AI analysis
     const totalTrips = filteredTrips.length;
-    const totalCO2Saved = filteredTrips.reduce((sum, trip) => sum + trip.co2Saved, 0);
-    const totalDistance = filteredTrips.reduce((sum, trip) => sum + trip.distance, 0);
-    const uniqueUsers = new Set(filteredTrips.map((trip) => trip.user?._id?.toString())).size;
+    const totalCO2Saved = filteredTrips.reduce(
+      (sum, trip) => sum + trip.co2Saved,
+      0,
+    );
+    const totalDistance = filteredTrips.reduce(
+      (sum, trip) => sum + trip.distance,
+      0,
+    );
+    const uniqueUsers = new Set(
+      filteredTrips.map((trip) => trip.user?._id?.toString()),
+    ).size;
 
     // Transport mode breakdown
     const transportBreakdown = {};
@@ -618,7 +626,7 @@ exports.getAIInsights = async (req, res) => {
     // Faculty breakdown
     const facultyBreakdown = {};
     filteredTrips.forEach((trip) => {
-      const fac = trip.user?.faculty || 'Unknown';
+      const fac = trip.user?.faculty || "Unknown";
       if (!facultyBreakdown[fac]) {
         facultyBreakdown[fac] = { trips: 0, co2Saved: 0, users: new Set() };
       }
@@ -627,12 +635,14 @@ exports.getAIInsights = async (req, res) => {
       facultyBreakdown[fac].users.add(trip.user?._id?.toString());
     });
 
-    const facultyStats = Object.entries(facultyBreakdown).map(([fac, data]) => ({
-      faculty: fac,
-      trips: data.trips,
-      co2Saved: parseFloat(data.co2Saved.toFixed(2)),
-      users: data.users.size
-    }));
+    const facultyStats = Object.entries(facultyBreakdown).map(
+      ([fac, data]) => ({
+        faculty: fac,
+        trips: data.trips,
+        co2Saved: parseFloat(data.co2Saved.toFixed(2)),
+        users: data.users.size,
+      }),
+    );
 
     // Prepare data summary for AI
     const dataSummary = {
@@ -640,26 +650,33 @@ exports.getAIInsights = async (req, res) => {
       totalCO2Saved: parseFloat(totalCO2Saved.toFixed(2)),
       totalDistance: parseFloat(totalDistance.toFixed(2)),
       uniqueUsers,
-      avgCO2PerTrip: totalTrips > 0 ? parseFloat((totalCO2Saved / totalTrips).toFixed(2)) : 0,
-      avgDistancePerTrip: totalTrips > 0 ? parseFloat((totalDistance / totalTrips).toFixed(2)) : 0,
-      transportModes: Object.entries(transportBreakdown).map(([mode, data]) => ({
-        mode,
-        count: data.count,
-        percentage: parseFloat(((data.count / totalTrips) * 100).toFixed(1)),
-        co2Saved: parseFloat(data.co2Saved.toFixed(2)),
-        avgDistance: parseFloat((data.distance / data.count).toFixed(2))
-      })),
+      avgCO2PerTrip:
+        totalTrips > 0
+          ? parseFloat((totalCO2Saved / totalTrips).toFixed(2))
+          : 0,
+      avgDistancePerTrip:
+        totalTrips > 0
+          ? parseFloat((totalDistance / totalTrips).toFixed(2))
+          : 0,
+      transportModes: Object.entries(transportBreakdown).map(
+        ([mode, data]) => ({
+          mode,
+          count: data.count,
+          percentage: parseFloat(((data.count / totalTrips) * 100).toFixed(1)),
+          co2Saved: parseFloat(data.co2Saved.toFixed(2)),
+          avgDistance: parseFloat((data.distance / data.count).toFixed(2)),
+        }),
+      ),
       faculties: facultyStats,
       dateRange: {
-        start: startDate || 'All time',
-        end: endDate || 'Present'
-      }
+        start: startDate || "All time",
+        end: endDate || "Present",
+      },
     };
 
-    // Initialize OpenAI
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    });
+    // Initialize Google Gemini AI
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     // Create AI prompt
     const prompt = `You are a sustainability analyst for a university campus commute tracking system. 
@@ -678,44 +695,46 @@ Please provide a comprehensive analysis with:
 Format your response in clear sections with bullet points. Be specific and data-driven.
 Keep it professional and suitable for presentation to university administrators.`;
 
-    // Call OpenAI API
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // Fast and cost-effective
-      messages: [
-        {
-          role: "system",
-          content: "You are a sustainability analytics expert specializing in campus transportation and environmental impact analysis."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 1000
-    });
+    // Call Gemini API
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const aiInsights = response.text();
 
-    const aiInsights = completion.choices[0].message.content;
-
-    console.log(`🤖 AI Insights generated successfully`);
+    console.log(`🤖 AI Insights generated successfully using Google Gemini`);
 
     res.status(200).json({
       success: true,
       insights: aiInsights,
       dataSummary,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      provider: "Google Gemini",
     });
-
   } catch (error) {
     console.error("AI Insights error:", error.message);
-    
-    if (error.response) {
-      console.error("OpenAI error:", error.response.data);
+
+    let userMessage = error.message || "Failed to generate AI insights";
+
+    // Handle specific Gemini errors
+    if (error.message?.includes("API_KEY_INVALID")) {
+      userMessage =
+        "Gemini API key is invalid. Please get a valid key at https://aistudio.google.com/app/apikey";
+    } else if (error.message?.includes("QUOTA_EXCEEDED")) {
+      userMessage =
+        "Gemini API quota exceeded. Please try again later or check your usage.";
+    } else if (error.status === 429 || error.message?.includes("429")) {
+      userMessage =
+        "API rate limit exceeded. Please try again in a few moments.";
+    } else if (error.message?.includes("quota")) {
+      userMessage =
+        "API quota exceeded. The free tier has generous limits - please try again later.";
     }
-    
+
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to generate AI insights'
+      message: userMessage,
+      dataAvailable: true, // Data summary is still available even if AI fails
+      fallbackMessage:
+        "AI insights are temporarily unavailable. Please review the data summary manually.",
     });
   }
 };
