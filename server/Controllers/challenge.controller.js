@@ -204,9 +204,9 @@ exports.joinChallenge = async (req, res) => {
 exports.getMyChallenges = async (req, res) => {
   try {
     const participations = await Participation.find({
-      user: req.user.id,
+      user: req.user.id,   
       status: "ACTIVE"
-    }).populate("challenge");
+    }).populate("challenge");  
 
     res.status(200).json(participations);
   } catch (err) {

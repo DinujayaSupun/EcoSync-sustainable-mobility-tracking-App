@@ -17,20 +17,20 @@ router.post(
   challengeController.createChallenge
 );
 
+router.get("/user", protect, challengeController.getMyChallenges);
+
 router.put("/:id", challengeController.updateChallenge);
 
 router.delete("/:id", challengeController.deleteChallenge);
 
 router.get("/", challengeController.getChallenges);
 
-router.get("/recommended", challengeController.getRecommendedChallenges);
+
+router.get("/recommended", challengeController.getRecommendedChallenges); 
 
 router.get("/:id", challengeController.getChallengeById);
 
-
 router.post("/:id/join", protect, challengeController.joinChallenge);
-
-router.get("/me", protect, challengeController.getMyChallenges);
 
 router.put("/:id/progress", protect, challengeController.updateProgress);
 
