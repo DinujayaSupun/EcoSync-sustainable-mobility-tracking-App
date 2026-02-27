@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Trip = require("../models/Trip");
+const ActivityLog = require("../models/ActivityLog");
 const nodemailer = require("nodemailer");
 const axios = require("axios");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
@@ -221,14 +222,23 @@ exports.updateUser = async (req, res) => {
         });
       }
 
-      // Prevent self-demotion (if implemented with user context)
-      // if (req.user && req.user._id.toString() === id && role === 'user' && user.role === 'admin') {
-      //   return res.status(403).json({
-      //     success: false,
-      //     message: "Cannot demote yourself",
-      //     errors: [{ field: "role", message: "You cannot change your own admin role" }]
-      //   });
-      // }
+      // Prevent self-demotion and self-modification
+      if (req.user && req.user._id.toString() === id) {
+        // Prevent changing own role
+        if (role.toLowerCase() !== user.role) {
+          return res.status(403).json({
+            success: false,
+            message: "Cannot modify your own role",
+            errors: [
+              {
+                field: "role",
+                message:
+                  "You cannot change your own admin role. Ask another administrator to do this.",
+              },
+            ],
+          });
+        }
+      }
     }
 
     // Update fields
@@ -332,14 +342,38 @@ exports.deleteUser = async (req, res) => {
       });
     }
 
-    // Prevent self-deletion (if implemented with user context)
-    // if (req.user && req.user._id.toString() === id) {
-    //   return res.status(403).json({
-    //     success: false,
-    //     message: "Cannot delete yourself",
-    //     errors: [{ field: "id", message: "You cannot delete your own account" }]
-    //   });
-    // }
+    // Prevent self-deletion
+    if (req.user && req.user._id.toString() === id) {
+      return res.status(403).json({
+        success: false,
+        message: "Cannot delete your own account",
+        errors: [
+          {
+            field: "id",
+            message:
+              "You cannot delete your own account. This is a security measure.",
+          },
+        ],
+      });
+    }
+
+    // Additional protection: prevent deleting the last admin
+    if (user.role === "admin") {
+      const adminCount = await User.countDocuments({ role: "admin" });
+      if (adminCount <= 1) {
+        return res.status(403).json({
+          success: false,
+          message: "Cannot delete the last admin",
+          errors: [
+            {
+              field: "id",
+              message:
+                "This is the last admin account. Create another admin before deleting this one.",
+            },
+          ],
+        });
+      }
+    }
 
     // Store user info for logging before deletion
     const deletedUserInfo = {
@@ -977,6 +1011,103 @@ Keep it professional and suitable for presentation to university administrators.
       dataAvailable: true, // Data summary is still available even if AI fails
       fallbackMessage:
         "AI insights are temporarily unavailable. Please review the data summary manually.",
+    });
+  }
+};
+
+// GET activity logs
+exports.getActivityLogs = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 50,
+      action,
+      targetType,
+      adminId,
+      startDate,
+      endDate,
+    } = req.query;
+
+    // Build query
+    const query = {};
+
+    if (action) query.action = action;
+    if (targetType) query.targetType = targetType;
+    if (adminId) query.admin = adminId;
+
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(startDate);
+      if (endDate) query.createdAt.$lte = new Date(endDate);
+    }
+
+    // Pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const limitNum = parseInt(limit);
+
+    // Fetch logs with pagination
+    const [logs, totalCount] = await Promise.all([
+      ActivityLog.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      ActivityLog.countDocuments(query),
+    ]);
+
+    // Get summary statistics
+    const [actionStats, recentAdmins] = await Promise.all([
+      ActivityLog.aggregate([
+        { $match: query },
+        { $group: { _id: "$action", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+      ActivityLog.aggregate([
+        { $match: query },
+        {
+          $group: {
+            _id: { id: "$admin", name: "$adminName", email: "$adminEmail" },
+            activityCount: { $sum: 1 },
+            lastActivity: { $max: "$createdAt" },
+          },
+        },
+        { $sort: { activityCount: -1 } },
+        { $limit: 10 },
+      ]),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      logs,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalCount / limitNum),
+        totalLogs: totalCount,
+        logsPerPage: limitNum,
+      },
+      statistics: {
+        actionBreakdown: actionStats,
+        topAdmins: recentAdmins.map((a) => ({
+          adminId: a._id.id,
+          adminName: a._id.name,
+          adminEmail: a._id.email,
+          activityCount: a.activityCount,
+          lastActivity: a.lastActivity,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("Get activity logs error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch activity logs",
+      logs: [],
+      pagination: {
+        currentPage: 1,
+        totalPages: 0,
+        totalLogs: 0,
+        logsPerPage: 50,
+      },
     });
   }
 };
