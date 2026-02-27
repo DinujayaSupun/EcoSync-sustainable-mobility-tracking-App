@@ -38,8 +38,8 @@ exports.createChallenge = async (req, res) => {
       rewardPoints,
       type,
       deadline,
-      // createdBy: req.user.id
-      createdBy: "64f123abc4567890abcdef12"
+      createdBy: req.user.id
+      
     });
 
     res.status(201).json(challenge);

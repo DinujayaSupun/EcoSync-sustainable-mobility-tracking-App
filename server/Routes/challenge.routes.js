@@ -11,17 +11,20 @@ const { protect } = require("../middleware/authMiddleware");
 
 router.post(
   "/",
+  protect,
   validateCreateChallenge,
   validate,
   challengeController.createChallenge
 );
 
-
 router.put("/:id", challengeController.updateChallenge);
+
 router.delete("/:id", challengeController.deleteChallenge);
 
 router.get("/", challengeController.getChallenges);
+
 router.get("/recommended", challengeController.getRecommendedChallenges);
+
 router.get("/:id", challengeController.getChallengeById);
 
 

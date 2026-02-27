@@ -18,6 +18,102 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // challenge management states
+  const [showChallenges, setShowChallenges] = useState(false);
+  const [challenges, setChallenges] = useState([]);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createData, setCreateData] = useState({
+    transportMode: '',
+    emissionTarget: '',
+    durationDays: '',
+    difficulty: '',
+    type: '',
+    rewardPoints: ''
+  });
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData] = useState({
+    emissionTarget: '',
+    durationDays: '',
+    rewardPoints: '',
+    status: ''
+  });
+
+  // fetch challenges when needed
+  const fetchChallenges = async () => {
+    try {
+      const res = await API.get('/challenges?limit=100');
+      // controller returns { challenges: [...] }
+      setChallenges(res.data.challenges || res.data);
+    } catch (err) {
+      console.error('Error fetching challenges:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (showChallenges) fetchChallenges();
+  }, [showChallenges]);
+
+  const handleCreateChange = e => {
+    setCreateData({ ...createData, [e.target.name]: e.target.value });
+  };
+
+  const handleCreateSubmit = async e => {
+    e.preventDefault();
+    try {
+      await API.post('/challenges/', createData);
+      fetchChallenges();
+      setShowCreateForm(false);
+      setCreateData({
+        transportMode: '',
+        emissionTarget: '',
+        durationDays: '',
+        difficulty: '',
+        type: '',
+        rewardPoints: ''
+      });
+    } catch (err) {
+      console.error('Failed to create challenge', err);
+    }
+  };
+
+  const startEdit = ch => {
+    setEditingId(ch._id);
+    setEditData({
+      emissionTarget: ch.emissionTarget || '',
+      durationDays: ch.durationDays || '',
+      rewardPoints: ch.rewardPoints || '',
+      status: ch.status || ''
+    });
+    setShowCreateForm(false);
+  };
+
+  const handleEditChange = e => {
+    setEditData({ ...editData, [e.target.name]: e.target.value });
+  };
+
+  const submitEdit = async e => {
+    e.preventDefault();
+    try {
+      await API.put(`/challenges/${editingId}`, editData);
+      fetchChallenges();
+      setEditingId(null);
+      setEditData({ emissionTarget: '', durationDays: '', rewardPoints: '', status: '' });
+    } catch (err) {
+      console.error('Update failed', err);
+    }
+  };
+
+  const handleDelete = async id => {
+    if (window.confirm('Delete this challenge?')) {
+      try {
+        await API.delete(`/challenges/${id}`);
+        fetchChallenges();
+      } catch (err) {
+        console.error('Delete failed', err);
+      }
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -281,6 +377,188 @@ const AdminDashboard = () => {
               <p className="text-sm text-gray-600">Configure application settings</p>
             </button>
           </div>
+        </div>
+
+        {/* Challenge Management Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-800">Challenges</h2>
+            <button
+              onClick={() => setShowChallenges(prev => !prev)}
+              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+            >
+              {showChallenges ? 'Hide' : 'Show'} Challenges
+            </button>
+          </div>
+
+          {showChallenges && (
+            <>
+              <button
+                onClick={() => {
+                  setShowCreateForm(prev => !prev);
+                  setEditingId(null);
+                }}
+                className="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+              >
+                {showCreateForm ? 'Cancel New' : 'Create New Challenge'}
+              </button>
+
+              {showCreateForm && (
+                <form onSubmit={handleCreateSubmit} className="space-y-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      name="transportMode"
+                      value={createData.transportMode}
+                      onChange={handleCreateChange}
+                      placeholder="Transport Mode"
+                      className="border rounded p-2 w-full"
+                      required
+                    />
+                    <input
+                      name="emissionTarget"
+                      value={createData.emissionTarget}
+                      onChange={handleCreateChange}
+                      placeholder="Emission Target"
+                      className="border rounded p-2 w-full"
+                      required
+                    />
+                    <input
+                      name="durationDays"
+                      type="number"
+                      value={createData.durationDays}
+                      onChange={handleCreateChange}
+                      placeholder="Duration (days)"
+                      className="border rounded p-2 w-full"
+                      required
+                    />
+                    <input
+                      name="difficulty"
+                      value={createData.difficulty}
+                      onChange={handleCreateChange}
+                      placeholder="Difficulty"
+                      className="border rounded p-2 w-full"
+                      required
+                    />
+                    <input
+                      name="type"
+                      value={createData.type}
+                      onChange={handleCreateChange}
+                      placeholder="Type"
+                      className="border rounded p-2 w-full"
+                      required
+                    />
+                    <input
+                      name="rewardPoints"
+                      type="number"
+                      value={createData.rewardPoints}
+                      onChange={handleCreateChange}
+                      placeholder="Reward Points"
+                      className="border rounded p-2 w-full"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                  >
+                    Create Challenge
+                  </button>
+                </form>
+              )}
+
+              {/* challenge list */}
+              <div className="space-y-4">
+                {challenges.length === 0 && (
+                  <p className="text-gray-500">No challenges available.</p>
+                )}
+                {challenges.map(ch => (
+                  <div
+                    key={ch._id}
+                    className="border rounded p-4 flex flex-col md:flex-row md:justify-between items-start md:items-center"
+                  >
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800">{ch.title}</h3>
+                      <p className="text-sm text-gray-600">{ch.description}</p>
+                      <p className="text-xs text-gray-500">
+                        Mode: {ch.transportMode} | Target: {ch.emissionTarget} | Duration: {ch.durationDays}d | Reward: {ch.rewardPoints}
+                      </p>
+                    </div>
+                    <div className="mt-2 md:mt-0 flex gap-2">
+                      <button
+                        onClick={() => startEdit(ch)}
+                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-sm"
+                      >
+                        Update
+                      </button>
+                      <button
+                        onClick={() => handleDelete(ch._id)}
+                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+
+                    {editingId === ch._id && (
+                      <form onSubmit={submitEdit} className="w-full mt-4 md:mt-0">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                          <input
+                            name="emissionTarget"
+                            value={editData.emissionTarget}
+                            onChange={handleEditChange}
+                            placeholder="Emission Target"
+                            className="border rounded p-2 w-full"
+                            required
+                          />
+                          <input
+                            name="durationDays"
+                            type="number"
+                            value={editData.durationDays}
+                            onChange={handleEditChange}
+                            placeholder="Duration"
+                            className="border rounded p-2 w-full"
+                            required
+                          />
+                          <input
+                            name="rewardPoints"
+                            type="number"
+                            value={editData.rewardPoints}
+                            onChange={handleEditChange}
+                            placeholder="Reward Points"
+                            className="border rounded p-2 w-full"
+                            required
+                          />
+                          <select
+                            name="status"
+                            value={editData.status}
+                            onChange={handleEditChange}
+                            className="border rounded p-2 w-full"
+                          >
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                          </select>
+                        </div>
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            type="submit"
+                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingId(null)}
+                            className="px-3 py-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition text-sm"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </main>
     </div>

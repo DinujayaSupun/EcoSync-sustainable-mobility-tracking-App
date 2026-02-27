@@ -14,7 +14,7 @@ exports.generateChallengeContent = async (params) => {
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o",
       messages: [
         { role: "system", content: "You are a backend service that ONLY returns valid JSON." },
         {
