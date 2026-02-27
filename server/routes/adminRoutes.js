@@ -36,21 +36,21 @@ router.use(adminLimiter);
  *   - name: User Management
  *     description: |
  *       **Complete user management with A+ features**
- *       
+ *
  *       Endpoints for managing users including CRUD operations with:
  *       - ✅ Search & Pagination (Frontend: 10 items/page, search by name/email/faculty)
  *       - ✅ Self-Protection (Cannot delete self, change own role, or delete last admin)
  *       - ✅ Input Validation (Email, name, role validation with detailed error messages)
  *       - ✅ Rate Limiting (Tiered: 100/20 requests per 15 minutes)
  *       - ✅ Activity Logging (All actions tracked for audit trail)
- *   
+ *
  *   - name: Admin Statistics
  *     description: Dashboard statistics and analytics endpoints
- *   
+ *
  *   - name: Activity Logs
  *     description: |
  *       **Comprehensive audit trail system**
- *       
+ *
  *       Track all administrative actions with:
  *       - Admin who performed the action
  *       - Timestamp and IP address
@@ -58,13 +58,13 @@ router.use(adminLimiter);
  *       - Filter by action, date range, admin, or target type
  *       - Pagination support
  *       - Statistics and analytics
- *   
+ *
  *   - name: Reports
  *     description: |
  *       Report generation and AI insights endpoints
- *       
+ *
  *       Rate Limited: 10 requests per 15 minutes (resource-intensive operations)
- * 
+ *
  * @swagger
  * components:
  *   securitySchemes:
@@ -73,7 +73,7 @@ router.use(adminLimiter);
  *       scheme: bearer
  *       bearerFormat: JWT
  *       description: Enter your JWT token from login endpoint
- *   
+ *
  *   schemas:
  *     User:
  *       type: object
@@ -105,7 +105,7 @@ router.use(adminLimiter);
  *           format: date-time
  *           description: Account creation timestamp
  *           example: 2026-01-15T08:30:00.000Z
- *     
+ *
  *     AdminStats:
  *       type: object
  *       properties:
@@ -138,7 +138,7 @@ router.use(adminLimiter);
  *                 type: string
  *               students:
  *                 type: integer
- *     
+ *
  *     ValidationError:
  *       type: object
  *       properties:
@@ -159,7 +159,170 @@ router.use(adminLimiter);
  *               message:
  *                 type: string
  *                 example: Please provide a valid email
- *     
+ *
+ *     Trip:
+ *       type: object
+ *       description: Trip/Commute record with user and CO2 data
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: MongoDB ObjectId
+ *           example: 65a8f2b4c3d4e5f6a7b8c9d0
+ *         user:
+ *           type: object
+ *           properties:
+ *             _id:
+ *               type: string
+ *             name:
+ *               type: string
+ *               example: John Doe
+ *             email:
+ *               type: string
+ *               example: john.doe@university.edu
+ *             faculty:
+ *               type: string
+ *               example: Engineering
+ *         transportMode:
+ *           type: string
+ *           description: Mode of transport used
+ *           example: Bicycle
+ *         distance:
+ *           type: number
+ *           format: float
+ *           description: Distance traveled in kilometers
+ *           example: 12.5
+ *         co2Saved:
+ *           type: number
+ *           format: float
+ *           description: CO2 saved compared to car (kg)
+ *           example: 3.25
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Trip timestamp
+ *           example: 2026-02-15T08:30:00.000Z
+ *
+ *     ReportData:
+ *       type: object
+ *       description: Comprehensive sustainability report data structure
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         reportData:
+ *           type: object
+ *           properties:
+ *             summary:
+ *               type: object
+ *               description: Overall statistics
+ *               properties:
+ *                 totalTrips:
+ *                   type: integer
+ *                   example: 1250
+ *                 totalCO2Saved:
+ *                   type: number
+ *                   example: 3875.45
+ *                 totalDistance:
+ *                   type: number
+ *                   example: 15420.75
+ *                 uniqueUsers:
+ *                   type: integer
+ *                   example: 342
+ *                 dateRange:
+ *                   type: object
+ *                   properties:
+ *                     start:
+ *                       type: string
+ *                       example: "2026-01-01"
+ *                     end:
+ *                       type: string
+ *                       example: "2026-01-31"
+ *                 faculty:
+ *                   type: string
+ *                   example: "All faculties"
+ *             transportBreakdown:
+ *               type: array
+ *               description: Statistics by transport mode
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   mode:
+ *                     type: string
+ *                     example: Bicycle
+ *                   count:
+ *                     type: integer
+ *                     example: 425
+ *                   co2Saved:
+ *                     type: number
+ *                     example: 1285.50
+ *                   distance:
+ *                     type: number
+ *                     example: 5420.25
+ *             facultyStats:
+ *               type: array
+ *               description: Performance by faculty
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   faculty:
+ *                     type: string
+ *                     example: Engineering
+ *                   trips:
+ *                     type: integer
+ *                     example: 450
+ *                   co2Saved:
+ *                     type: number
+ *                     example: 1385.65
+ *                   distance:
+ *                     type: number
+ *                     example: 5520.30
+ *                   users:
+ *                     type: integer
+ *                     example: 89
+ *             dailyTrends:
+ *               type: array
+ *               description: Daily timeline data
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   date:
+ *                     type: string
+ *                     format: date
+ *                     example: "2026-01-15"
+ *                   trips:
+ *                     type: integer
+ *                     example: 42
+ *                   co2Saved:
+ *                     type: number
+ *                     example: 128.45
+ *                   distance:
+ *                     type: number
+ *                     example: 512.75
+ *             topUsers:
+ *               type: array
+ *               description: Leaderboard of top contributors
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     example: John Doe
+ *                   email:
+ *                     type: string
+ *                     example: john.doe@university.edu
+ *                   faculty:
+ *                     type: string
+ *                     example: Engineering
+ *                   trips:
+ *                     type: integer
+ *                     example: 87
+ *                   co2Saved:
+ *                     type: number
+ *                     example: 265.80
+ *                   distance:
+ *                     type: number
+ *                     example: 1058.50
+ *
  *     Error:
  *       type: object
  *       properties:
@@ -169,47 +332,47 @@ router.use(adminLimiter);
  *         message:
  *           type: string
  *           example: An error occurred
- * 
+ *
  * @swagger
  * /api/admin:
  *   description: |
  *     ## Admin Module - A+ Grade Features
- *     
+ *
  *     This API provides comprehensive admin functionality with production-ready features:
- *     
+ *
  *     ### 🔒 Security Features
  *     - **JWT Authentication**: All endpoints require valid JWT token
  *     - **Role-Based Access Control**: Admin role required for all operations
  *     - **Self-Protection**: Prevents admins from harming themselves or the system
  *     - **Input Validation**: Comprehensive validation with detailed error messages
  *     - **MongoDB Injection Prevention**: ObjectId sanitization
- *     
+ *
  *     ### 🛡️ Rate Limiting (Tiered Approach)
  *     - **General Admin**: 100 requests per 15 minutes (all admin endpoints)
  *     - **Strict Operations**: 20 requests per 15 minutes (PUT/DELETE users)
  *     - **Reports**: 10 requests per 15 minutes (resource-intensive operations)
  *     - **Headers**: RateLimit-Limit, RateLimit-Remaining, RateLimit-Reset, Retry-After
- *     
+ *
  *     ### 📝 Activity Logging
  *     - All administrative actions are logged automatically
  *     - Tracks: admin, action, target, changes, IP address, user agent
  *     - Available via GET /api/admin/activity-logs with filtering and pagination
- *     
+ *
  *     ### 🔍 Search & Pagination (Frontend)
  *     - Real-time search across name, email, and faculty
  *     - Pagination with 10 users per page
  *     - Role filtering (All/Admin/User)
  *     - Optimized with React useMemo
- *     
+ *
  *     ### ✅ Self-Protection Rules
  *     - ❌ Admins cannot delete their own account
  *     - ❌ Admins cannot change their own role
  *     - ❌ Cannot delete the last admin in the system
- *     
+ *
  *     ### 📊 Response Format
  *     Success responses include `success: true` and relevant data.
  *     Error responses include `success: false`, `message`, and optionally `errors` array.
- *     
+ *
  *     ### 🧪 Testing
  *     - 33+ unit tests with Jest and Supertest
  *     - 85-90% code coverage
@@ -224,7 +387,7 @@ router.use(adminLimiter);
  *     summary: Get admin dashboard statistics
  *     description: |
  *       Retrieve comprehensive statistics including total users, CO2 saved, active users, and faculty breakdown.
- *       
+ *
  *       **Rate Limiting**: 100 requests per 15 minutes (general admin rate limit)
  *     tags: [Admin Statistics]
  *     security:
@@ -302,18 +465,18 @@ router.get("/stats", protect, isAdmin, getAdminStats);
  *     summary: Get all users
  *     description: |
  *       Retrieve a list of all registered users (passwords excluded).
- *       
+ *
  *       **Frontend Features:**
  *       - Search functionality across name, email, and faculty
  *       - Pagination with 10 users per page
  *       - Role filtering (All Users / Admins Only / Regular Users)
  *       - Real-time search with instant results
- *       
+ *
  *       **Performance:**
  *       - Passwords are automatically excluded for security
  *       - Optimized with React useMemo for large datasets
  *       - Efficient MongoDB queries with selective field projection
- *       
+ *
  *       **Use Cases:**
  *       - User management dashboard
  *       - Admin oversight of all registered users
@@ -889,14 +1052,32 @@ router.get("/recent-trips", protect, isAdmin, getRecentTrips);
  * @swagger
  * /api/admin/report:
  *   get:
- *     summary: Get report data
+ *     summary: Generate comprehensive sustainability report
  *     description: |
- *       Generate comprehensive report data for admin analysis.
- *       
- *       **Resource Intensive**: This endpoint performs complex aggregations and queries.
- *       **Rate Limiting**: 10 requests per 15 minutes (special rate limit for reports)
- *       
- *       Use this endpoint to generate detailed statistics for specific date ranges.
+ *       Generate detailed sustainability report with comprehensive statistics and analytics.
+ *
+ *       **📊 Report Features:**
+ *       - Summary statistics (trips, CO2 saved, distance, active users)
+ *       - Transport mode breakdown (trips, CO2, distance per mode)
+ *       - Faculty performance comparison
+ *       - Daily trends timeline
+ *       - Top 10 contributors leaderboard
+ *
+ *       **🎯 Frontend Features:**
+ *       - Export as PDF (html2pdf.js - formatted with tables, charts, and styling)
+ *       - Export as CSV (downloadable spreadsheet)
+ *       - Print functionality
+ *       - Email report to admin
+ *       - AI-powered insights (Google Gemini)
+ *       - Visual charts (Recharts - bar, line, pie charts)
+ *
+ *       **⚡ Performance:**
+ *       - Complex MongoDB aggregations
+ *       - Populated user data
+ *       - Date range filtering
+ *       - Faculty filtering
+ *
+ *       **🔒 Rate Limiting**: 10 requests per 15 minutes (resource-intensive operation)
  *     tags: [Reports]
  *     security:
  *       - bearerAuth: []
@@ -906,15 +1087,21 @@ router.get("/recent-trips", protect, isAdmin, getRecentTrips);
  *         schema:
  *           type: string
  *           format: date
- *         description: Report start date (YYYY-MM-DD)
+ *         description: Report start date (YYYY-MM-DD). Omit for all-time data.
  *         example: 2026-01-01
  *       - in: query
  *         name: endDate
  *         schema:
  *           type: string
  *           format: date
- *         description: Report end date (YYYY-MM-DD)
+ *         description: Report end date (YYYY-MM-DD). Omit for present date.
  *         example: 2026-01-31
+ *       - in: query
+ *         name: faculty
+ *         schema:
+ *           type: string
+ *         description: Filter by specific faculty. Omit for all faculties.
+ *         example: Engineering
  *     responses:
  *       200:
  *         description: Report data generated successfully
@@ -928,13 +1115,198 @@ router.get("/recent-trips", protect, isAdmin, getRecentTrips);
  *                   example: true
  *                 reportData:
  *                   type: object
- *                   description: Comprehensive report statistics
+ *                   properties:
+ *                     summary:
+ *                       type: object
+ *                       description: Overall statistics summary
+ *                       properties:
+ *                         totalTrips:
+ *                           type: integer
+ *                           example: 1250
+ *                         totalCO2Saved:
+ *                           type: number
+ *                           format: float
+ *                           description: Total CO2 saved in kilograms
+ *                           example: 3875.45
+ *                         totalDistance:
+ *                           type: number
+ *                           format: float
+ *                           description: Total distance traveled in kilometers
+ *                           example: 15420.75
+ *                         uniqueUsers:
+ *                           type: integer
+ *                           description: Number of active users in the period
+ *                           example: 342
+ *                         dateRange:
+ *                           type: object
+ *                           properties:
+ *                             start:
+ *                               type: string
+ *                               example: "2026-01-01"
+ *                             end:
+ *                               type: string
+ *                               example: "2026-01-31"
+ *                         faculty:
+ *                           type: string
+ *                           example: "All faculties"
+ *                     transportBreakdown:
+ *                       type: array
+ *                       description: Statistics by transport mode
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           mode:
+ *                             type: string
+ *                             example: "Bicycle"
+ *                           count:
+ *                             type: integer
+ *                             example: 425
+ *                           co2Saved:
+ *                             type: number
+ *                             format: float
+ *                             example: 1285.50
+ *                           distance:
+ *                             type: number
+ *                             format: float
+ *                             example: 5420.25
+ *                     facultyStats:
+ *                       type: array
+ *                       description: Performance statistics by faculty
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           faculty:
+ *                             type: string
+ *                             example: "Engineering"
+ *                           trips:
+ *                             type: integer
+ *                             example: 450
+ *                           co2Saved:
+ *                             type: number
+ *                             format: float
+ *                             example: 1385.65
+ *                           distance:
+ *                             type: number
+ *                             format: float
+ *                             example: 5520.30
+ *                           users:
+ *                             type: integer
+ *                             description: Number of active users in faculty
+ *                             example: 89
+ *                     dailyTrends:
+ *                       type: array
+ *                       description: Daily statistics for trend analysis
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           date:
+ *                             type: string
+ *                             format: date
+ *                             example: "2026-01-15"
+ *                           trips:
+ *                             type: integer
+ *                             example: 42
+ *                           co2Saved:
+ *                             type: number
+ *                             format: float
+ *                             example: 128.45
+ *                           distance:
+ *                             type: number
+ *                             format: float
+ *                             example: 512.75
+ *                     topUsers:
+ *                       type: array
+ *                       description: Top 10 contributors ranked by CO2 saved
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                             example: "John Doe"
+ *                           email:
+ *                             type: string
+ *                             example: "john.doe@university.edu"
+ *                           faculty:
+ *                             type: string
+ *                             example: "Engineering"
+ *                           trips:
+ *                             type: integer
+ *                             example: 87
+ *                           co2Saved:
+ *                             type: number
+ *                             format: float
+ *                             example: 265.80
+ *                           distance:
+ *                             type: number
+ *                             format: float
+ *                             example: 1058.50
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized - Invalid or missing JWT token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Not authorized, no token
  *       403:
  *         description: Forbidden - Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Not authorized as admin
+ *       429:
+ *         description: Too Many Requests - Report rate limit exceeded (10/15min)
+ *         headers:
+ *           X-RateLimit-Limit:
+ *             schema:
+ *               type: integer
+ *             description: Request limit per window
+ *             example: 10
+ *           X-RateLimit-Remaining:
+ *             schema:
+ *               type: integer
+ *             description: Remaining requests
+ *             example: 0
+ *           X-RateLimit-Reset:
+ *             schema:
+ *               type: string
+ *             description: Time when limit resets
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Too many report requests. Please try again after 15 minutes.
  *       500:
- *         description: Server error
+ *         description: Server error during report generation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Failed to generate report
  */
 router.get("/report", protect, isAdmin, reportLimiter, getReportData);
 
@@ -942,23 +1314,52 @@ router.get("/report", protect, isAdmin, reportLimiter, getReportData);
  * @swagger
  * /api/admin/email-report:
  *   post:
- *     summary: Email report to recipient
+ *     summary: Email sustainability report to admin
  *     description: |
- *       Generate and send a detailed report via email to specified address.
- *       
- *       **Resource Intensive**: Generates report and sends email (uses Brevo SMTP).
- *       **Rate Limiting**: 10 requests per 15 minutes (special rate limit for reports)
- *       
- *       This endpoint is rate-limited to prevent email spam and server overload.
+ *       Generate and send a detailed sustainability report via email to the logged-in admin's email address.
+ *
+ *       **📧 Email Features:**
+ *       - HTML formatted report with professional styling
+ *       - Includes all report sections (summary, transport, faculties, top users)
+ *       - Sent to admin's registered email address
+ *       - Uses Brevo SMTP service (reliable delivery)
+ *
+ *       **📊 Report Content:**
+ *       - Summary statistics (trips, CO2, distance, users)
+ *       - Transport mode breakdown table
+ *       - Faculty performance comparison
+ *       - Top 10 contributors leaderboard
+ *       - Date range and filter information
+ *
+ *       **⚡ Configuration Required:**
+ *       - BREVO_SMTP_KEY (get from Brevo dashboard)
+ *       - BREVO_SMTP_EMAIL (your Brevo sender email)
+ *
+ *       **🔒 Rate Limiting**: 10 requests per 15 minutes (prevents email spam)
  *     tags: [Reports]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/EmailReport'
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Report start date (YYYY-MM-DD). Omit for all-time data.
+ *         example: 2026-01-01
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Report end date (YYYY-MM-DD). Omit for present date.
+ *         example: 2026-01-31
+ *       - in: query
+ *         name: faculty
+ *         schema:
+ *           type: string
+ *         description: Filter by specific faculty. Omit for all faculties.
+ *         example: Engineering
  *     responses:
  *       200:
  *         description: Email sent successfully
@@ -972,11 +1373,9 @@ router.get("/report", protect, isAdmin, reportLimiter, getReportData);
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Report email sent successfully
- *       400:
- *         description: Invalid request - missing required fields
+ *                   example: Report email sent successfully to john.admin@university.edu
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized - Invalid or missing JWT token
  *       403:
  *         description: Forbidden - Admin access required
  *       429:
@@ -993,7 +1392,18 @@ router.get("/report", protect, isAdmin, reportLimiter, getReportData);
  *                   type: string
  *                   example: Too many email report requests. Please try again later.
  *       500:
- *         description: Server error or email delivery failed
+ *         description: Server error, SMTP configuration missing, or email delivery failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Brevo SMTP credentials not configured. Please add BREVO_SMTP_KEY and BREVO_SMTP_EMAIL to .env file
  */
 router.post("/email-report", protect, isAdmin, reportLimiter, emailReport);
 
@@ -1001,23 +1411,59 @@ router.post("/email-report", protect, isAdmin, reportLimiter, emailReport);
  * @swagger
  * /api/admin/ai-insights:
  *   post:
- *     summary: Get AI-powered insights on sustainability data
+ *     summary: Generate AI-powered insights using Google Gemini
  *     description: |
- *       Generate AI-powered insights and recommendations using Google Gemini AI.
- *       
- *       **Resource Intensive**: Makes external API call to Google Gemini AI.
- *       **Rate Limiting**: 10 requests per 15 minutes (special rate limit for AI operations)
- *       
- *       Provides intelligent analysis of sustainability data with actionable recommendations.
+ *       Get intelligent analysis and actionable recommendations from Google Gemini 2.0 Flash AI.
+ *
+ *       **🤖 AI Features:**
+ *       - Comprehensive data analysis using Google Gemini AI
+ *       - Actionable recommendations for improving sustainability
+ *       - Trend identification and predictions
+ *       - Faculty comparison and insights
+ *       - Transport mode effectiveness analysis
+ *       - Personalized strategies for improvement
+ *
+ *       **📊 Analysis Includes:**
+ *       - Overall performance assessment
+ *       - Top performing faculties and users
+ *       - Transport mode preferences
+ *       - Growth trends and patterns
+ *       - Specific recommendations for improvement
+ *       - Engagement strategies
+ *
+ *       **🔧 Configuration Required:**
+ *       - GEMINI_API_KEY (get free at https://aistudio.google.com/app/apikey)
+ *
+ *       **⚡ Performance:**
+ *       - External API call to Google Gemini
+ *       - Response time: 2-5 seconds
+ *       - Model: gemini-2.0-flash-lite (fast and efficient)
+ *
+ *       **🔒 Rate Limiting**: 10 requests per 15 minutes (AI operations are resource-intensive)
  *     tags: [Reports]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/AIInsightsRequest'
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Analysis start date (YYYY-MM-DD). Omit for all-time data.
+ *         example: 2026-01-01
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Analysis end date (YYYY-MM-DD). Omit for present date.
+ *         example: 2026-01-31
+ *       - in: query
+ *         name: faculty
+ *         schema:
+ *           type: string
+ *         description: Focus analysis on specific faculty. Omit for all faculties.
+ *         example: Engineering
  *     responses:
  *       200:
  *         description: AI insights generated successfully
@@ -1031,16 +1477,44 @@ router.post("/email-report", protect, isAdmin, reportLimiter, emailReport);
  *                   example: true
  *                 insights:
  *                   type: string
- *                   description: AI generated insights and recommendations
- *                   example: Based on the data, Engineering faculty has the highest CO2 savings...
- *       400:
- *         description: Invalid request data
+ *                   description: AI-generated comprehensive analysis with markdown formatting
+ *                   example: "## Sustainability Performance Analysis\n\n### Overall Assessment\nYour institution has saved 3,875 kg of CO2 through 1,250 sustainable trips...\n\n### Key Findings\n- Engineering faculty leads with 35% of all trips\n- Bicycle usage has increased 45% this month\n\n### Recommendations\n1. Expand bicycle infrastructure\n2. Launch inter-faculty challenges..."
+ *                 dataSummary:
+ *                   type: object
+ *                   description: Quick statistics for context
+ *                   properties:
+ *                     totalTrips:
+ *                       type: integer
+ *                       example: 1250
+ *                     totalCO2Saved:
+ *                       type: number
+ *                       example: 3875.45
+ *                     uniqueUsers:
+ *                       type: integer
+ *                       example: 342
+ *                     avgCO2PerTrip:
+ *                       type: number
+ *                       example: 3.10
  *       401:
  *         description: Unauthorized - Invalid or missing JWT token
  *       403:
  *         description: Forbidden - Admin access required
  *       429:
  *         description: Too Many Requests - AI insights rate limit exceeded (10/15min)
+ *         headers:
+ *           X-RateLimit-Limit:
+ *             schema:
+ *               type: integer
+ *             example: 10
+ *           X-RateLimit-Remaining:
+ *             schema:
+ *               type: integer
+ *             example: 0
+ *           Retry-After:
+ *             schema:
+ *               type: integer
+ *             description: Seconds until rate limit resets
+ *             example: 900
  *         content:
  *           application/json:
  *             schema:
@@ -1053,7 +1527,18 @@ router.post("/email-report", protect, isAdmin, reportLimiter, emailReport);
  *                   type: string
  *                   example: Too many AI insights requests. Please try again later.
  *       500:
- *         description: AI service error or server error
+ *         description: AI service error, missing API key, or server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Gemini API key not configured. Please add GEMINI_API_KEY to .env file. Get your free key at https://aistudio.google.com/app/apikey
  */
 router.post("/ai-insights", reportLimiter, getAIInsights);
 
@@ -1064,12 +1549,12 @@ router.post("/ai-insights", reportLimiter, getAIInsights);
  *     summary: Get activity logs (Audit Trail)
  *     description: |
  *       Retrieve comprehensive admin activity logs with powerful filtering and pagination.
- *       
+ *
  *       **Purpose:**
  *       - Track all administrative actions for compliance and security
  *       - Audit trail for user modifications, deletions, and report access
  *       - Monitor admin behavior and detect suspicious activity
- *       
+ *
  *       **Features:**
  *       - Filter by action type (CREATE, UPDATE, DELETE, VIEW, etc.)
  *       - Filter by target type (USER, REPORT, SETTINGS)
@@ -1077,14 +1562,14 @@ router.post("/ai-insights", reportLimiter, getAIInsights);
  *       - Date range filtering
  *       - Pagination support (default 50 logs per page)
  *       - Statistics summary included
- *       
+ *
  *       **Logged Information:**
  *       - Admin who performed the action
  *       - Action type and timestamp
  *       - Target resource (user, report, etc.)
  *       - Before/after values for updates
  *       - IP address and user agent
- *       
+ *
  *       **Use Cases:**
  *       - Compliance reporting
  *       - Security audits
