@@ -48,7 +48,6 @@ const geocodeLocation = async (locationName) => {
   }
 };
 
-<<<<<<< HEAD
 // Haversine formula to calculate straight-line distance between two coordinates
 const haversineDistance = (startCoords, destCoords) => {
   const R = 6371; // Earth radius in km
@@ -72,39 +71,6 @@ const estimateDuration = (distance, transportType) => {
 };
 
 // Helper function to calculate route using OSRM API (with Haversine fallback)
-=======
-// Helper function to calculate distance using Haversine formula (fallback)
-const calculateHaversineDistance = (startCoords, destCoords, transportType) => {
-  const R = 6371; // Earth's radius in kilometers
-  const lat1 = (startCoords.lat * Math.PI) / 180;
-  const lat2 = (destCoords.lat * Math.PI) / 180;
-  const deltaLat = ((destCoords.lat - startCoords.lat) * Math.PI) / 180;
-  const deltaLon = ((destCoords.lon - startCoords.lon) * Math.PI) / 180;
-
-  const a =
-    Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-    Math.cos(lat1) *
-      Math.cos(lat2) *
-      Math.sin(deltaLon / 2) *
-      Math.sin(deltaLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = R * c;
-
-  // Estimate duration based on transport type (km/h average speeds)
-  const speeds = {
-    Car: 60,
-    Bus: 40,
-    Train: 80,
-    Bike: 15,
-    Walk: 5,
-  };
-  const duration = (distance / speeds[transportType]) * 60; // Convert to minutes
-
-  return { distance, duration };
-};
-
-// Helper function to calculate route using OSRM API
->>>>>>> 6a14297752216defc65dc9f60d36d72ff734e815
 const calculateRoute = async (startCoords, destCoords, transportType) => {
   try {
     // OSRM supports different profiles
@@ -124,11 +90,7 @@ const calculateRoute = async (startCoords, destCoords, transportType) => {
         overview: "false",
         steps: "false",
       },
-<<<<<<< HEAD
       timeout: 8000, // 8 second timeout
-=======
-      timeout: 5000, // 5 second timeout
->>>>>>> 6a14297752216defc65dc9f60d36d72ff734e815
     });
 
     if (
@@ -146,7 +108,6 @@ const calculateRoute = async (startCoords, destCoords, transportType) => {
       throw new Error("Route not found");
     }
   } catch (error) {
-<<<<<<< HEAD
     // Fallback: use Haversine straight-line distance when OSRM fails
     console.warn(`OSRM failed (${error.message}), using Haversine fallback.`);
     const distance = haversineDistance(startCoords, destCoords);
@@ -158,13 +119,6 @@ const calculateRoute = async (startCoords, destCoords, transportType) => {
       duration: parseFloat(duration.toFixed(2)),
       source: "haversine_fallback",
     };
-=======
-    console.warn(
-      `⚠️ OSRM API failed (${error.message}), using fallback distance calculation`,
-    );
-    // Fallback to Haversine distance calculation
-    return calculateHaversineDistance(startCoords, destCoords, transportType);
->>>>>>> 6a14297752216defc65dc9f60d36d72ff734e815
   }
 };
 
