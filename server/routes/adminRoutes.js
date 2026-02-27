@@ -11,6 +11,14 @@ const {
   getAIInsights,
 } = require("../controllers/adminController");
 const { protect, isAdmin } = require("../middleware/authMiddleware");
+const {
+  validateUserId,
+  validateUserUpdate,
+  validateEmailReport,
+  validateAtLeastOneField,
+  handleValidation,
+  sanitizeObjectId,
+} = require("../middleware/validation.middlewire");
 
 /**
  * @swagger
@@ -136,7 +144,24 @@ router.get("/users", protect, isAdmin, getAllUsers);
  * /api/admin/users/{id}:
  *   put:
  *     summary: Update user details
- *     description: Update user information including name, email, faculty, or role
+ *     description: |
+ *       Update user information including name, email, faculty, or role.
+ *       This endpoint supports partial updates - you can send only the fields you want to change.
+ *
+ *       **Common Use Cases:**
+ *       - Update user role (user ↔ admin)
+ *       - Change user email address
+ *       - Modify user faculty
+ *       - Update user name
+ *
+ *       **Validation Rules:**
+ *       - Email must be unique across all users
+ *       - Role must be either 'user' or 'admin'
+ *       - User ID must be a valid MongoDB ObjectId
+ *
+ *       **Security:**
+ *       - Requires admin privileges
+ *       - Requires valid JWT authentication token
  *     tags: [User Management]
  *     security:
  *       - bearerAuth: []
@@ -146,10 +171,12 @@ router.get("/users", protect, isAdmin, getAllUsers);
  *         required: true
  *         schema:
  *           type: string
- *         description: User ID to update
- *         example: 507f1f77bcf86cd799439011
+ *           pattern: '^[0-9a-fA-F]{24}$'
+ *         description: MongoDB ObjectId of the user to update
+ *         example: 65a8f2b4c3d4e5f6a7b8c9d0
  *     requestBody:
  *       required: true
+ *       description: User fields to update (all fields are optional, send only what needs to be changed)
  *       content:
  *         application/json:
  *           schema:
@@ -157,18 +184,53 @@ router.get("/users", protect, isAdmin, getAllUsers);
  *             properties:
  *               name:
  *                 type: string
+ *                 description: User's full name
+ *                 minLength: 1
+ *                 maxLength: 100
  *                 example: John Doe
  *               email:
  *                 type: string
  *                 format: email
- *                 example: john.doe@example.com
+ *                 description: User's email address (must be unique)
+ *                 example: john.doe@university.edu
  *               faculty:
  *                 type: string
+ *                 description: User's faculty/department
  *                 example: Engineering
  *               role:
  *                 type: string
  *                 enum: [user, admin]
- *                 example: user
+ *                 description: User's role in the system
+ *                 example: admin
+ *           examples:
+ *             updateRoleToAdmin:
+ *               summary: Update user role to admin
+ *               description: Common use case - promote a user to admin
+ *               value:
+ *                 role: admin
+ *             updateRoleToUser:
+ *               summary: Demote admin to user
+ *               description: Revoke admin privileges from a user
+ *               value:
+ *                 role: user
+ *             updateEmail:
+ *               summary: Change user email
+ *               description: Update a user's email address
+ *               value:
+ *                 email: newemail@university.edu
+ *             updateFaculty:
+ *               summary: Change user faculty
+ *               description: Transfer user to different faculty
+ *               value:
+ *                 faculty: Computer Science
+ *             fullUpdate:
+ *               summary: Update multiple fields
+ *               description: Update name, email, and role together
+ *               value:
+ *                 name: Jane Smith
+ *                 email: jane.smith@university.edu
+ *                 faculty: Business
+ *                 role: admin
  *     responses:
  *       200:
  *         description: User updated successfully
@@ -184,19 +246,105 @@ router.get("/users", protect, isAdmin, getAllUsers);
  *                   type: string
  *                   example: User updated successfully
  *                 user:
- *                   $ref: '#/components/schemas/User'
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: 65a8f2b4c3d4e5f6a7b8c9d0
+ *                     name:
+ *                       type: string
+ *                       example: John Doe
+ *                     email:
+ *                       type: string
+ *                       example: john.doe@university.edu
+ *                     role:
+ *                       type: string
+ *                       example: admin
+ *                     faculty:
+ *                       type: string
+ *                       example: Engineering
+ *             examples:
+ *               roleUpdated:
+ *                 summary: Role updated successfully
+ *                 value:
+ *                   success: true
+ *                   message: User updated successfully
+ *                   user:
+ *                     _id: 65a8f2b4c3d4e5f6a7b8c9d0
+ *                     name: John Doe
+ *                     email: john.doe@university.edu
+ *                     role: admin
+ *                     faculty: Engineering
  *       400:
- *         description: Invalid request data
+ *         description: Bad Request - Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *             examples:
+ *               emailInUse:
+ *                 summary: Email already exists
+ *                 value:
+ *                   message: Email already in use
+ *               invalidRole:
+ *                 summary: Invalid role value
+ *                 value:
+ *                   message: Role must be either 'user' or 'admin'
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized - Invalid or missing JWT token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Not authorized, token failed
  *       403:
  *         description: Forbidden - Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Access denied. Admin privileges required.
  *       404:
  *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User not found
  *       500:
- *         description: Server error
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Update failed
  */
-router.put("/users/:id", protect, isAdmin, updateUser);
+router.put(
+  "/users/:id",
+  protect,
+  isAdmin,
+  sanitizeObjectId,
+  validateUserId,
+  validateUserUpdate,
+  validateAtLeastOneField,
+  handleValidation,
+  updateUser,
+);
 
 /**
  * @swagger
@@ -238,7 +386,15 @@ router.put("/users/:id", protect, isAdmin, updateUser);
  *       500:
  *         description: Server error
  */
-router.delete("/users/:id", protect, isAdmin, deleteUser);
+router.delete(
+  "/users/:id",
+  protect,
+  isAdmin,
+  sanitizeObjectId,
+  validateUserId,
+  handleValidation,
+  deleteUser,
+);
 
 /**
  * @swagger

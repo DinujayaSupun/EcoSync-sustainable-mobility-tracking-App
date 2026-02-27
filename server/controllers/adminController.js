@@ -97,27 +97,168 @@ exports.updateUser = async (req, res) => {
     const { id } = req.params;
     const { name, email, faculty, role } = req.body;
 
-    // Find user
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    // Validate MongoDB ObjectId format
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID format",
+        errors: [{ field: "id", message: "Must be a valid MongoDB ObjectId" }],
+      });
     }
 
-    // Check if email is being changed and if it's already taken
+    // Validate at least one field is provided
+    if (!name && !email && !faculty && !role) {
+      return res.status(400).json({
+        success: false,
+        message: "No fields to update",
+        errors: [
+          {
+            field: "body",
+            message:
+              "At least one field (name, email, faculty, role) must be provided",
+          },
+        ],
+      });
+    }
+
+    // Find user with error handling
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+        errors: [{ field: "id", message: `No user found with ID: ${id}` }],
+      });
+    }
+
+    // Store original values for logging
+    const originalValues = {
+      name: user.name,
+      email: user.email,
+      faculty: user.faculty,
+      role: user.role,
+    };
+
+    // Validate and check email uniqueness
     if (email && email !== user.email) {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid email format",
+          errors: [
+            { field: "email", message: "Please provide a valid email address" },
+          ],
+        });
+      }
+
       const emailExists = await User.findOne({ email });
       if (emailExists) {
-        return res.status(400).json({ message: "Email already in use" });
+        return res.status(400).json({
+          success: false,
+          message: "Email already in use",
+          errors: [
+            {
+              field: "email",
+              message: `Email '${email}' is already registered to another user`,
+            },
+          ],
+        });
       }
     }
 
-    // Update fields
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (faculty) user.faculty = faculty;
-    if (role && ["user", "admin"].includes(role)) user.role = role;
+    // Validate name
+    if (name !== undefined) {
+      if (typeof name !== "string" || name.trim().length < 2) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid name",
+          errors: [
+            {
+              field: "name",
+              message: "Name must be at least 2 characters long",
+            },
+          ],
+        });
+      }
+      if (name.trim().length > 100) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid name",
+          errors: [
+            { field: "name", message: "Name must not exceed 100 characters" },
+          ],
+        });
+      }
+    }
 
+    // Validate faculty
+    if (faculty !== undefined) {
+      if (typeof faculty !== "string" || faculty.trim().length < 2) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid faculty",
+          errors: [
+            {
+              field: "faculty",
+              message: "Faculty must be at least 2 characters long",
+            },
+          ],
+        });
+      }
+    }
+
+    // Validate role
+    if (role !== undefined) {
+      if (!["user", "admin"].includes(role.toLowerCase())) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid role",
+          errors: [
+            { field: "role", message: "Role must be either 'user' or 'admin'" },
+          ],
+        });
+      }
+
+      // Prevent self-demotion (if implemented with user context)
+      // if (req.user && req.user._id.toString() === id && role === 'user' && user.role === 'admin') {
+      //   return res.status(403).json({
+      //     success: false,
+      //     message: "Cannot demote yourself",
+      //     errors: [{ field: "role", message: "You cannot change your own admin role" }]
+      //   });
+      // }
+    }
+
+    // Update fields
+    if (name) user.name = name.trim();
+    if (email) user.email = email.trim().toLowerCase();
+    if (faculty) user.faculty = faculty.trim();
+    if (role) user.role = role.toLowerCase();
+
+    // Save with error handling
     await user.save();
+
+    // Log the update
+    console.log(`[ADMIN UPDATE] User ${id} updated by admin. Changes:`, {
+      name:
+        originalValues.name !== user.name
+          ? { from: originalValues.name, to: user.name }
+          : "unchanged",
+      email:
+        originalValues.email !== user.email
+          ? { from: originalValues.email, to: user.email }
+          : "unchanged",
+      faculty:
+        originalValues.faculty !== user.faculty
+          ? { from: originalValues.faculty, to: user.faculty }
+          : "unchanged",
+      role:
+        originalValues.role !== user.role
+          ? { from: originalValues.role, to: user.role }
+          : "unchanged",
+    });
 
     res.status(200).json({
       success: true,
@@ -131,18 +272,119 @@ exports.updateUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Update user error:", error.message);
-    res.status(500).json({ message: "Update failed" });
+    console.error("Update user error:", error);
+
+    // Handle specific MongoDB errors
+    if (error.name === "ValidationError") {
+      const errors = Object.keys(error.errors).map((key) => ({
+        field: key,
+        message: error.errors[key].message,
+      }));
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors,
+      });
+    }
+
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid data format",
+        errors: [{ field: error.path, message: "Invalid value provided" }],
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Update failed due to server error",
+      errors: [
+        {
+          field: "server",
+          message: "An unexpected error occurred. Please try again later.",
+        },
+      ],
+    });
   }
 };
 
 // DELETE a user
 exports.deleteUser = async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: "User deleted successfully" });
+    const { id } = req.params;
+
+    // Validate MongoDB ObjectId format
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID format",
+        errors: [{ field: "id", message: "Must be a valid MongoDB ObjectId" }],
+      });
+    }
+
+    // Check if user exists before deletion
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+        errors: [{ field: "id", message: `No user found with ID: ${id}` }],
+      });
+    }
+
+    // Prevent self-deletion (if implemented with user context)
+    // if (req.user && req.user._id.toString() === id) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: "Cannot delete yourself",
+    //     errors: [{ field: "id", message: "You cannot delete your own account" }]
+    //   });
+    // }
+
+    // Store user info for logging before deletion
+    const deletedUserInfo = {
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      faculty: user.faculty,
+    };
+
+    // Delete the user
+    await User.findByIdAndDelete(id);
+
+    // Log the deletion
+    console.log(`[ADMIN DELETE] User deleted:`, deletedUserInfo);
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+      deletedUser: {
+        name: deletedUserInfo.name,
+        email: deletedUserInfo.email,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: "Delete failed" });
+    console.error("Delete user error:", error);
+
+    // Handle specific errors
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID format",
+        errors: [{ field: "id", message: "Invalid MongoDB ObjectId" }],
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Delete failed due to server error",
+      errors: [
+        {
+          field: "server",
+          message: "An unexpected error occurred. Please try again later.",
+        },
+      ],
+    });
   }
 };
 
