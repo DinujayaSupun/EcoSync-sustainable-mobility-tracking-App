@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
+import html2pdf from 'html2pdf.js';
 import {
   FileText,
   Download,
@@ -12,7 +13,9 @@ import {
   Filter,
   BarChart3,
   Award,
-  Leaf
+  Leaf,
+  Mail,
+  Sparkles
 } from 'lucide-react';
 import {
   BarChart,
@@ -34,6 +37,10 @@ const Reports = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiInsights, setAiInsights] = useState(null);
+  const [showAiModal, setShowAiModal] = useState(false);
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -101,8 +108,185 @@ const Reports = () => {
     a.click();
   };
 
+  const handleExportPDF = async () => {
+    if (!reportData) return;
+
+    try {
+      // Create a temporary container with the report content
+      const element = document.createElement('div');
+      element.style.padding = '20px';
+      element.style.backgroundColor = 'white';
+      element.style.fontFamily = 'Arial, sans-serif';
+      
+      element.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #10b981; font-size: 24px; margin-bottom: 5px;">🌿 Sustainability Report</h1>
+          <p style="color: #6b7280; font-size: 12px;">Generated on: ${new Date().toLocaleDateString()}</p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h2 style="color: #1f2937; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #10b981; padding-bottom: 5px;">📊 Summary</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background-color: #f3f4f6;">
+              <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">Total Trips</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${reportData.summary.totalTrips}</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">Total CO2 Saved</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px; color: #10b981; font-weight: bold;">${reportData.summary.totalCO2Saved} kg</td>
+            </tr>
+            <tr style="background-color: #f3f4f6;">
+              <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">Total Distance</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${reportData.summary.totalDistance} km</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">Active Users</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${reportData.summary.uniqueUsers}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h2 style="color: #1f2937; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #10b981; padding-bottom: 5px;">🚗 Transport Mode Breakdown</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background-color: #10b981; color: white;">
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Mode</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Trips</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">CO2 Saved (kg)</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Distance (km)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.transportBreakdown.map((item, idx) => `
+                <tr style="${idx % 2 === 0 ? 'background-color: #f9fafb;' : ''}">
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${item.mode}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${item.count}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px; color: #10b981; font-weight: bold;">${item.co2Saved}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${item.distance}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h2 style="color: #1f2937; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #10b981; padding-bottom: 5px;">🏫 Faculty Performance</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background-color: #10b981; color: white;">
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Faculty</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Users</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Trips</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">CO2 Saved (kg)</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Distance (km)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.facultyStats.map((faculty, idx) => `
+                <tr style="${idx % 2 === 0 ? 'background-color: #f9fafb;' : ''}">
+                  <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">${faculty.faculty}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${faculty.users}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${faculty.trips}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px; color: #10b981; font-weight: bold;">${faculty.co2Saved}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${faculty.distance}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="page-break-before: always;">
+          <h2 style="color: #1f2937; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #10b981; padding-bottom: 5px;">🏆 Top Contributors</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background-color: #10b981; color: white;">
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Rank</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Name</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Email</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Faculty</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">CO2 Saved (kg)</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Trips</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.topUsers.slice(0, 10).map((user, idx) => `
+                <tr style="${idx % 2 === 0 ? 'background-color: #f9fafb;' : ''}">
+                  <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">#${idx + 1}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${user.name}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px; font-size: 10px;">${user.email}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${user.faculty}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px; color: #10b981; font-weight: bold;">${user.co2Saved}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${user.trips}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+      
+      const opt = {
+        margin: 10,
+        filename: `sustainability-report-${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF report');
+    }
+  };
+
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleEmailReport = async () => {
+    setEmailLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.startDate) params.append('startDate', filters.startDate);
+      if (filters.endDate) params.append('endDate', filters.endDate);
+      if (filters.faculty) params.append('faculty', filters.faculty);
+
+      const res = await API.post(`/admin/email-report?${params.toString()}`);
+      
+      if (res.data.success) {
+        alert(`✅ ${res.data.message}`);
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      const errorMsg = error.response?.data?.message || 'Failed to send email report';
+      alert(`❌ ${errorMsg}`);
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+    const handleAIInsights = async () => {
+    setAiLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.startDate) params.append('startDate', filters.startDate);
+      if (filters.endDate) params.append('endDate', filters.endDate);
+      if (filters.faculty) params.append('faculty', filters.faculty);
+
+      const res = await API.post(`/admin/ai-insights?${params.toString()}`);
+      
+      if (res.data.success) {
+        setAiInsights(res.data);
+        setShowAiModal(true);
+      }
+    } catch (error) {
+      console.error('Error generating AI insights:', error);
+      const errorMsg = error.response?.data?.message || 'Failed to generate AI insights';
+      alert(`❌ ${errorMsg}`);
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   if (loading && !reportData) {
@@ -138,6 +322,48 @@ const Reports = () => {
             </div>
             <div className="flex gap-2 print:hidden">
               <button
+                onClick={handleAIInsights}
+                disabled={aiLoading}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Generate AI-powered insights"
+              >
+                {aiLoading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={18} />
+                    AI Insights
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleEmailReport}
+                disabled={emailLoading}
+                className="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Email report to your registered email"
+              >
+                {emailLoading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Mail size={18} />
+                    Email Report
+                  </>
+                )}
+              </button>
+              <button
                 onClick={handlePrint}
                 className="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition flex items-center gap-2"
               >
@@ -145,11 +371,11 @@ const Reports = () => {
                 Print
               </button>
               <button
-                onClick={handleExportCSV}
+                onClick={handleExportPDF}
                 className="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition flex items-center gap-2"
               >
                 <Download size={18} />
-                Export CSV
+                Export PDF
               </button>
             </div>
           </div>
@@ -405,6 +631,83 @@ const Reports = () => {
           </>
         )}
       </main>
+              {/* AI Insights Modal */}
+        {showAiModal && aiInsights && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 flex justify-between items-center rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <Sparkles size={28} />
+                  <div>
+                    <h2 className="text-2xl font-bold">AI-Powered Insights</h2>
+                    <p className="text-purple-100 text-sm">Generated by Google Gemini 2.5 Flash</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAiModal(false)}
+                  className="text-white hover:bg-white/20 p-2 rounded-lg transition"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="p-6">
+                {/* Data Summary Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                    <div className="text-2xl font-bold text-green-600">{aiInsights.dataSummary.totalTrips}</div>
+                    <div className="text-sm text-gray-600">Total Trips</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                    <div className="text-2xl font-bold text-blue-600">{aiInsights.dataSummary.totalCO2Saved} kg</div>
+                    <div className="text-sm text-gray-600">CO2 Saved</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                    <div className="text-2xl font-bold text-purple-600">{aiInsights.dataSummary.uniqueUsers}</div>
+                    <div className="text-sm text-gray-600">Active Users</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-orange-50 to-yellow-50 p-4 rounded-lg border border-orange-200">
+                    <div className="text-2xl font-bold text-orange-600">{aiInsights.dataSummary.avgCO2PerTrip} kg</div>
+                    <div className="text-sm text-gray-600">Avg CO2/Trip</div>
+                  </div>
+                </div>
+
+                {/* AI Insights Content */}
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                  <div className="prose max-w-none">
+                    <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+                      {aiInsights.insights}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-6 flex gap-3">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(aiInsights.insights);
+                      alert('✅ Insights copied to clipboard!');
+                    }}
+                    className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Copy to Clipboard
+                  </button>
+                  <button
+                    onClick={() => setShowAiModal(false)}
+                    className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 };

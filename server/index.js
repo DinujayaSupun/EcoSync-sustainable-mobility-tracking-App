@@ -10,9 +10,18 @@ const adminRoutes = require("./routes/adminRoutes");
 const smartCommuteRoutes = require("./routes/smartCommute.routes");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+<<<<<<< HEAD
 const challengeRoutes = require("./Routes/challenge.routes");
 
 console.log("OPENAI_API_KEY =", process.env.OPENAI_API_KEY ? "SET" : "NOT SET");
+=======
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
+
+// Gamification routes
+const badgeRoutes = require("./routes/badgeRoutes");
+const leaderboardRoutes = require("./routes/leaderboardRoutes");
+>>>>>>> TestBranchJohan
 
 // Load environment variables
 dotenv.config();
@@ -43,6 +52,18 @@ const limiter = rateLimit({
 });
 app.use("/api/", limiter);
 
+// Swagger API Documentation (Admin Only)
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    explorer: true,
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Admin API Documentation',
+    customfavIcon: '/favicon.ico',
+  })
+);
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/commute", commuteRoutes);
@@ -50,11 +71,19 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/smart-commute", smartCommuteRoutes);
 app.use("/api/challenges", challengeRoutes);
 
+// Gamification route mounts
+app.use("/api/badges", badgeRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
+
 // Basic route for testing
 app.get("/", (req, res) => {
   res.json({
     success: true,
     message: "Welcome to Sustainability Project API",
+    documentation: {
+      swagger: "http://localhost:5000/api-docs",
+      description: "Complete Admin API documentation with interactive testing",
+    },
     endpoints: {
       auth: {
         register: "POST /api/auth/register",
@@ -65,6 +94,11 @@ app.get("/", (req, res) => {
         log: "POST /api/commute/log (Protected)",
         history: "GET /api/commute/history (Protected)",
         summary: "GET /api/commute/emission-summary (Protected)",
+      },
+      admin: {
+        stats: "GET /api/admin/stats (Admin Only)",
+        users: "GET /api/admin/users (Admin Only)",
+        documentation: "Visit /api-docs for detailed API documentation",
       },
     },
   });
@@ -85,4 +119,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
 });

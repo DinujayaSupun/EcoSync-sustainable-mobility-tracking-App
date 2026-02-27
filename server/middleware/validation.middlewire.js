@@ -1,9 +1,9 @@
 // const { body, param, validationResult } = require("express-validator");
 
-// const validateCarbonCreate = [
-//   body("userId")
-//     .notEmpty()
-//     .withMessage("User ID is required"),
+const validateCarbonCreate = [
+  body("userId")
+    .notEmpty()
+    .withMessage("User ID is required"),
 
 //   body("vehicleType")
 //     .isIn(["PETROL_CAR", "ELECTRIC_BIKE", "LUXURY_BUS", "TRAIN", "WALK"])
@@ -14,27 +14,27 @@
 //     .withMessage("Distance must be a positive number"),
 // ];
 
-// const validateObjectId = [
-//   param("id")
-//     .isMongoId()
-//     .withMessage("Invalid record ID"),
-// ];
+const validateObjectId = [
+  param("id")
+    .isMongoId()
+    .withMessage("Invalid record ID"),
+];
 
-// const handleValidation = (req, res, next) => {
-//   const errors = validationResult(req);
+const handleValidation = (req, res, next) => {
+  const errors = validationResult(req);
 
-//   if (!errors.isEmpty()) {
-//     return res.status(400).json({
-//       success: false,
-//       errors: errors.array(),
-//     });
-//   }
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      errors: errors.array(),
+    });
+  }
 
-//   next();
-// };
+  next();
+};
 
-// module.exports = {
-//   validateCarbonCreate,
-//   validateObjectId,
-//   handleValidation,
-// };
+module.exports = {
+  validateCarbonCreate,
+  validateObjectId,
+  handleValidation,
+};

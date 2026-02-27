@@ -1,5 +1,5 @@
 const WeatherLog = require('../models/WeatherLog');
-const weatherService = require('../Services/weather.service');
+const weatherService = require('../services/weather.service');
 const axios = require('axios');
 
 /**
