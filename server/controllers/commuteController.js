@@ -2,6 +2,10 @@ const Commute = require("../models/Commute");
 const Trip = require("../models/Trip");
 const axios = require("axios");
 const mongoose = require("mongoose");
+
+// For badge evaluation after logging a commute
+const { evaluateBadgesForUser } = require("../services/badgeAwardService");
+
 const {
   calculateLinearRegression,
   calculateMonthlyProjection,
@@ -234,6 +238,13 @@ exports.logCommute = async (req, res) => {
       transportMode: transportModeMap[transportType],
       co2Saved: co2Saved,
     });
+
+    //Auto-award badges (do NOT fail commute if badge logic fails)
+    try {
+      await evaluateBadgesForUser(userId);
+    } catch (e) {
+      console.warn("Badge evaluation failed:", e.message);
+    }
 
     res.status(201).json({
       success: true,

@@ -2,8 +2,8 @@ const { validationResult } = require("express-validator");
 const badgeService = require("../services/badgeService");
 const Badge = require("../models/Badge");
 const User = require("../models/User");
-const { awardBadgeToUser } = require("../services/badgeAwardService");
 const UserBadge = require("../models/UserBadge");
+const { awardBadgeToUser, evaluateBadgesForUser } = require("../services/badgeAwardService");
 
 function handleValidation(req, res) {
   const errors = validationResult(req);
@@ -88,7 +88,6 @@ async function awardBadge(req, res, next) {
       data: result.record,
     });
   } catch (err) {
-    // duplicate index
     if (err?.code === 11000) {
       return res.status(200).json({ success: true, message: "Badge already awarded" });
     }
@@ -97,16 +96,25 @@ async function awardBadge(req, res, next) {
 }
 
 /**
- * Get current logged user's earned badges (profile view).
+ * Get current logged user's earned badges.
+ * Gamification-only auto-award: evaluate on read, then return.
  */
 async function getMyBadges(req, res, next) {
   try {
-    const userId = req.user.id; // token payload
+    const userId = req.user.id || req.user._id;
+
+    // 🔥 This is the key: award badges here (no need to touch commute module)
+    const evalResult = await evaluateBadgesForUser(userId);
+
     const earned = await UserBadge.find({ userId })
       .populate("badgeId")
       .sort({ awardedAt: -1 });
 
-    res.json({ success: true, data: earned });
+    res.json({
+      success: true,
+      meta: evalResult, // shows newAwards + stats (helpful for debugging/demo)
+      data: earned,
+    });
   } catch (err) {
     next(err);
   }

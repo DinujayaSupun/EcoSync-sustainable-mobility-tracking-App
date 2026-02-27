@@ -37,7 +37,7 @@ async function getLeaderboard({ period = "weekly", limit = 10 }) {
     },
     // fairness: require some activity
     { $match: { $or: [{ tripCount: { $gte: 2 } }, { totalDistanceKm: { $gte: 5 } }] } },
-    { $sort: { totalCo2Saved: -1 } },
+    { $sort: { totalCo2Saved: -1, totalDistanceKm: -1, tripCount: -1 } },
     { $limit: Number(limit) },
   ]);
 

@@ -5,8 +5,21 @@ const badgeController = require("../controllers/badgeController");
 
 const router = express.Router();
 
-// Read
+/**
+ * IMPORTANT:
+ * Put specific routes BEFORE param routes (/:id), otherwise "me" becomes ":id".
+ */
+
+// Read (list)
 router.get("/", protect, badgeController.getAllBadges);
+
+// My earned badges
+router.get("/me/earned", protect, badgeController.getMyBadges);
+
+// Manual award (Admin)
+router.post("/:badgeId/award/:userId", protect, isAdmin, badgeController.awardBadge);
+
+// Read (single)
 router.get("/:id", protect, badgeController.getBadgeById);
 
 // Create (Admin)
@@ -32,7 +45,9 @@ router.patch(
   [
     body("name").optional().isString().trim().notEmpty(),
     body("description").optional().isString().trim().notEmpty(),
-    body("type").optional().isIn(["TRIP_COUNT", "TOTAL_DISTANCE", "TOTAL_CO2_SAVED"]),
+    body("type")
+      .optional()
+      .isIn(["TRIP_COUNT", "TOTAL_DISTANCE", "TOTAL_CO2_SAVED"]),
     body("threshold").optional().isNumeric().toFloat(),
     body("imageUrl").optional().isString(),
   ],
@@ -41,11 +56,5 @@ router.patch(
 
 // Delete (Admin)
 router.delete("/:id", protect, isAdmin, badgeController.deleteBadge);
-
-// Manual award (Admin)
-router.post("/:badgeId/award/:userId", protect, isAdmin, badgeController.awardBadge);
-
-// Profile: my earned badges
-router.get("/me/earned", protect, badgeController.getMyBadges);
 
 module.exports = router;
