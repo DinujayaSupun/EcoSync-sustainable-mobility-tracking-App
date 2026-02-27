@@ -1,13 +1,29 @@
+const mongoose = require("mongoose");
 const Badge = require("../models/Badge");
 const UserBadge = require("../models/UserBadge");
 const Trip = require("../models/Trip");
 
 /**
+ * Convert userId string -> ObjectId safely
+ */
+function toObjectId(id) {
+  if (!id) return null;
+  if (id instanceof mongoose.Types.ObjectId) return id;
+  if (!mongoose.Types.ObjectId.isValid(id)) return null;
+  return new mongoose.Types.ObjectId(id);
+}
+
+/**
  * Calculates user stats from Trip collection.
  */
 async function getUserTripStats(userId) {
+  const userObjectId = toObjectId(userId);
+  if (!userObjectId) {
+    return { tripCount: 0, totalDistance: 0, totalCo2Saved: 0 };
+  }
+
   const rows = await Trip.aggregate([
-    { $match: { user: userId } },
+    { $match: { user: userObjectId } }, // Trip.user is ObjectId
     {
       $group: {
         _id: "$user",
@@ -47,20 +63,34 @@ function meetsCriteria(badge, stats) {
  * Safe: duplicate protected by DB unique index + graceful handling.
  */
 async function awardBadgeToUser(userId, badgeId) {
-  // If already exists, return existing record (no error)
-  const existing = await UserBadge.findOne({ userId, badgeId });
+  const userObjectId = toObjectId(userId);
+  const badgeObjectId = toObjectId(badgeId);
+
+  if (!userObjectId || !badgeObjectId) {
+    throw new Error("Invalid userId or badgeId");
+  }
+
+  const existing = await UserBadge.findOne({ userId: userObjectId, badgeId: badgeObjectId });
   if (existing) return { created: false, record: existing };
 
-  const record = await UserBadge.create({ userId, badgeId, awardedAt: new Date() });
+  const record = await UserBadge.create({
+    userId: userObjectId,
+    badgeId: badgeObjectId,
+    awardedAt: new Date(),
+  });
+
   return { created: true, record };
 }
 
 /**
  * Auto-evaluate and award all eligible badges for user.
- * Returns how many new badges were awarded.
+ * Returns how many new badges were awarded + stats.
  */
 async function evaluateBadgesForUser(userId) {
-  const stats = await getUserTripStats(userId);
+  const userObjectId = toObjectId(userId);
+  if (!userObjectId) return { newAwards: 0, stats: { tripCount: 0, totalDistance: 0, totalCo2Saved: 0 } };
+
+  const stats = await getUserTripStats(userObjectId);
   const badges = await Badge.find();
 
   let newAwards = 0;
@@ -68,14 +98,14 @@ async function evaluateBadgesForUser(userId) {
   for (const badge of badges) {
     if (!meetsCriteria(badge, stats)) continue;
 
-    const existing = await UserBadge.findOne({ userId, badgeId: badge._id });
+    const existing = await UserBadge.findOne({ userId: userObjectId, badgeId: badge._id });
     if (existing) continue;
 
     try {
-      await UserBadge.create({ userId, badgeId: badge._id, awardedAt: new Date() });
+      await UserBadge.create({ userId: userObjectId, badgeId: badge._id, awardedAt: new Date() });
       newAwards += 1;
     } catch (err) {
-      // If unique index triggers due to race, ignore safely
+      // Ignore duplicates (race conditions)
       if (err?.code !== 11000) throw err;
     }
   }

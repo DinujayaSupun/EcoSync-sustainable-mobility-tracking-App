@@ -2,6 +2,10 @@ const Commute = require("../models/Commute");
 const Trip = require("../models/Trip");
 const axios = require("axios");
 const mongoose = require("mongoose");
+
+// For badge evaluation after logging a commute
+const { evaluateBadgesForUser } = require("../services/badgeAwardService");
+
 const {
   calculateLinearRegression,
   calculateMonthlyProjection,
@@ -48,37 +52,29 @@ const geocodeLocation = async (locationName) => {
   }
 };
 
-// Helper function to calculate distance using Haversine formula (fallback)
-const calculateHaversineDistance = (startCoords, destCoords, transportType) => {
-  const R = 6371; // Earth's radius in kilometers
-  const lat1 = (startCoords.lat * Math.PI) / 180;
-  const lat2 = (destCoords.lat * Math.PI) / 180;
-  const deltaLat = ((destCoords.lat - startCoords.lat) * Math.PI) / 180;
-  const deltaLon = ((destCoords.lon - startCoords.lon) * Math.PI) / 180;
-
+// Haversine formula to calculate straight-line distance between two coordinates
+const haversineDistance = (startCoords, destCoords) => {
+  const R = 6371; // Earth radius in km
+  const dLat = ((destCoords.lat - startCoords.lat) * Math.PI) / 180;
+  const dLon = ((destCoords.lon - startCoords.lon) * Math.PI) / 180;
   const a =
-    Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-    Math.cos(lat1) *
-      Math.cos(lat2) *
-      Math.sin(deltaLon / 2) *
-      Math.sin(deltaLon / 2);
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((startCoords.lat * Math.PI) / 180) *
+      Math.cos((destCoords.lat * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = R * c;
-
-  // Estimate duration based on transport type (km/h average speeds)
-  const speeds = {
-    Car: 60,
-    Bus: 40,
-    Train: 80,
-    Bike: 15,
-    Walk: 5,
-  };
-  const duration = (distance / speeds[transportType]) * 60; // Convert to minutes
-
-  return { distance, duration };
+  return R * c; // Distance in km
 };
 
-// Helper function to calculate route using OSRM API
+// Estimate duration based on transport type and distance
+const estimateDuration = (distance, transportType) => {
+  const speedMap = { Car: 50, Bus: 35, Train: 60, Bike: 15, Walk: 5 }; // avg km/h
+  const speed = speedMap[transportType] || 30;
+  return (distance / speed) * 60; // Convert to minutes
+};
+
+// Helper function to calculate route using OSRM API (with Haversine fallback)
 const calculateRoute = async (startCoords, destCoords, transportType) => {
   try {
     // OSRM supports different profiles
@@ -98,7 +94,7 @@ const calculateRoute = async (startCoords, destCoords, transportType) => {
         overview: "false",
         steps: "false",
       },
-      timeout: 5000, // 5 second timeout
+      timeout: 8000, // 8 second timeout
     });
 
     if (
@@ -109,17 +105,24 @@ const calculateRoute = async (startCoords, destCoords, transportType) => {
       const route = response.data.routes[0];
       return {
         distance: route.distance / 1000, // Convert meters to kilometers
-        duration: route.duration / 60, // Convert seconds to minutes
+        duration: route.duration / 60,   // Convert seconds to minutes
+        source: "osrm",
       };
     } else {
       throw new Error("Route not found");
     }
   } catch (error) {
-    console.warn(
-      `⚠️ OSRM API failed (${error.message}), using fallback distance calculation`,
-    );
-    // Fallback to Haversine distance calculation
-    return calculateHaversineDistance(startCoords, destCoords, transportType);
+    // Fallback: use Haversine straight-line distance when OSRM fails
+    console.warn(`OSRM failed (${error.message}), using Haversine fallback.`);
+    const distance = haversineDistance(startCoords, destCoords);
+    // Apply a road factor multiplier (roads are ~30% longer than straight line)
+    const adjustedDistance = distance * 1.3;
+    const duration = estimateDuration(adjustedDistance, transportType);
+    return {
+      distance: parseFloat(adjustedDistance.toFixed(2)),
+      duration: parseFloat(duration.toFixed(2)),
+      source: "haversine_fallback",
+    };
   }
 };
 
@@ -159,15 +162,14 @@ const generateEcoSuggestion = (transportType, distance) => {
 // @access  Private
 exports.logCommute = async (req, res) => {
   try {
-    const { startLocation, destination, transportType } = req.body;
+    const { startLocation, destination, transportType, faculty, dayType } = req.body;
     const userId = req.user.id;
 
     // Validation
-    if (!startLocation || !destination || !transportType) {
+    if (!startLocation || !destination || !transportType || !faculty || !dayType) {
       return res.status(400).json({
         success: false,
-        message:
-          "Please provide start location, destination, and transport type",
+        message: "Please provide start location, destination, transport type, faculty, and day type",
       });
     }
 
@@ -211,6 +213,8 @@ exports.logCommute = async (req, res) => {
       startCoords,
       destinationCoords: destCoords,
       transportType,
+      faculty,
+      dayType,
       distance: routeData.distance,
       duration: routeData.duration,
       emissionEstimate,
@@ -235,9 +239,19 @@ exports.logCommute = async (req, res) => {
       co2Saved: co2Saved,
     });
 
+    //Auto-award badges (do NOT fail commute if badge logic fails)
+    try {
+      await evaluateBadgesForUser(userId);
+    } catch (e) {
+      console.warn("Badge evaluation failed:", e.message);
+    }
+
     res.status(201).json({
       success: true,
       message: "Commute logged successfully",
+      distanceSource: routeData.source === "haversine_fallback"
+        ? "Estimated (straight-line x1.3 road factor)"
+        : "OSRM routing",
       data: {
         ...commute.toObject(),
         co2Saved: co2Saved,
