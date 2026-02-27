@@ -57,8 +57,8 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/login" element={!user ? <Login /> : <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace />} />
+      {/* Public Routes
+      <Route path="/" element={!user ? <Login /> : <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace />} /> */}
 
       {/* 🏠 Student Routes */}
       <Route path="/home" element={
@@ -108,7 +108,8 @@ function AppRoutes() {
       } />
 
       {/* Default Redirects */}
-      <Route path="/" element={<Navigate to={!user ? "/login" : (user.role === 'admin' ? "/admin" : "/home")} replace />} />
+      <Route path="/" element={<Login />} />
+      <Route path="/login" element={<Login />} /> 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
