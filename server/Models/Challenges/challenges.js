@@ -18,12 +18,12 @@ const challengeSchema = new mongoose.Schema({
 
   transportMode: {
     type: String,
-    enum: ["BUS", "TRAIN", "BIKE", "WALK"],
+    enum: ["BUS", "TRAIN", "BIKE", "WALK", "CAR", "VAN"],
     required: true
   },
 
   emissionTarget: {
-    type: Number, // kg CO2 to save
+    type: Number, 
     required: true
   },
 

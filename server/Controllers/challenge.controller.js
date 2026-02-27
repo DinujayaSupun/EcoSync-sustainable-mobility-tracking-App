@@ -15,7 +15,6 @@ exports.createChallenge = async (req, res) => {
       rewardPoints
     } = req.body;
 
-    // Ask ChatGPT to write description + tagline
     const aiContent = await generateChallengeContent({
       transportMode,
       emissionTarget,
@@ -160,15 +159,11 @@ exports.deleteChallenge = async (req, res) => {
   }
 };
 
-// if user info isn't available we simply return the most
-// recent active challenges (or you could randomize / paginate)
+
 exports.getRecommendedChallenges = async (req, res) => {
   try {
     let filter = { status: "ACTIVE", isDeleted: false };
 
-    // optional query param `excludeMode` can be supplied by client
-    // to emulate previous behaviour where we filtered out a user's
-    // preferred transport mode.  eg.  /recommended?excludeMode=Bus
     if (req.query.excludeMode) {
       filter.transportMode = { $ne: req.query.excludeMode };
     }

@@ -2,7 +2,7 @@ const { body } = require("express-validator");
 
 exports.validateCreateChallenge = [
   body("transportMode")
-    .isIn(["BUS", "TRAIN", "BIKE", "WALK"])
+    .isIn(["BUS", "TRAIN", "BIKE", "WALK", "CAR", "VAN"])
     .withMessage("Invalid transport mode"),
 
   body("emissionTarget")
