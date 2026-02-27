@@ -5,9 +5,6 @@ class WeatherService {
     this.baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
   }
 
-  /**
-   * Get API key from environment (loaded at runtime, not at module load)
-   */
   getApiKey() {
     const apiKey = process.env.OPENWEATHER_API_KEY;
     if (!apiKey) {
@@ -17,12 +14,6 @@ class WeatherService {
     return apiKey;
   }
 
-  /**
-   * Get weather data by coordinates (more reliable than city name)
-   * @param {number} lat - Latitude
-   * @param {number} lon - Longitude
-   * @returns {Promise<Object>} Weather data
-   */
   async getWeatherByCoords(lat, lon) {
     try {
       const apiKey = this.getApiKey();
@@ -51,11 +42,6 @@ class WeatherService {
     }
   }
 
-  /**
-   * Get weather data for a location
-   * @param {string} location - City name or coordinates
-   * @returns {Promise<Object>} Weather data
-   */
   async getWeather(location) {
     try {
       const apiKey = this.getApiKey();
@@ -91,11 +77,6 @@ class WeatherService {
     }
   }
 
-  /**
-   * Suggest transport mode based on weather condition
-   * @param {string} weatherCondition
-   * @returns {string} transport mode
-   */
   suggestTransport(weatherCondition) {
     const suggestions = {
       Rain: 'Bus',
@@ -110,12 +91,8 @@ class WeatherService {
     return suggestions[weatherCondition] || 'Carpool';
   }
 
-  /**
-   * Calculate straight-line distance between two coords using Haversine formula
-   * @returns {number} distance in km
-   */
   haversineDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Earth radius in km
+    const R = 6371; 
     const toRad = (deg) => (deg * Math.PI) / 180;
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
@@ -125,13 +102,6 @@ class WeatherService {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
-  /**
-   * Suggest transport purely based on distance
-   * 0–2 km   → Walking
-   * 2–5 km   → Cycling
-   * 5–10 km  → Tuk-Tuk
-   * 10+ km  → Bus
-   */
   suggestByDistance(distanceKm) {
     if (distanceKm <= 2)  return 'Walking';
     if (distanceKm <= 5)  return 'Cycling';
@@ -139,19 +109,12 @@ class WeatherService {
     return 'Bus';
   }
 
-  /**
-   * Bad-weather conditions where weather always overrides distance
-   */
+  
   isBadWeather(weatherCondition) {
     return ['Rain', 'Drizzle', 'Thunderstorm', 'Snow', 'Mist', 'Fog'].includes(weatherCondition);
   }
 
-  /**
-   * Apply distance-based adjustment on top of weather suggestion.
-   * Bad weather → keep weather suggestion (Bus/Carpool).
-   * Good weather → distance wins.
-   * @returns {{ transport, reason, distanceKm }}
-   */
+  
   adjustSuggestion(weatherSuggestion, weatherCondition, distanceKm) {
     if (this.isBadWeather(weatherCondition)) {
       return {
@@ -168,14 +131,6 @@ class WeatherService {
     };
   }
 
-  /**
-   * Get weather-based + distance-adjusted transport suggestion
-   * @param {string} location - fallback city name
-   * @param {number|null} lat  - origin latitude
-   * @param {number|null} lon  - origin longitude
-   * @param {number|null} destLat - destination latitude
-   * @param {number|null} destLon - destination longitude
-   */
   async getWeatherBasedSuggestion(location, lat, lon, destLat, destLon) {
     try {
       const weather = (lat && lon)
@@ -184,7 +139,7 @@ class WeatherService {
 
       const weatherTransport = this.suggestTransport(weather.condition);
 
-      // Apply distance-based adjustment when both coords are available
+      
       let suggestedTransport = weatherTransport;
       let adjustmentReason = null;
       let distanceKm = null;
@@ -206,7 +161,7 @@ class WeatherService {
         description: weather.description,
         distanceKm,
         adjustmentReason,
-        weatherTransport, // original weather-only suggestion
+        weatherTransport, 
       };
     } catch (error) {
       throw error;
