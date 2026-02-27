@@ -9,10 +9,14 @@ const CommuteLogger = () => {
     startLocation: '',
     destination: '',
     transportType: 'Car',
+    faculty: '',
+    dayType: 'Weekday',
   });
 
   const [startCoords, setStartCoords] = useState(null);
   const [endCoords, setEndCoords] = useState(null);
+  const [liveCoords, setLiveCoords] = useState(null);
+  const [liveLocating, setLiveLocating] = useState(false);
 
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -57,6 +61,46 @@ const CommuteLogger = () => {
     }
   };
 
+  // Live GPS location — sets origin with reverse-geocoded address
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    setLiveLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        setLiveCoords([lat, lon]);
+        setStartCoords([lat, lon]);
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+          );
+          const data = await res.json();
+          const name = data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+          setFormData((prev) => ({ ...prev, startLocation: name }));
+        } catch {
+          setFormData((prev) => ({ ...prev, startLocation: `${lat.toFixed(5)}, ${lon.toFixed(5)}` }));
+        }
+        setLiveLocating(false);
+      },
+      (err) => {
+        console.error('Geolocation error:', err);
+        alert('Unable to retrieve your location. Please allow location access.');
+        setLiveLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  // Callback from LocateControl button inside the map
+  const handleMapLocate = (lat, lon, name) => {
+    setLiveCoords([lat, lon]);
+    setStartCoords([lat, lon]);
+    setFormData((prev) => ({ ...prev, startLocation: name }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -71,6 +115,8 @@ const CommuteLogger = () => {
         startLocation: '',
         destination: '',
         transportType: 'Car',
+        faculty: '',
+        dayType: 'Weekday',
       });
       setStartCoords(null);
       setEndCoords(null);
@@ -94,19 +140,37 @@ const CommuteLogger = () => {
           startLabel={formData.startLocation}
           endLabel={formData.destination}
           transportType={formData.transportType}
+          liveCoords={liveCoords}
+          onLocate={handleMapLocate}
         />
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        <LocationAutocomplete
-          name="startLocation"
-          value={formData.startLocation}
-          onChange={handleChange}
-          onCoordSelect={handleCoordSelect}
-          placeholder="e.g., Colombo, Sri Lanka"
-          label="Start Location"
-          required
-        />
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-gray-700 font-medium">Start Location</label>
+            <button
+              type="button"
+              onClick={handleLocateMe}
+              disabled={liveLocating}
+              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition-colors"
+            >
+              {liveLocating ? (
+                <><span className="animate-spin">⏳</span> Locating...</>
+              ) : (
+                <><span>📍</span> Use My Location</>
+              )}
+            </button>
+          </div>
+          <LocationAutocomplete
+            name="startLocation"
+            value={formData.startLocation}
+            onChange={handleChange}
+            onCoordSelect={handleCoordSelect}
+            placeholder="e.g., Colombo, Sri Lanka"
+            required
+          />
+        </div>
 
         <LocationAutocomplete
           name="destination"
@@ -135,6 +199,56 @@ const CommuteLogger = () => {
             <option value="Bike">🚴 Bike</option>
             <option value="Walk">🚶 Walk</option>
           </select>
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Faculty</label>
+          <select
+            name="faculty"
+            value={formData.faculty}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            required
+          >
+            <option value="">-- Select Faculty --</option>
+            <option value="Faculty of Computing">🖥️ Faculty of Computing</option>
+            <option value="Faculty of Engineering">⚙️ Faculty of Engineering</option>
+            <option value="Faculty of Business">💼 Faculty of Business</option>
+            <option value="Faculty of Science">🔬 Faculty of Science</option>
+            <option value="Faculty of Arts">🎨 Faculty of Arts</option>
+            <option value="Faculty of Medicine">🏥 Faculty of Medicine</option>
+            <option value="Faculty of Law">⚖️ Faculty of Law</option>
+            <option value="Faculty of Education">📚 Faculty of Education</option>
+            <option value="Other">🏫 Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Day Type</label>
+          <div className="flex gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="dayType"
+                value="Weekday"
+                checked={formData.dayType === 'Weekday'}
+                onChange={handleChange}
+                className="accent-green-600 w-4 h-4"
+              />
+              <span className="text-gray-700">📅 Weekday</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="dayType"
+                value="Weekend"
+                checked={formData.dayType === 'Weekend'}
+                onChange={handleChange}
+                className="accent-green-600 w-4 h-4"
+              />
+              <span className="text-gray-700">🛋️ Weekend</span>
+            </label>
+          </div>
         </div>
 
         <button
@@ -274,6 +388,16 @@ const CommuteLogger = () => {
             <p className="text-sm text-gray-600">
               <strong>Transport:</strong> {result.transportType}
             </p>
+            {result.faculty && (
+              <p className="text-sm text-gray-600">
+                <strong>Faculty:</strong> {result.faculty}
+              </p>
+            )}
+            {result.dayType && (
+              <p className="text-sm text-gray-600">
+                <strong>Day Type:</strong> {result.dayType}
+              </p>
+            )}
           </div>
         </div>
       )}

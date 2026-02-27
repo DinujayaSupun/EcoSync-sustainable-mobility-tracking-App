@@ -28,6 +28,15 @@ const commuteSchema = new mongoose.Schema(
       enum: ["Car", "Bus", "Train", "Bike", "Walk"],
       required: true,
     },
+    faculty: {
+      type: String,
+      required: true,
+    },
+    dayType: {
+      type: String,
+      enum: ["Weekday", "Weekend"],
+      required: true,
+    },
     distance: {
       type: Number, // in kilometers
       required: true,

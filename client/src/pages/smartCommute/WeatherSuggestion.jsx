@@ -18,10 +18,52 @@ const WeatherSuggestion = () => {
 
   const [startCoords, setStartCoords] = useState(null);
   const [endCoords, setEndCoords] = useState(null);
+  const [liveCoords, setLiveCoords] = useState(null);
+  const [liveLocating, setLiveLocating] = useState(false);
 
   const handleCoordSelect = (fieldName, lat, lon) => {
     if (fieldName === 'origin') setStartCoords([lat, lon]);
     else if (fieldName === 'destination') setEndCoords([lat, lon]);
+  };
+
+  // Live GPS location — sets origin with reverse-geocoded address
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    setLiveLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        setLiveCoords([lat, lon]);
+        setStartCoords([lat, lon]);
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+          );
+          const data = await res.json();
+          const name = data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+          setFormData((prev) => ({ ...prev, origin: name }));
+        } catch {
+          setFormData((prev) => ({ ...prev, origin: `${lat.toFixed(5)}, ${lon.toFixed(5)}` }));
+        }
+        setLiveLocating(false);
+      },
+      (err) => {
+        console.error('Geolocation error:', err);
+        alert('Unable to retrieve your location. Please allow location access.');
+        setLiveLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  // Callback from LocateControl button inside the map
+  const handleMapLocate = (lat, lon, name) => {
+    setLiveCoords([lat, lon]);
+    setStartCoords([lat, lon]);
+    setFormData((prev) => ({ ...prev, origin: name }));
   };
 
   // Fetch user's suggestions
@@ -218,6 +260,8 @@ const WeatherSuggestion = () => {
                 endCoords={endCoords}
                 startLabel={formData.origin}
                 endLabel={formData.destination}
+                liveCoords={liveCoords}
+                onLocate={handleMapLocate}
               />
             </div>
             {/* Get Suggestion Form */}
@@ -227,16 +271,32 @@ const WeatherSuggestion = () => {
               </h2>
 
               <form onSubmit={handleGetSuggestion} className="space-y-4">
-                <LocationAutocomplete
-                  name="origin"
-                  value={formData.origin}
-                  onChange={handleInputChange}
-                  onCoordSelect={handleCoordSelect}
-                  label="Origin Location"
-                  placeholder="Start typing your origin location..."
-                  apiEndpoint="/smart-commute/weather-suggestion/autocomplete"
-                  required
-                />
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium text-gray-700">Origin Location</label>
+                    <button
+                      type="button"
+                      onClick={handleLocateMe}
+                      disabled={liveLocating}
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition-colors"
+                    >
+                      {liveLocating ? (
+                        <><span className="animate-spin">⏳</span> Locating...</>
+                      ) : (
+                        <><span>📍</span> Use My Location</>
+                      )}
+                    </button>
+                  </div>
+                  <LocationAutocomplete
+                    name="origin"
+                    value={formData.origin}
+                    onChange={handleInputChange}
+                    onCoordSelect={handleCoordSelect}
+                    placeholder="Start typing your origin location..."
+                    apiEndpoint="/smart-commute/weather-suggestion/autocomplete"
+                    required
+                  />
+                </div>
 
                 <LocationAutocomplete
                   name="destination"
