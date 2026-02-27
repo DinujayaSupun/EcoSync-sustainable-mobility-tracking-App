@@ -48,7 +48,29 @@ const geocodeLocation = async (locationName) => {
   }
 };
 
-// Helper function to calculate route using OSRM API
+// Haversine formula to calculate straight-line distance between two coordinates
+const haversineDistance = (startCoords, destCoords) => {
+  const R = 6371; // Earth radius in km
+  const dLat = ((destCoords.lat - startCoords.lat) * Math.PI) / 180;
+  const dLon = ((destCoords.lon - startCoords.lon) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((startCoords.lat * Math.PI) / 180) *
+      Math.cos((destCoords.lat * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+};
+
+// Estimate duration based on transport type and distance
+const estimateDuration = (distance, transportType) => {
+  const speedMap = { Car: 50, Bus: 35, Train: 60, Bike: 15, Walk: 5 }; // avg km/h
+  const speed = speedMap[transportType] || 30;
+  return (distance / speed) * 60; // Convert to minutes
+};
+
+// Helper function to calculate route using OSRM API (with Haversine fallback)
 const calculateRoute = async (startCoords, destCoords, transportType) => {
   try {
     // OSRM supports different profiles
@@ -68,19 +90,31 @@ const calculateRoute = async (startCoords, destCoords, transportType) => {
         overview: "false",
         steps: "false",
       },
+      timeout: 8000, // 8 second timeout
     });
 
     if (response.data && response.data.routes && response.data.routes.length > 0) {
       const route = response.data.routes[0];
       return {
         distance: route.distance / 1000, // Convert meters to kilometers
-        duration: route.duration / 60, // Convert seconds to minutes
+        duration: route.duration / 60,   // Convert seconds to minutes
+        source: "osrm",
       };
     } else {
       throw new Error("Route not found");
     }
   } catch (error) {
-    throw new Error(`Route calculation failed: ${error.message}`);
+    // Fallback: use Haversine straight-line distance when OSRM fails
+    console.warn(`OSRM failed (${error.message}), using Haversine fallback.`);
+    const distance = haversineDistance(startCoords, destCoords);
+    // Apply a road factor multiplier (roads are ~30% longer than straight line)
+    const adjustedDistance = distance * 1.3;
+    const duration = estimateDuration(adjustedDistance, transportType);
+    return {
+      distance: parseFloat(adjustedDistance.toFixed(2)),
+      duration: parseFloat(duration.toFixed(2)),
+      source: "haversine_fallback",
+    };
   }
 };
 
@@ -188,10 +222,13 @@ exports.logCommute = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Commute logged successfully",
+      distanceSource: routeData.source === "haversine_fallback"
+        ? "Estimated (straight-line x1.3 road factor)"
+        : "OSRM routing",
       data: {
         ...commute.toObject(),
-        co2Saved: co2Saved
-      }
+        co2Saved: co2Saved,
+      },
     });
   } catch (error) {
     console.error("Commute logging error:", error.message);
