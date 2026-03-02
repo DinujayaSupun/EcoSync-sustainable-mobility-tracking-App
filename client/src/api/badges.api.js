@@ -41,4 +41,11 @@ export const BadgesAPI = {
     const res = await API.delete(`${BASE}/${id}`);
     return res.data;
   },
+
+  // Fetch a single Unsplash image suggestion for the badge image picker
+  // page param lets admin swipe to next image on each click
+  async getImageSuggestion(query, page = 1) {
+    const res = await API.get(`${BASE}/image-suggestion`, { params: { query, page } });
+    return res.data;
+  },
 };

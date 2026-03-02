@@ -4,6 +4,7 @@ const Badge = require("../models/Badge");
 const User = require("../models/User");
 const UserBadge = require("../models/UserBadge");
 const { awardBadgeToUser, evaluateBadgesForUser } = require("../services/badgeAwardService");
+const { fetchEcoImageByPage } = require("../services/unsplashService");
 
 function handleValidation(req, res) {
   const errors = validationResult(req);
@@ -120,6 +121,20 @@ async function getMyBadges(req, res, next) {
   }
 }
 
+/**
+ * Returns a single Unsplash image for the given query and page.
+ * Used by the badge image picker in the admin UI.
+ */
+async function getImageSuggestion(req, res, next) {
+  try {
+    const { query = "eco badge", page = 1 } = req.query;
+    const result = await fetchEcoImageByPage(query, Number(page));
+    res.json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   createBadge,
   getAllBadges,
@@ -128,4 +143,5 @@ module.exports = {
   deleteBadge,
   awardBadge,
   getMyBadges,
+  getImageSuggestion,
 };

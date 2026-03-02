@@ -28,10 +28,15 @@ export default function BadgeManagement() {
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null); // null = create, string = edit
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Image picker state — tracks current Unsplash page for swipe
+  const [imgLoading, setImgLoading] = useState(false);
+  const [imgPage, setImgPage] = useState(1);
+  const [imgTotalPages, setImgTotalPages] = useState(0);
 
   // Delete confirmation state
   const [deletingId, setDeletingId] = useState(null);
@@ -64,6 +69,8 @@ export default function BadgeManagement() {
     setEditingId(null);
     setForm(EMPTY_FORM);
     setFormError("");
+    setImgPage(1);
+    setImgTotalPages(0);
     setModalOpen(true);
   }
 
@@ -78,6 +85,8 @@ export default function BadgeManagement() {
       imageUrl: badge.imageUrl || "",
     });
     setFormError("");
+    setImgPage(1);
+    setImgTotalPages(0);
     setModalOpen(true);
   }
 
@@ -88,6 +97,30 @@ export default function BadgeManagement() {
 
   function handleFormChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  // Fetch image from Unsplash using badge name as query
+  // Each call increments the page so admin gets a different image on each click
+  async function fetchImage() {
+    const query = form.name.trim() || "eco badge";
+    const nextPage = imgPage;
+    setImgLoading(true);
+    try {
+      const res = await BadgesAPI.getImageSuggestion(query, nextPage);
+      if (res?.url) {
+        setForm((prev) => ({ ...prev, imageUrl: res.url }));
+        // Advance page for next click — wrap around when we reach the end
+        const total = res.totalPages || 1;
+        setImgTotalPages(total);
+        setImgPage((prev) => (prev >= total ? 1 : prev + 1));
+      } else {
+        setFormError("No image found for this name. Try a different name.");
+      }
+    } catch {
+      setFormError("Failed to fetch image. Check your Unsplash API key.");
+    } finally {
+      setImgLoading(false);
+    }
   }
 
   async function handleSave(e) {
@@ -293,14 +326,52 @@ export default function BadgeManagement() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Image URL <span className="text-gray-400 font-normal">(optional)</span>
+                  Badge Image
                 </label>
+
+                {/* Image preview */}
+                {form.imageUrl ? (
+                  <div className="mb-2 w-full h-32 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                    <img
+                      src={form.imageUrl}
+                      alt="Badge preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="mb-2 w-full h-32 rounded-lg border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-gray-400 text-sm">
+                    No image selected
+                  </div>
+                )}
+
+                {/* Find / Next image buttons */}
+                <div className="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={fetchImage}
+                    disabled={imgLoading}
+                    className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium disabled:opacity-50"
+                  >
+                    {imgLoading ? "Fetching..." : form.imageUrl ? "→ Next Image" : "Find Image"}
+                  </button>
+                  {form.imageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, imageUrl: "" }))}
+                      className="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs hover:bg-gray-50"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                {/* Manual URL input */}
                 <input
                   name="imageUrl"
                   value={form.imageUrl}
                   onChange={handleFormChange}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Leave blank to auto-fetch from Unsplash"
+                  placeholder="Or paste an image URL directly"
                 />
               </div>
 

@@ -13,6 +13,9 @@ const router = express.Router();
 // Read (list)
 router.get("/", protect, badgeController.getAllBadges);
 
+// Image suggestion for badge picker (Admin)
+router.get("/image-suggestion", protect, isAdmin, badgeController.getImageSuggestion);
+
 // My earned badges
 router.get("/me/earned", protect, badgeController.getMyBadges);
 
