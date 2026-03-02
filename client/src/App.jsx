@@ -13,6 +13,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
  
 // Importing the Badges page 
 import Badges from "./pages/Badges";
+import Leaderboard from "./pages/Leaderboard";
 
  //🛡️ Admin Guard Component
 const AdminProtectedRoute = ({ children }) => {
@@ -115,6 +116,15 @@ function AppRoutes() {
         element={
           <UserProtectedRoute>
             <Badges />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/leaderboard"
+        element={
+          <UserProtectedRoute>
+            <Leaderboard />
           </UserProtectedRoute>
         }
       />
