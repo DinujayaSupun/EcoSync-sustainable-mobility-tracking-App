@@ -30,6 +30,7 @@ function FilterChip({ active, children, onClick }) {
 export default function Badges() {
   const [badges, setBadges] = useState([]);
   const [earnedIds, setEarnedIds] = useState(new Set());
+  const [activeTab, setActiveTab] = useState("all"); // "all" or "mine"
   const [activeType, setActiveType] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -49,6 +50,8 @@ export default function Badges() {
       // or unpopulated (badgeId as a raw ObjectId string), so handle both shapes
       const earnedList = Array.isArray(earnedData)
         ? earnedData
+        : Array.isArray(earnedData?.data)
+        ? earnedData.data
         : Array.isArray(earnedData?.badges)
         ? earnedData.badges
         : [];
@@ -82,9 +85,12 @@ export default function Badges() {
   }, []);
 
   const filteredBadges = useMemo(() => {
-    if (activeType === "ALL") return badges;
-    return badges.filter((b) => b?.type === activeType);
-  }, [badges, activeType]);
+    // First apply the My Badges / All Badges tab filter
+    let list = activeTab === "mine" ? badges.filter((b) => earnedIds.has(b?._id)) : badges;
+    // Then apply the type chip filter on top
+    if (activeType !== "ALL") list = list.filter((b) => b?.type === activeType);
+    return list;
+  }, [badges, activeType, activeTab, earnedIds]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -95,6 +101,39 @@ export default function Badges() {
           <p className="text-gray-600 mt-1">
             Earn rewards for consistent sustainable commutes.
           </p>
+
+          {/* All Badges / My Badges tab switcher */}
+          <div className="mt-4 flex gap-2 border-b border-gray-100 pb-3">
+            <button
+              type="button"
+              onClick={() => setActiveTab("all")}
+              className={[
+                "px-4 py-1.5 rounded-full text-sm border transition",
+                activeTab === "all"
+                  ? "bg-green-600 text-white border-green-600"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50",
+              ].join(" ")}
+            >
+              All Badges
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("mine")}
+              className={[
+                "px-4 py-1.5 rounded-full text-sm border transition",
+                activeTab === "mine"
+                  ? "bg-green-600 text-white border-green-600"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50",
+              ].join(" ")}
+            >
+              🏅 My Badges
+              {earnedIds.size > 0 && (
+                <span className="ml-1 bg-white text-green-700 text-xs font-bold px-1.5 py-0.5 rounded-full border border-green-200">
+                  {earnedIds.size}
+                </span>
+              )}
+            </button>
+          </div>
 
           {/* Filters */}
           <div className="mt-4 flex flex-wrap gap-2">

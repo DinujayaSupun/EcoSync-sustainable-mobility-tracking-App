@@ -28,9 +28,12 @@ export default function Leaderboard() {
     try {
       const data = await LeaderboardAPI.getLeaderboard(period);
 
-      // Normalize response — backend may return a plain array or { leaderboard: [] }
+      // Normalize response — backend returns { success: true, data: [] }
+      // but may also return a plain array in future
       const list = Array.isArray(data)
         ? data
+        : Array.isArray(data?.data)
+        ? data.data
         : Array.isArray(data?.leaderboard)
         ? data.leaderboard
         : [];

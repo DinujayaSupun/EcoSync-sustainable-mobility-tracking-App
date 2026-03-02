@@ -45,6 +45,18 @@ const Home = () => {
               🚀 Smart Commute
             </button>
             <button
+              onClick={() => navigate('/badges')}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded transition"
+            >
+              🏅 Badges
+            </button>
+            <button
+              onClick={() => navigate('/leaderboard')}
+              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition"
+            >
+              🏆 Leaderboard
+            </button>
+            <button
               onClick={() => navigate('/commute-history')}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition"
             >
