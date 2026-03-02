@@ -26,17 +26,23 @@ function thresholdText(type, threshold) {
   return `Threshold: ${t}`;
 }
 
-export default function BadgeCard({ badge }) {
+export default function BadgeCard({ badge, earned = false }) {
   const imageUrl = badge?.imageUrl || badge?.image || badge?.iconUrl || "";
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition">
-      <div className="h-40 bg-gray-100 overflow-hidden">
+    <div className={`bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition border ${earned ? "border-green-400" : "border-gray-100"}`}>
+      {/* Position relative so the "Earned" banner can overlay the image */}
+      <div className="h-40 bg-gray-100 overflow-hidden relative">
+        {earned && (
+          <span className="absolute top-2 left-2 z-10 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+            ✓ Earned
+          </span>
+        )}
         {imageUrl ? (
           <img
             src={imageUrl}
             alt={badge?.name || "Badge"}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover transition ${earned ? "" : "grayscale opacity-50"}`}
             loading="lazy"
           />
         ) : (

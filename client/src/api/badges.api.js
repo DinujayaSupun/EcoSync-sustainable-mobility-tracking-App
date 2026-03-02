@@ -33,7 +33,7 @@ export const BadgesAPI = {
   },
 
   async updateBadge(id, payload) {
-    const res = await API.put(`${BASE}/${id}`, payload);
+    const res = await API.patch(`${BASE}/${id}`, payload);
     return res.data;
   },
 

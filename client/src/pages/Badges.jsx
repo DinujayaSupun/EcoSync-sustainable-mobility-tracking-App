@@ -29,6 +29,7 @@ function FilterChip({ active, children, onClick }) {
 
 export default function Badges() {
   const [badges, setBadges] = useState([]);
+  const [earnedIds, setEarnedIds] = useState(new Set());
   const [activeType, setActiveType] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -37,12 +38,24 @@ export default function Badges() {
     setLoading(true);
     setError("");
     try {
-      const data = await BadgesAPI.getAllBadges();
+      // Fetch all badges and the current user's earned badges in parallel
+      // to avoid two sequential round trips to the server
+      const [data, earnedData] = await Promise.all([
+        BadgesAPI.getAllBadges(),
+        BadgesAPI.getMyEarnedBadges(),
+      ]);
 
-      // Accept multiple possible backend response shapes safely:
-      // - array
-      // - { badges: [...] }
-      // - { data: [...] }
+      // Normalize earned badges — UserBadge documents can be populated (badgeId._id)
+      // or unpopulated (badgeId as a raw ObjectId string), so handle both shapes
+      const earnedList = Array.isArray(earnedData)
+        ? earnedData
+        : Array.isArray(earnedData?.badges)
+        ? earnedData.badges
+        : [];
+      setEarnedIds(new Set(earnedList.map((b) => b?.badgeId?._id || b?.badgeId || b?._id)));
+
+      // Normalize all-badges response — backend may return a plain array,
+      // { badges: [] }, or { data: [] } depending on the controller version
       const list = Array.isArray(data)
         ? data
         : Array.isArray(data?.badges)
@@ -135,7 +148,7 @@ export default function Badges() {
           {!loading && !error && filteredBadges.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredBadges.map((badge) => (
-                <BadgeCard key={badge?._id || badge?.id} badge={badge} />
+                <BadgeCard key={badge?._id || badge?.id} badge={badge} earned={earnedIds.has(badge?._id)} />
               ))}
             </div>
           )}
