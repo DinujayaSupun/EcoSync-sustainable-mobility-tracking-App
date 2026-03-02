@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -8,6 +10,9 @@ const adminRoutes = require("./routes/adminRoutes");
 const smartCommuteRoutes = require("./routes/smartCommute.routes");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const challengeRoutes = require("./Routes/challenge.routes");
+
+console.log("OPENAI_API_KEY =", process.env.OPENAI_API_KEY ? "SET" : "NOT SET");
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 
@@ -62,6 +67,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/commute", commuteRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/smart-commute", smartCommuteRoutes);
+app.use("/api/challenges", challengeRoutes);
 
 // Gamification route mounts
 app.use("/api/badges", badgeRoutes);

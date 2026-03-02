@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
+import html2pdf from 'html2pdf.js';
 import {
   FileText,
   Download,
@@ -105,6 +106,138 @@ const Reports = () => {
     a.href = url;
     a.download = `sustainability-report-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+  };
+
+  const handleExportPDF = async () => {
+    if (!reportData) return;
+
+    try {
+      // Create a temporary container with the report content
+      const element = document.createElement('div');
+      element.style.padding = '20px';
+      element.style.backgroundColor = 'white';
+      element.style.fontFamily = 'Arial, sans-serif';
+      
+      element.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #10b981; font-size: 24px; margin-bottom: 5px;">🌿 Sustainability Report</h1>
+          <p style="color: #6b7280; font-size: 12px;">Generated on: ${new Date().toLocaleDateString()}</p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h2 style="color: #1f2937; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #10b981; padding-bottom: 5px;">📊 Summary</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background-color: #f3f4f6;">
+              <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">Total Trips</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${reportData.summary.totalTrips}</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">Total CO2 Saved</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px; color: #10b981; font-weight: bold;">${reportData.summary.totalCO2Saved} kg</td>
+            </tr>
+            <tr style="background-color: #f3f4f6;">
+              <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">Total Distance</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${reportData.summary.totalDistance} km</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">Active Users</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${reportData.summary.uniqueUsers}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h2 style="color: #1f2937; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #10b981; padding-bottom: 5px;">🚗 Transport Mode Breakdown</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background-color: #10b981; color: white;">
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Mode</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Trips</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">CO2 Saved (kg)</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Distance (km)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.transportBreakdown.map((item, idx) => `
+                <tr style="${idx % 2 === 0 ? 'background-color: #f9fafb;' : ''}">
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${item.mode}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${item.count}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px; color: #10b981; font-weight: bold;">${item.co2Saved}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${item.distance}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h2 style="color: #1f2937; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #10b981; padding-bottom: 5px;">🏫 Faculty Performance</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background-color: #10b981; color: white;">
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Faculty</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Users</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Trips</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">CO2 Saved (kg)</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Distance (km)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.facultyStats.map((faculty, idx) => `
+                <tr style="${idx % 2 === 0 ? 'background-color: #f9fafb;' : ''}">
+                  <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">${faculty.faculty}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${faculty.users}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${faculty.trips}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px; color: #10b981; font-weight: bold;">${faculty.co2Saved}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${faculty.distance}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="page-break-before: always;">
+          <h2 style="color: #1f2937; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #10b981; padding-bottom: 5px;">🏆 Top Contributors</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background-color: #10b981; color: white;">
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Rank</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Name</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Email</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Faculty</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">CO2 Saved (kg)</th>
+                <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Trips</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.topUsers.slice(0, 10).map((user, idx) => `
+                <tr style="${idx % 2 === 0 ? 'background-color: #f9fafb;' : ''}">
+                  <td style="border: 1px solid #d1d5db; padding: 8px; font-weight: bold;">#${idx + 1}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${user.name}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px; font-size: 10px;">${user.email}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${user.faculty}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px; color: #10b981; font-weight: bold;">${user.co2Saved}</td>
+                  <td style="border: 1px solid #d1d5db; padding: 8px;">${user.trips}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+      
+      const opt = {
+        margin: 10,
+        filename: `sustainability-report-${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF report');
+    }
   };
 
   const handlePrint = () => {
@@ -238,11 +371,11 @@ const Reports = () => {
                 Print
               </button>
               <button
-                onClick={handleExportCSV}
+                onClick={handleExportPDF}
                 className="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition flex items-center gap-2"
               >
                 <Download size={18} />
-                Export CSV
+                Export PDF
               </button>
             </div>
           </div>
