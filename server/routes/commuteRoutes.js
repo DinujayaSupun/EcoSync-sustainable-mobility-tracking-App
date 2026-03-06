@@ -7,6 +7,8 @@ const {
   getEmissionSummary,
   autocompleteLocation,
   predictEmission,
+  deleteCommute,
+  updateCommute,
 } = require("../controllers/commuteController");
 
 // All routes are protected with JWT authentication
@@ -15,5 +17,7 @@ router.get("/history", protect, getCommuteHistory);
 router.get("/emission-summary", protect, getEmissionSummary);
 router.get("/autocomplete", protect, autocompleteLocation);
 router.get("/predict", protect, predictEmission);
+router.delete("/:id", protect, deleteCommute);
+router.put("/:id", protect, updateCommute);
 
 module.exports = router;

@@ -1,0 +1,13 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cmd /c \"cd C:\\\\Users\\\\Dinujaya\\\\Documents\\\\GitHub\\\\Application-Framework-Project-SE\\\\client && npm run build 2>&1\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cmd /c \"cd /d C:\\\\Users\\\\Dinujaya\\\\Documents\\\\GitHub\\\\Application-Framework-Project-SE\\\\client && npm run build\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "npm run build": true
+    }
+}

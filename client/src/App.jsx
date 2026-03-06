@@ -1,14 +1,22 @@
+
 import './App.css'
 import { AuthContext } from './context/AuthContext'
-import Login from './pages/Login'
+import Login from './pages/login'
 import Home from './pages/Home'
 import AdminDashboard from './pages/AdminDashboard'
 import CommuteLogger from './pages/CommuteLogger'
 import CommuteHistory from './pages/CommuteHistory'
 import UserManagement from './pages/UserManagement';
+import Reports from './pages/Reports';
+import SmartCommuteRoutes from './pages/smartCommute/routes';
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
  
+// Importing the Badges page 
+import Badges from "./pages/Badges";
+import Leaderboard from "./pages/Leaderboard";
+import BadgeManagement from "./pages/BadgeManagement";
+
  //🛡️ Admin Guard Component
 const AdminProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
@@ -77,6 +85,13 @@ function AppRoutes() {
         </UserProtectedRoute>
       } />
 
+      {/* 🚀 Smart Commute & Logistics Module */}
+      <Route path="/smart-commute/*" element={
+        <UserProtectedRoute>
+          <SmartCommuteRoutes />
+        </UserProtectedRoute>
+      } />
+
       {/* 🏛️ Admin Routes (Your Primary Work) */}
       <Route path="/admin" element={
         <AdminProtectedRoute>
@@ -90,6 +105,38 @@ function AppRoutes() {
           <UserManagement />
         </AdminProtectedRoute>
       } />
+      
+      {/* Reports Route */}
+      <Route path="/admin/reports" element={
+        <AdminProtectedRoute>
+          <Reports />
+        </AdminProtectedRoute>
+      } />
+
+      {/* Badge Management Route */}
+      <Route path="/admin/badges" element={
+        <AdminProtectedRoute>
+          <BadgeManagement />
+        </AdminProtectedRoute>
+      } />
+
+      <Route
+        path="/badges"
+        element={
+          <UserProtectedRoute>
+            <Badges />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/leaderboard"
+        element={
+          <UserProtectedRoute>
+            <Leaderboard />
+          </UserProtectedRoute>
+        }
+      />
 
       {/* Default Redirects */}
       <Route path="/" element={<Navigate to={!user ? "/login" : (user.role === 'admin' ? "/admin" : "/home")} replace />} />

@@ -39,6 +39,24 @@ const Home = () => {
           <div className="flex items-center gap-4">
             <span className="text-gray-700">Welcome, {user?.name}!</span>
             <button
+              onClick={() => navigate('/smart-commute')}
+              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded transition font-medium shadow-md"
+            >
+              🚀 Smart Commute
+            </button>
+            <button
+              onClick={() => navigate('/badges')}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded transition"
+            >
+              🏅 Badges
+            </button>
+            <button
+              onClick={() => navigate('/leaderboard')}
+              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition"
+            >
+              🏆 Leaderboard
+            </button>
+            <button
               onClick={() => navigate('/commute-history')}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition"
             >
@@ -135,6 +153,29 @@ const Home = () => {
                 <p className="text-blue-600">Start logging your commutes below to see analytics!</p>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Smart Commute Module Feature Card */}
+        <div 
+          onClick={() => navigate('/smart-commute')}
+          className="bg-gradient-to-r from-green-500 to-green-700 rounded-lg shadow-lg p-8 mb-8 cursor-pointer hover:shadow-2xl transition-all transform hover:-translate-y-1"
+        >
+          <div className="flex items-center justify-between text-white">
+            <div>
+              <h2 className="text-3xl font-bold mb-3 flex items-center gap-2">
+                🚀 Smart Commute & Logistics
+              </h2>
+              <p className="text-lg mb-4 text-green-50">
+                Weather-based recommendations and carbon tracking for sustainable commuting
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                <div className="bg-white bg-opacity-20 rounded px-3 py-2">☁️ Weather Suggestions</div>
+                <div className="bg-white bg-opacity-20 rounded px-3 py-2">🗺️ Heat Map</div>
+                <div className="bg-white bg-opacity-20 rounded px-3 py-2">🅿️ Parking Impact</div>
+              </div>
+            </div>
+            <div className="text-6xl">→</div>
           </div>
         </div>
 

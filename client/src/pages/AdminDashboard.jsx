@@ -14,12 +14,42 @@ const AdminDashboard = () => {
     faculties: 0,
     facultyData: []
   });
+  const [recentTrips, setRecentTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+  
+  // Utility function to format time ago
+  const getTimeAgo = (date) => {
+    const now = new Date();
+    const diffMs = now - new Date(date);
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  };
+  
+  // Get color scheme based on transport mode
+  const getTransportStyle = (mode) => {
+    const modes = {
+      bus: { bg: 'bg-green-50', border: 'border-green-500', dot: 'bg-green-500' },
+      train: { bg: 'bg-purple-50', border: 'border-purple-500', dot: 'bg-purple-500' },
+      bike: { bg: 'bg-blue-50', border: 'border-blue-500', dot: 'bg-blue-500' },
+      walking: { bg: 'bg-yellow-50', border: 'border-yellow-500', dot: 'bg-yellow-500' },
+      shuttle: { bg: 'bg-indigo-50', border: 'border-indigo-500', dot: 'bg-indigo-500' },
+      car: { bg: 'bg-red-50', border: 'border-red-500', dot: 'bg-red-500' }
+    };
+    return modes[mode?.toLowerCase()] || modes.bus;
   };
   
   useEffect(() => {
@@ -34,7 +64,24 @@ const AdminDashboard = () => {
         setLoading(false);
       }
     };
+    
+    const fetchRecentTrips = async () => {
+      try {
+        const res = await API.get('/admin/recent-trips?limit=5');
+        if (res.data.success) {
+          setRecentTrips(res.data.trips);
+        }
+      } catch (error) {
+        console.error('Error fetching recent trips:', error);
+      }
+    };
+    
     fetchStats();
+    fetchRecentTrips();
+    
+    // Refresh recent trips every 30 seconds
+    const interval = setInterval(fetchRecentTrips, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) return (
@@ -166,34 +213,27 @@ const AdminDashboard = () => {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-xl font-bold mb-4 text-gray-800">Live Commute Feed</h3>
             <div className="space-y-3">
-              {/* Placeholder for recent trips */}
-              <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700">
-                    <strong>Computing:</strong> Saved 1.2kg via Bus
-                  </p>
+              {recentTrips.length > 0 ? (
+                recentTrips.map((trip) => {
+                  const style = getTransportStyle(trip.transportMode);
+                  return (
+                    <div key={trip._id} className={`flex items-center gap-3 p-3 ${style.bg} rounded-lg border-l-4 ${style.border}`}>
+                      <div className={`w-2 h-2 ${style.dot} rounded-full animate-pulse`}></div>
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-700">
+                          <strong>{trip.faculty}:</strong> Saved {trip.co2Saved}kg via {trip.transportMode.charAt(0).toUpperCase() + trip.transportMode.slice(1)}
+                        </p>
+                      </div>
+                      <span className="text-xs text-gray-400">{getTimeAgo(trip.createdAt)}</span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <Activity className="mx-auto mb-2" size={32} />
+                  <p>No recent trips yet</p>
                 </div>
-                <span className="text-xs text-gray-400">2 mins ago</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700">
-                    <strong>Engineering:</strong> Saved 0.8kg via Bike
-                  </p>
-                </div>
-                <span className="text-xs text-gray-400">5 mins ago</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg border-l-4 border-purple-500">
-                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700">
-                    <strong>Business:</strong> Saved 1.5kg via Train
-                  </p>
-                </div>
-                <span className="text-xs text-gray-400">8 mins ago</span>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -228,11 +268,20 @@ const AdminDashboard = () => {
               <h3 className="font-semibold text-gray-800">Manage Users</h3>
               <p className="text-sm text-gray-600">View and manage user accounts</p>
             </Link>
-            <button className="p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition text-left">
+            <Link 
+              to="/admin/reports" 
+              className="p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition text-left block">
               <Activity className="text-green-600 mb-2" size={28} />
               <h3 className="font-semibold text-gray-800">View Reports</h3>
               <p className="text-sm text-gray-600">Check sustainability reports</p>
-            </button>
+            </Link>
+            <Link
+              to="/admin/badges"
+              className="p-4 border-2 border-yellow-200 rounded-lg hover:bg-yellow-50 transition text-left block">
+              <Leaf className="text-yellow-600 mb-2" size={28} />
+              <h3 className="font-semibold text-gray-800">Manage Badges</h3>
+              <p className="text-sm text-gray-600">Create, edit and delete badges</p>
+            </Link>
             <button className="p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition text-left">
               <Settings className="text-purple-600 mb-2" size={28} />
               <h3 className="font-semibold text-gray-800">System Settings</h3>
@@ -245,4 +294,4 @@ const AdminDashboard = () => {
   )
 }
 
-export default AdminDashboard
+export default AdminDashboard;

@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const carbonRoutes = require("./Routes/carbon.routes");
-const errorHandler = require("./middlewires/error.middlewire");
+const errorHandler = require("./middleware/error.middlewire");
 
 const app = express();
 
