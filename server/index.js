@@ -13,8 +13,8 @@ const rateLimit = require("express-rate-limit");
 const challengeRoutes = require("./Routes/challenge.routes");
 
 console.log("OPENAI_API_KEY =", process.env.OPENAI_API_KEY ? "SET" : "NOT SET");
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./config/swagger');
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
 
 // Gamification routes
 const badgeRoutes = require("./routes/badgeRoutes");
@@ -52,14 +52,14 @@ app.use("/api/", limiter);
 
 // Swagger API Documentation (Admin Only)
 app.use(
-  '/api-docs',
+  "/api-docs",
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, {
     explorer: true,
-    customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'Admin API Documentation',
-    customfavIcon: '/favicon.ico',
-  })
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Admin API Documentation",
+    customfavIcon: "/favicon.ico",
+  }),
 );
 
 // Routes
