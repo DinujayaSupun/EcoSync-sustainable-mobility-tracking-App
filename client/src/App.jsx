@@ -12,6 +12,11 @@ import SmartCommuteRoutes from './pages/smartCommute/routes';
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
  
+// Importing the Badges page 
+import Badges from "./pages/Badges";
+import Leaderboard from "./pages/Leaderboard";
+import BadgeManagement from "./pages/BadgeManagement";
+
  //🛡️ Admin Guard Component
 const AdminProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
@@ -107,6 +112,31 @@ function AppRoutes() {
           <Reports />
         </AdminProtectedRoute>
       } />
+
+      {/* Badge Management Route */}
+      <Route path="/admin/badges" element={
+        <AdminProtectedRoute>
+          <BadgeManagement />
+        </AdminProtectedRoute>
+      } />
+
+      <Route
+        path="/badges"
+        element={
+          <UserProtectedRoute>
+            <Badges />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/leaderboard"
+        element={
+          <UserProtectedRoute>
+            <Leaderboard />
+          </UserProtectedRoute>
+        }
+      />
 
       {/* Default Redirects */}
       <Route path="/" element={<Navigate to={!user ? "/login" : (user.role === 'admin' ? "/admin" : "/home")} replace />} />

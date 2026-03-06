@@ -19,12 +19,13 @@ const swaggerSpec = require('./config/swagger');
 // Gamification routes
 const badgeRoutes = require("./routes/badgeRoutes");
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
+const seedBadges = require("./config/seedBadges");
 
 // Load environment variables
 dotenv.config();
 
 // Connect to MongoDB
-connectDB();
+connectDB().then(() => seedBadges());
 
 // Initialize express app
 const app = express();

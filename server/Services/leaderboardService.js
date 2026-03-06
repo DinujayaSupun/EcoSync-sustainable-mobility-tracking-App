@@ -53,7 +53,8 @@ async function getLeaderboard({ period = "weekly", limit = 10 }) {
     totalCo2Saved: r.totalCo2Saved,
     totalDistanceKm: r.totalDistanceKm,
     tripCount: r.tripCount,
-    ...(idx === 0 ? { title: "Weekly Champion" } : {}),
+    // Capitalize the period for the champion title (e.g. "Weekly Champion")
+    ...(idx === 0 ? { title: `${period.charAt(0).toUpperCase() + period.slice(1)} Champion` } : {}),
   }));
 
   return data;
