@@ -17,9 +17,9 @@ const {
   validateUserUpdate,
   validateEmailReport,
   validateAtLeastOneField,
-  handleValidation,
   sanitizeObjectId,
-} = require("../middleware/validation.middlewire");
+} = require("../middleware/validation.middleware");
+const { validate } = require("../middleware/validate.middleware");
 const { logActivity } = require("../middleware/activityLogger");
 const {
   adminLimiter,
@@ -886,7 +886,7 @@ router.put(
   validateUserId,
   validateUserUpdate,
   validateAtLeastOneField,
-  handleValidation,
+  validate,
   updateUser,
 );
 
@@ -1010,7 +1010,7 @@ router.delete(
   })),
   sanitizeObjectId,
   validateUserId,
-  handleValidation,
+  validate,
   deleteUser,
 );
 

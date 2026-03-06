@@ -1,4 +1,4 @@
-const CarbonRecord = require("../models/carbonRecord");
+const CarbonRecord = require("../models/CarbonRecord");
 const {
   calculateEmissionSaved,
   getGreenestOption,
@@ -9,8 +9,6 @@ const {
   forecastMonthlySavings,
   getUserPercentile,
 } = require("../services/analytics.service");
-
-
 
 // CREATE
 const createCarbonRecord = async (req, res, next) => {
@@ -90,11 +88,9 @@ const updateRecord = async (req, res, next) => {
       updateData = { vehicleType, distance, emissionSaved };
     }
 
-    const updatedRecord = await CarbonRecord.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    );
+    const updatedRecord = await CarbonRecord.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
     if (!updatedRecord) {
       return res.status(404).json({
