@@ -8,7 +8,7 @@ const {
   updateRecord,
   deleteRecord,
   getUserInsights,
-} = require("../controllers/carbon.controller");
+} = require("../controllers/carbonController");
 
 const {
   validateCarbonCreate,

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const challengeController = require("../Controllers/challenge.controller");
+const challengeController = require("../controllers/challengeController");
 
 const { validateCreateChallenge } = require("../validators/challenge.validator");
 const { validate } = require("../middleware/validate.middleware");
