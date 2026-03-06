@@ -14,7 +14,8 @@ const {
   validateCarbonCreate,
   validateObjectId,
   handleValidation,
-} = require("../middleware/validation.middlewire");
+} = require("../middleware/validation.middleware");
+const { validate } = require("../middleware/validate.middleware");
 
 router.post(
   "/calculate",
