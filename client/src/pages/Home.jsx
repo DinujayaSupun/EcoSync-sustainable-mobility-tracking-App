@@ -33,38 +33,47 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-green-600">EcoSync</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-gray-700">Welcome, {user?.name}!</span>
+      <nav className="sticky top-0 z-2000 border-b border-emerald-100/80 bg-white/85 shadow-sm backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-linear-to-br from-emerald-500 to-green-700 shadow-md" />
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-emerald-600">EcoSync</h1>
+              <p className="text-xs font-medium text-emerald-700/80">Smarter, cleaner commuting</p>
+            </div>
+          </div>
+
+          <div className="flex flex-1 flex-wrap items-center justify-end gap-2">
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+              Welcome, {user?.name}!
+            </span>
             <button
               onClick={() => navigate('/smart-commute')}
-              className="bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded transition font-medium shadow-md"
+              className="rounded-xl bg-linear-to-r from-emerald-700 to-green-800 px-4 py-2 font-semibold text-white shadow-md transition hover:from-emerald-800 hover:to-green-900"
             >
               🚀 Smart Commute
             </button>
             <button
               onClick={() => navigate('/badges')}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded transition"
+              className="rounded-xl border border-amber-700 bg-amber-900 px-4 py-2 font-semibold text-amber-100 transition hover:bg-amber-800"
             >
               🏅 Badges
             </button>
             <button
               onClick={() => navigate('/leaderboard')}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition"
+              className="rounded-xl border border-violet-700 bg-violet-900 px-4 py-2 font-semibold text-violet-100 transition hover:bg-violet-800"
             >
               🏆 Leaderboard
             </button>
             <button
               onClick={() => navigate('/commute-history')}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition"
+              className="rounded-xl border border-blue-700 bg-blue-900 px-4 py-2 font-semibold text-blue-100 transition hover:bg-blue-800"
             >
               📜 Trip History
             </button>
-            <button 
+            <button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition"
+              className="rounded-xl border border-rose-700 bg-rose-900 px-4 py-2 font-semibold text-rose-100 transition hover:bg-rose-800"
             >
               Logout
             </button>
