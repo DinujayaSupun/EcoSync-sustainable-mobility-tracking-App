@@ -91,11 +91,15 @@ const PredictionCard = () => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+      <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-white p-6 shadow-lg">
+        <div className="animate-pulse space-y-4">
+          <div className="h-7 w-2/3 rounded bg-emerald-100"></div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="h-28 rounded-xl bg-emerald-50"></div>
+            <div className="h-28 rounded-xl bg-green-50"></div>
+            <div className="h-28 rounded-xl bg-lime-50"></div>
+          </div>
+          <div className="h-20 rounded-xl bg-gray-100"></div>
         </div>
       </div>
     );
@@ -103,11 +107,13 @@ const PredictionCard = () => {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-3">📊 Emission Prediction</h3>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-          <p className="text-blue-800">{error}</p>
-          <p className="text-sm text-blue-600 mt-2">
+      <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-white p-6 shadow-lg">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-emerald-900">Emission Prediction</h3>
+        </div>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-center">
+          <p className="text-emerald-900">{error}</p>
+          <p className="mt-2 text-sm text-emerald-700">
             Keep logging your commutes to see predictions!
           </p>
         </div>
@@ -120,11 +126,14 @@ const PredictionCard = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold text-gray-800">📊 Next Month Emission Prediction</h3>
+    <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-white p-5 shadow-lg sm:p-6">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Forecast</p>
+          <h3 className="text-2xl font-bold text-emerald-900">📊 Next Month Emission Prediction</h3>
+        </div>
         {prediction.predictionType && (
-          <span className={`text-sm font-semibold px-3 py-1 rounded-full bg-indigo-100 ${getPredictionTypeLabel(prediction.predictionType).color}`}>
+          <span className={`w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold ${getPredictionTypeLabel(prediction.predictionType).color}`}>
             {getPredictionTypeLabel(prediction.predictionType).icon} {getPredictionTypeLabel(prediction.predictionType).label}
           </span>
         )}
@@ -132,18 +141,18 @@ const PredictionCard = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Predicted Emission */}
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-lg border border-blue-200">
-          <h4 className="text-sm font-semibold text-blue-700 mb-2">Predicted Emission</h4>
-          <p className="text-3xl font-bold text-blue-900">
+        <div className="rounded-xl border border-emerald-200 bg-linear-to-br from-emerald-50 to-green-100 p-5">
+          <h4 className="mb-2 text-sm font-semibold text-emerald-700">Predicted Emission</h4>
+          <p className="text-3xl font-bold text-emerald-900">
             {prediction.predictedEmission}
             <span className="text-lg ml-1">kg CO₂</span>
           </p>
         </div>
 
         {/* Trend */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-lg border border-purple-200">
-          <h4 className="text-sm font-semibold text-purple-700 mb-2">Trend</h4>
-          <p className="text-3xl font-bold text-purple-900 flex items-center gap-2">
+        <div className="rounded-xl border border-green-200 bg-linear-to-br from-green-50 to-emerald-100 p-5">
+          <h4 className="mb-2 text-sm font-semibold text-green-700">Trend</h4>
+          <p className="flex items-center gap-2 text-3xl font-bold text-green-900">
             {getTrendIcon(prediction.trend)} {prediction.trend}
           </p>
         </div>
@@ -158,7 +167,7 @@ const PredictionCard = () => {
       </div>
 
       {/* Info Section */}
-      <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+      <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
         <p className="text-sm text-gray-700">
           <strong>ℹ️ How it works:</strong> {getPredictionDescription(prediction.predictionType)}
         </p>

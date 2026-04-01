@@ -53,25 +53,52 @@ const geocodeLocation = async (locationName) => {
 };
 
 // Haversine formula to calculate straight-line distance between two coordinates
+// This formula accounts for the curvature of the Earth
+// Formula: a = sin²(Δlat/2) + cos(lat1) * cos(lat2) * sin²(Δlon/2)
+//          c = 2 * atan2(√a, √(1−a))
+//          d = R * c
 const haversineDistance = (startCoords, destCoords) => {
-  const R = 6371; // Earth radius in km
+  const R = 6371; // Earth's mean radius in kilometers
+
+  // Convert latitude difference from degrees to radians
+  // Δlat = lat2 - lat1, then converted to radians by * (π/180)
   const dLat = ((destCoords.lat - startCoords.lat) * Math.PI) / 180;
+
+  // Convert longitude difference from degrees to radians
   const dLon = ((destCoords.lon - startCoords.lon) * Math.PI) / 180;
+
+  // Haversine formula component 'a':
+  // sin²(Δlat/2) + cos(lat1) * cos(lat2) * sin²(Δlon/2)
+  // This gives the square of half the chord length between the two points
   const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((startCoords.lat * Math.PI) / 180) *
-      Math.cos((destCoords.lat * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +          // sin²(Δlat/2)
+    Math.cos((startCoords.lat * Math.PI) / 180) *       // cos(lat1) in radians
+      Math.cos((destCoords.lat * Math.PI) / 180) *      // cos(lat2) in radians
+      Math.sin(dLon / 2) *                              // sin(Δlon/2)
+      Math.sin(dLon / 2);                               // squared
+
+  // Angular distance in radians using atan2 for numerical stability
+  // c = 2 * atan2(√a, √(1−a)) — the central angle between the two points
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in km
+
+  // Final distance = Earth's radius * central angle
+  return R * c; // Result in kilometers
 };
 
-// Estimate duration based on transport type and distance
+// Estimate travel duration based on transport type and distance
+// Uses average real-world speeds (km/h) for each transport mode
 const estimateDuration = (distance, transportType) => {
-  const speedMap = { Car: 50, Bus: 35, Train: 60, Bike: 15, Walk: 5 }; // avg km/h
+  // Average speeds in km/h for each transport type
+  // Car: city driving average | Bus: including stops | Train: regional rail
+  // Bike: cycling pace | Walk: average walking pace
+  const speedMap = { Car: 50, Bus: 35, Train: 60, Bike: 15, Walk: 5 };
+
+  // Use the mapped speed, default to 30 km/h if transport type is unknown
   const speed = speedMap[transportType] || 30;
-  return (distance / speed) * 60; // Convert to minutes
+
+  // Duration formula: time = distance / speed  →  then * 60 to convert hours → minutes
+  // Example: 10 km by Car = (10 / 50) * 60 = 12 minutes
+  return (distance / speed) * 60; // Result in minutes
 };
 
 // Helper function to calculate route using OSRM API (with Haversine fallback)
@@ -104,8 +131,10 @@ const calculateRoute = async (startCoords, destCoords, transportType) => {
     ) {
       const route = response.data.routes[0];
       return {
-        distance: route.distance / 1000, // Convert meters to kilometers
-        duration: route.duration / 60,   // Convert seconds to minutes
+        // OSRM returns distance in meters → divide by 1000 to get kilometers
+        distance: route.distance / 1000,
+        // OSRM returns duration in seconds → divide by 60 to get minutes
+        duration: route.duration / 60,
         source: "osrm",
       };
     } else {
@@ -114,11 +143,20 @@ const calculateRoute = async (startCoords, destCoords, transportType) => {
   } catch (error) {
     // Fallback: use Haversine straight-line distance when OSRM fails
     console.warn(`OSRM failed (${error.message}), using Haversine fallback.`);
+
+    // Step 1: Calculate straight-line distance using Haversine formula
     const distance = haversineDistance(startCoords, destCoords);
-    // Apply a road factor multiplier (roads are ~30% longer than straight line)
+
+    // Step 2: Apply a road detour factor of 1.3
+    // Real road distances are typically ~30% longer than straight-line distance
+    // e.g. straight-line = 10 km → road estimate = 13 km
     const adjustedDistance = distance * 1.3;
+
+    // Step 3: Estimate travel time using average speed for transport type
     const duration = estimateDuration(adjustedDistance, transportType);
+
     return {
+      // Round to 2 decimal places for cleaner output
       distance: parseFloat(adjustedDistance.toFixed(2)),
       duration: parseFloat(duration.toFixed(2)),
       source: "haversine_fallback",
@@ -191,12 +229,18 @@ exports.logCommute = async (req, res) => {
       transportType,
     );
 
-    // Calculate emissions
+    // Calculate CO2 emissions for this trip
+    // Formula: emissions (kg CO2) = distance (km) × emission factor (kg CO2/km)
+    // Example: 10 km by Car = 10 × 0.192 = 1.92 kg CO2
     const emissionEstimate =
       routeData.distance * EMISSION_FACTORS[transportType];
 
-    // Calculate CO2 saved compared to driving a car
+    // Calculate how much CO2 was saved compared to driving a car
+    // Step 1: Calculate what emissions WOULD have been if user drove a car
     const carEmission = routeData.distance * EMISSION_FACTORS.Car;
+    // Step 2: Difference = CO2 saved by choosing a greener transport
+    // Math.max(0, ...) ensures co2Saved is never negative (car is the baseline)
+    // Example: Bus trip 10 km → carEmission=1.92, busEmission=1.05 → saved=0.87 kg
     const co2Saved = Math.max(0, carEmission - emissionEstimate);
 
     // Generate eco suggestion
@@ -367,25 +411,39 @@ exports.getEmissionSummary = async (req, res) => {
       },
     };
 
+    // Loop through each commute record and accumulate totals
     commutes.forEach((commute) => {
+      // Running total of all kilometres travelled across all commutes
       summary.totalDistance += commute.distance;
+
+      // Running total of all CO2 emissions (kg) across all commutes
       summary.totalEmissions += commute.emissionEstimate;
+
+      // Running total of all travel time (minutes) across all commutes
       summary.totalDuration += commute.duration;
 
+      // Break down stats per transport type (Car, Bus, Train, Bike, Walk)
       if (summary.transportBreakdown[commute.transportType]) {
+        // Increment trip count for this transport type
         summary.transportBreakdown[commute.transportType].count += 1;
+
+        // Accumulate emissions for this transport type
         summary.transportBreakdown[commute.transportType].emissions +=
           commute.emissionEstimate;
+
+        // Accumulate distance for this transport type
         summary.transportBreakdown[commute.transportType].distance +=
           commute.distance;
       }
     });
 
-    // Round values for cleaner output
+    // Round all totals to 2 decimal places to avoid floating-point noise
+    // e.g. 1.0000000001 becomes 1.00
     summary.totalDistance = parseFloat(summary.totalDistance.toFixed(2));
     summary.totalEmissions = parseFloat(summary.totalEmissions.toFixed(2));
     summary.totalDuration = parseFloat(summary.totalDuration.toFixed(2));
 
+    // Round per-transport breakdown values as well
     Object.keys(summary.transportBreakdown).forEach((type) => {
       summary.transportBreakdown[type].emissions = parseFloat(
         summary.transportBreakdown[type].emissions.toFixed(2),
@@ -443,17 +501,30 @@ exports.predictEmission = async (req, res) => {
     let predictionResult;
     let historicalData = [];
 
-    // Case 1: User has 2 or more complete months - Use Linear Regression
+    // ── PREDICTION STRATEGY SELECTION ──────────────────────────────────────────
+    // We use different algorithms depending on how much historical data exists.
+    // More data = more accurate predictions.
+
+    // Case 1: User has 2 or more complete months → Use Linear Regression
+    // Linear Regression fits a straight line through monthly data points
+    // and extrapolates the next value: y = mx + b
+    // More months = more accurate slope (trend) calculation
     if (monthlyEmissions.length >= 2) {
+      // Map MongoDB aggregate results into clean { month, emission, yearMonth } objects
+      // 'index + 1' gives sequential month numbers (1, 2, 3...) for regression x-axis
       historicalData = monthlyEmissions.map((entry, index) => ({
-        month: index + 1,
-        emission: parseFloat(entry.totalEmission.toFixed(2)),
-        yearMonth: `${entry._id.year}-${String(entry._id.month).padStart(2, "0")}`,
+        month: index + 1,                                          // x-axis: month sequence
+        emission: parseFloat(entry.totalEmission.toFixed(2)),      // y-axis: total CO2 that month
+        yearMonth: `${entry._id.year}-${String(entry._id.month).padStart(2, "0")}`, // label e.g. "2026-01"
       }));
 
+      // Pass formatted data to linear regression utility
+      // Returns: { nextMonthPrediction, trend (up/down/stable), predictionType }
       predictionResult = calculateLinearRegression(historicalData);
     }
-    // Case 2: User has exactly 1 complete month - Use Monthly Projection
+    // Case 2: User has exactly 1 complete month → Use Monthly Projection
+    // Cannot calculate a trend with one point, so we project forward
+    // based on the single available month's total
     else if (monthlyEmissions.length === 1) {
       const singleMonthEmission = monthlyEmissions[0].totalEmission;
 
@@ -465,11 +536,14 @@ exports.predictEmission = async (req, res) => {
         },
       ];
 
+      // Uses the single month as a baseline and projects the same value forward
       predictionResult = calculateMonthlyProjection(singleMonthEmission);
     }
-    // Case 3: User has less than 1 month (partial data) - Use Daily Projection
+    // Case 3: User has less than 1 month of data → Use Daily Projection
+    // Not enough monthly data, so calculate a daily average
+    // and scale it up to a full 30-day month
     else {
-      // Get all commutes to calculate daily average
+      // Fetch all individual commute records for the user
       const allCommutes = await Commute.find({ userId });
 
       if (allCommutes.length === 0) {
@@ -480,32 +554,39 @@ exports.predictEmission = async (req, res) => {
         });
       }
 
-      // Calculate total emissions and unique days
+      // Sum all emissions across all commutes using reduce
+      // reduce(accumulator, currentValue) → starts at 0, adds each emissionEstimate
       const totalEmission = allCommutes.reduce(
         (sum, commute) => sum + commute.emissionEstimate,
-        0,
+        0, // initial accumulator value
       );
 
-      // Get unique days with commutes
+      // Use a Set to count unique calendar days that had commutes
+      // Converts each date to "YYYY-MM-DD" string (drops time), Set removes duplicates
+      // e.g. 3 trips on same day still counts as 1 day
       const uniqueDays = new Set(
         allCommutes.map(
           (commute) => new Date(commute.createdAt).toISOString().split("T")[0],
         ),
       );
-      const daysLogged = uniqueDays.size;
+      const daysLogged = uniqueDays.size; // number of unique days with commute activity
 
+      // Project: dailyAverage = totalEmission / daysLogged
+      //          monthlyEstimate = dailyAverage * 30
       predictionResult = calculateDailyProjection(totalEmission, daysLogged);
 
       historicalData = [
         {
           daysLogged,
           totalEmission: parseFloat(totalEmission.toFixed(2)),
+          // dailyAverage = total / days → rounded to 2dp
           dailyAverage: parseFloat((totalEmission / daysLogged).toFixed(2)),
         },
       ];
     }
 
-    // Categorize risk level
+    // Categorize the predicted emission into a risk level (Low / Medium / High)
+    // based on predefined CO2 thresholds in the categorizeRisk utility
     const riskLevel = categorizeRisk(predictionResult.nextMonthPrediction);
 
     res.status(200).json({
@@ -575,10 +656,18 @@ exports.updateCommute = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorised' });
     }
 
-    // Recalculate emission with updated transport type
+    // Recalculate emission using the new transport type
+    // Formula: emissions (kg CO2) = distance (km) × emission factor (kg CO2/km)
+    // e.g. switching from Car (0.192) to Train (0.041) on a 10 km trip:
+    //      old = 10 × 0.192 = 1.92 kg CO2
+    //      new = 10 × 0.041 = 0.41 kg CO2  → saves 1.51 kg CO2
     const newEmission = EMISSION_FACTORS[transportType] * trip.distance;
+
+    // Update the trip document fields with new values
     trip.transportType = transportType;
     trip.emissionEstimate = newEmission;
+
+    // Persist the updated document to MongoDB
     await trip.save();
 
     res.status(200).json({ success: true, message: 'Trip updated successfully', data: trip });
