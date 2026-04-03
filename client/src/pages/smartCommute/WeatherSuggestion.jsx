@@ -197,64 +197,68 @@ const WeatherSuggestion = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            <span className="material-icons" style={{fontSize: '32px', verticalAlign: 'middle', marginRight: '8px'}}>cloud</span>Weather-Based Transport Suggestion
-          </h1>
-          <p className="text-gray-600 mb-4">
-            Get eco-friendly transport recommendations based on current weather conditions
-          </p>
-          
-          {/* Login Status Banner */}
-          {!user ? (
-            <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4 flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <span className="material-icons" style={{fontSize: '32px'}}>warning</span>
-                <div>
-                  <p className="text-red-900 font-bold text-lg">Not Logged In</p>
-                  <p className="text-red-700 text-sm">
-                    You can use Quick Check for weather info, but you need to log in to save suggestions.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/login')}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors shadow-md"
-              >
-                Login Now
-              </button>
-            </div>
-          ) : (
-            <div className="bg-green-50 border border-green-300 rounded-lg p-3 flex items-center gap-3 mb-4">
-              <span className="material-icons" style={{fontSize: '24px', color: 'green'}}>check_circle</span>
-              <p className="text-green-900 font-medium">
-                Logged in as <span className="font-bold">{user.name}</span>
-              </p>
-            </div>
-          )}
-          
-          {/* Info Box */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-            <span className="material-icons" style={{fontSize: '24px', color: '#2563eb'}}>lightbulb</span>
-            <div className="flex-1 text-sm">
-              <p className="text-blue-900 font-medium mb-1">Live Location Search Enabled</p>
-              <p className="text-blue-700">
-                Start typing in the location fields to see real-time suggestions from OpenStreetMap. 
-                Select from the dropdown to auto-fill accurate location names with coordinates.
-              </p>
-            </div>
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-lg">
+          <div className="bg-linear-to-r from-emerald-700 to-green-600 px-6 py-6 text-white sm:px-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100">Overview</p>
+            <h1 className="mt-1 text-3xl font-bold sm:text-4xl">
+              <span className="material-icons" style={{fontSize: '34px', verticalAlign: 'middle', marginRight: '8px'}}>cloud</span>
+              Weather-Based Transport Suggestion
+            </h1>
+            <p className="mt-2 text-sm text-emerald-100 sm:text-base">
+              Get eco-friendly transport recommendations based on current weather conditions
+            </p>
           </div>
-        </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-6 p-5 sm:p-7">
+            {/* Login Status Banner */}
+            {!user ? (
+              <div className="mb-1 flex items-center justify-between rounded-xl border-2 border-red-300 bg-red-50 p-4">
+                <div className="flex items-center gap-3">
+                  <span className="material-icons text-red-700" style={{fontSize: '32px'}}>warning</span>
+                  <div>
+                    <p className="text-lg font-bold text-red-900">Not Logged In</p>
+                    <p className="text-sm text-red-700">
+                      You can use Quick Check for weather info, but you need to log in to save suggestions.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="rounded-lg bg-red-600 px-6 py-2 font-semibold text-white shadow-md transition-colors hover:bg-red-700"
+                >
+                  Login Now
+                </button>
+              </div>
+            ) : (
+              <div className="mb-1 flex items-center gap-3 rounded-xl border border-green-300 bg-green-50 p-3.5">
+                <span className="material-icons" style={{fontSize: '24px', color: 'green'}}>check_circle</span>
+                <p className="font-medium text-green-900">
+                  Logged in as <span className="font-bold">{user.name}</span>
+                </p>
+              </div>
+            )}
+
+            {/* Info Box */}
+            <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <span className="material-icons" style={{fontSize: '24px', color: '#2563eb'}}>lightbulb</span>
+              <div className="flex-1 text-sm">
+                <p className="mb-1 font-medium text-blue-900">Live Location Search Enabled</p>
+                <p className="text-blue-700">
+                  Start typing in the location fields to see real-time suggestions from OpenStreetMap.
+                  Select from the dropdown to auto-fill accurate location names with coordinates.
+                </p>
+              </div>
+            </div>
+
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Left Column - Form */}
-          <div className="space-y-6">            {/* Map */}
-            <div className="bg-white rounded-lg shadow-md p-4">
-              <p className="text-sm text-gray-500 mb-2"><span className="material-icons" style={{fontSize: '18px', verticalAlign: 'middle', marginRight: '4px', display: 'inline-flex'}}>location_on</span>Select locations below to see them on the map</p>
+          <div className="space-y-6">
+            {/* Map */}
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/30 p-4 shadow-sm">
+              <p className="mb-2 text-sm text-gray-600"><span className="material-icons" style={{fontSize: '18px', verticalAlign: 'middle', marginRight: '4px', display: 'inline-flex'}}>location_on</span>Select locations below to see them on the map</p>
               <CommuteMap
                 startCoords={startCoords}
                 endCoords={endCoords}
@@ -265,8 +269,8 @@ const WeatherSuggestion = () => {
               />
             </div>
             {/* Get Suggestion Form */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-xl font-semibold text-gray-800">
                 Get Weather Suggestion
               </h2>
 
@@ -313,7 +317,7 @@ const WeatherSuggestion = () => {
                   <button
                     type="submit"
                     disabled={loading || !user}
-                    className={`flex-1 py-2 px-4 rounded-lg transition-colors font-medium flex items-center justify-center gap-1 ${
+                    className={`flex flex-1 items-center justify-center gap-1 rounded-lg px-4 py-2 font-medium transition-colors ${
                       !user
                         ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
                         : loading
@@ -329,7 +333,7 @@ const WeatherSuggestion = () => {
                     type="button"
                     onClick={handleQuickCheck}
                     disabled={loading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:bg-gray-400"
                   >
                     Quick Check
                   </button>
@@ -339,86 +343,104 @@ const WeatherSuggestion = () => {
 
             {/* Current Weather Display */}
             {currentWeather && (
-              <div className="bg-linear-to-br from-blue-500 to-blue-700 rounded-lg shadow-lg p-6 text-white">
-                <h3 className="text-xl font-semibold mb-4">Current Suggestion</h3>
+              <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-600 via-blue-600 to-indigo-700 p-6 text-white shadow-xl">
+                <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
+                <div className="pointer-events-none absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-cyan-200/20 blur-2xl" />
 
-                {/* Weather + Temp row */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-5xl">
-                    <span className="material-icons" style={{fontSize: '64px'}}>
-                      {getWeatherIcon(currentWeather.weatherCondition)}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold">
-                      {currentWeather.temperature?.toFixed(1)}°C
-                    </div>
-                    <div className="text-blue-100">
-                      {currentWeather.weatherCondition}
-                    </div>
-                  </div>
-                </div>
+                <div className="relative">
+                  <h3 className="mb-5 text-xl font-semibold">Current Suggestion</h3>
 
-                {/* Recommended transport */}
-                <div className="bg-white bg-opacity-20 rounded-lg p-4 mb-3">
-                  <div className="text-sm text-blue-100 mb-1">Recommended Transport</div>
-                  <div className="text-2xl font-semibold flex items-center gap-2">
-                    <span className="material-icons" style={{fontSize: '32px'}}>
-                      {getTransportIcon(currentWeather.suggestedTransport)}
-                    </span>
-                    {currentWeather.suggestedTransport}
+                  {/* Weather + Temp row */}
+                  <div className="mb-5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/25 bg-white/15 backdrop-blur-sm">
+                        <span className="material-icons" style={{fontSize: '38px'}}>
+                          {getWeatherIcon(currentWeather.weatherCondition)}
+                        </span>
+                      </span>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-blue-100">Condition</p>
+                        <p className="text-base font-semibold">{currentWeather.weatherCondition}</p>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="text-4xl font-bold leading-none">
+                        {currentWeather.temperature?.toFixed(1)}°C
+                      </div>
+                      <div className="mt-1 text-sm text-blue-100">Current temperature</div>
+                    </div>
                   </div>
-                  {/* Show secondary weather-only suggestion when distance overrides */}
-                  {currentWeather.adjustmentReason === 'distance-adjusted' && currentWeather.weatherTransport && currentWeather.weatherTransport !== currentWeather.suggestedTransport && (
-                    <div className="text-xs text-blue-200 mt-1">
-                      Weather-only suggestion: {getTransportIcon(currentWeather.weatherTransport)} {currentWeather.weatherTransport}
+
+                  {/* Recommended transport */}
+                  <div className="mb-4 rounded-2xl border border-white/25 bg-white/15 p-4 backdrop-blur-sm">
+                    <div className="mb-2 text-xs uppercase tracking-[0.18em] text-blue-100">Recommended Transport</div>
+                    <div className="flex items-center gap-2 text-2xl font-semibold text-white">
+                      <span className="material-icons" style={{fontSize: '30px'}}>
+                        {getTransportIcon(currentWeather.suggestedTransport)}
+                      </span>
+                      {currentWeather.suggestedTransport}
+                    </div>
+
+                    {/* Show secondary weather-only suggestion when distance overrides */}
+                    {currentWeather.adjustmentReason === 'distance-adjusted' && currentWeather.weatherTransport && currentWeather.weatherTransport !== currentWeather.suggestedTransport && (
+                      <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs text-blue-50">
+                        <span className="material-icons" style={{fontSize: '14px'}}>
+                          {getTransportIcon(currentWeather.weatherTransport)}
+                        </span>
+                        Weather-only: {currentWeather.weatherTransport}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Distance + adjustment badges */}
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {currentWeather.distanceKm != null && (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-sm font-medium text-white">
+                        <span className="material-icons" style={{fontSize: '16px'}}>straighten</span>
+                        {Number(currentWeather.distanceKm).toFixed(1)} km
+                      </span>
+                    )}
+                    {currentWeather.adjustmentReason === 'distance-adjusted' && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                        <span className="material-icons" style={{fontSize: '14px'}}>check_circle</span>
+                        Distance Adjusted
+                      </span>
+                    )}
+                    {currentWeather.adjustmentReason === 'weather-priority' && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-orange-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                        <span className="material-icons" style={{fontSize: '14px'}}>warning</span>
+                        Weather Priority
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Distance legend */}
+                  <div className="mb-4 grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
+                    {[{label:'0-2 km',icon:'directions_walk',name:'Walk'},{label:'2-5 km',icon:'directions_bike',name:'Cycle'},{label:'5-10 km',icon:'local_taxi',name:'Tuk-Tuk'},{label:'10+ km',icon:'directions_bus',name:'Bus'}].map(item => (
+                      <div key={item.name} className="rounded-xl border border-white/20 bg-white/12 p-2 backdrop-blur-sm">
+                        <span className="material-icons mb-1 block" style={{fontSize: '20px'}}>
+                          {item.icon}
+                        </span>
+                        <div className="text-xs font-medium text-blue-50">{item.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {currentWeather.humidity != null && (
+                    <div className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm text-blue-50">
+                      <span className="material-icons" style={{fontSize: '16px'}}>water_drop</span>
+                      Humidity: {currentWeather.humidity}%
                     </div>
                   )}
                 </div>
-
-                {/* Distance + adjustment badges */}
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {currentWeather.distanceKm != null && (
-                    <span className="bg-white bg-opacity-25 text-white text-sm px-3 py-1 rounded-full font-medium flex items-center gap-1">
-                      <span className="material-icons" style={{fontSize: '16px'}}>straighten</span>{Number(currentWeather.distanceKm).toFixed(1)} km
-                    </span>
-                  )}
-                  {currentWeather.adjustmentReason === 'distance-adjusted' && (
-                    <span className="bg-green-400 bg-opacity-80 text-white text-xs px-3 py-1 rounded-full font-semibold flex items-center gap-1">
-                      <span className="material-icons" style={{fontSize: '14px'}}>check_circle</span>Distance Adjusted
-                    </span>
-                  )}
-                  {currentWeather.adjustmentReason === 'weather-priority' && (
-                    <span className="bg-orange-400 bg-opacity-90 text-white text-xs px-3 py-1 rounded-full font-semibold flex items-center gap-1">
-                      <span className="material-icons" style={{fontSize: '14px'}}>warning</span>Weather Priority
-                    </span>
-                  )}
-                </div>
-
-                {/* Distance legend */}
-                <div className="grid grid-cols-4 gap-1 mb-3 text-center">
-                  {[{label:'0–2 km',icon:'directions_walk',name:'Walk'},{label:'2–5 km',icon:'directions_bike',name:'Cycle'},{label:'5–10 km',icon:'three_wheeler_auto',name:'Tuk-Tuk'},{label:'10+ km',icon:'directions_bus',name:'Bus'}].map(item => (
-                    <div key={item.name} className="bg-white bg-opacity-15 rounded p-1">
-                      <div className="text-lg"><span className="material-icons" style={{fontSize: '24px', display: 'block'}}>
-                        {item.icon}
-                      </span></div>
-                      <div className="text-xs text-blue-100">{item.label}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {currentWeather.humidity && (
-                  <div className="text-sm text-blue-100">
-                    Humidity: {currentWeather.humidity}%
-                  </div>
-                )}
               </div>
             )}
           </div>
 
           {/* Right Column - History */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-xl font-semibold text-gray-800">
               Recent Suggestions
             </h2>
 
@@ -443,7 +465,7 @@ const WeatherSuggestion = () => {
                 suggestions.map((suggestion) => (
                   <div
                     key={suggestion._id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    className="rounded-xl border border-emerald-100 bg-emerald-50/20 p-4 transition-shadow hover:shadow-md"
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex-1">
@@ -507,28 +529,50 @@ const WeatherSuggestion = () => {
               )}
             </div>
           </div>
-        </div>
-
-        {/* Info Section */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-            <span className="material-icons">lightbulb</span>How It Works
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
-            <div>
-              <p className="font-semibold mb-1 flex items-center gap-1"><span className="material-icons" style={{fontSize: '18px'}}>cloud</span>Weather Rules</p>
-              <p>• <strong>Bad weather</strong> (Rain/Storm/Fog): weather always wins — we suggest Bus or safe transit</p>
-              <p>• <strong>Good weather</strong> (Clear/Clouds): distance takes priority for best mode</p>
             </div>
-            <div>
-              <p className="font-semibold mb-1 flex items-center gap-1"><span className="material-icons" style={{fontSize: '18px'}}>straighten</span>Distance Rules (good weather)</p>
-              <p>• 0–2 km → <span className="material-icons" style={{fontSize: '14px', verticalAlign: 'middle'}}>directions_walk</span>Walking</p>
-              <p>• 2–5 km → <span className="material-icons" style={{fontSize: '14px', verticalAlign: 'middle'}}>directions_bike</span>Cycling</p>
-              <p>• 5–10 km → <span className="material-icons" style={{fontSize: '14px', verticalAlign: 'middle'}}>three_wheeler_auto</span>Tuk-Tuk</p>
-              <p>• 10+ km → <span className="material-icons" style={{fontSize: '14px', verticalAlign: 'middle'}}>directions_bus</span>Bus</p>
+
+            {/* Info Section */}
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-6">
+              <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-emerald-900">
+                <span className="material-icons">lightbulb</span>
+                How It Works
+              </h3>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-xl border border-emerald-200 bg-white/80 p-4">
+                  <p className="mb-3 flex items-center gap-2 font-semibold text-emerald-900">
+                    <span className="material-icons" style={{fontSize: '18px'}}>cloud</span>
+                    Weather Rules
+                  </p>
+                  <ul className="space-y-2 text-sm text-emerald-800">
+                    <li><strong>Bad weather</strong> (Rain/Storm/Fog): weather always wins and suggests safe transit.</li>
+                    <li><strong>Good weather</strong> (Clear/Clouds): distance takes priority for the best mode.</li>
+                  </ul>
+                </div>
+
+                <div className="rounded-xl border border-emerald-200 bg-white/80 p-4">
+                  <p className="mb-3 flex items-center gap-2 font-semibold text-emerald-900">
+                    <span className="material-icons" style={{fontSize: '18px'}}>straighten</span>
+                    Distance Rules (good weather)
+                  </p>
+                  <ul className="space-y-2 text-sm text-emerald-800">
+                    <li className="flex items-center gap-2"><span className="font-semibold">0-2 km</span><span>-></span><span className="material-icons" style={{fontSize: '16px'}}>directions_walk</span><span>Walking</span></li>
+                    <li className="flex items-center gap-2"><span className="font-semibold">2-5 km</span><span>-></span><span className="material-icons" style={{fontSize: '16px'}}>directions_bike</span><span>Cycling</span></li>
+                    <li className="flex items-center gap-2"><span className="font-semibold">5-10 km</span><span>-></span><span className="material-icons" style={{fontSize: '16px'}}>local_taxi</span><span>Tuk-Tuk</span></li>
+                    <li className="flex items-center gap-2"><span className="font-semibold">10+ km</span><span>-></span><span className="material-icons" style={{fontSize: '16px'}}>directions_bus</span><span>Bus</span></li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-lg border border-emerald-200 bg-white/70 p-3 text-sm text-emerald-800">
+                <p className="flex items-start gap-2">
+                  <span className="material-icons mt-0.5" style={{fontSize: '16px'}}>lightbulb</span>
+                  <span><strong>Quick Check</strong> gives instant weather without saving history. Select both origin and destination for distance-aware suggestions.</span>
+                </p>
+              </div>
             </div>
           </div>
-          <p className="text-xs text-blue-600 mt-3 flex items-center gap-1"><span className="material-icons" style={{fontSize: '16px'}}>lightbulb</span><strong>Quick Check</strong> gives instant weather without saving to history. Select both origin and destination for distance-aware suggestions.</p>
+
         </div>
       </div>
     </div>
