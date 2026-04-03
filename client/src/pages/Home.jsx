@@ -51,13 +51,6 @@ const Home = () => {
               Welcome, {user?.name}!
             </span>
             <button
-              onClick={() => navigate('/smart-commute')}
-              className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-emerald-700 to-green-800 px-4 py-2.5 font-semibold text-white shadow-md transition hover:from-emerald-800 hover:to-green-900 hover:shadow-lg"
-            >
-              <span className="material-icons" style={{fontSize: '18px'}}>electric_moped</span>
-              Smart Commute
-            </button>
-            <button
               onClick={() => navigate('/badges')}
               className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-4 py-2.5 font-semibold text-amber-900 transition hover:bg-amber-100 hover:border-amber-400"
             >
@@ -234,47 +227,6 @@ const Home = () => {
               </div>
             )}
           </div>
-          </div>
-        </div>
-
-        {/* Smart Commute Module Feature Card */}
-        <div
-          onClick={() => navigate('/smart-commute')}
-          className="group relative mb-8 cursor-pointer overflow-hidden rounded-2xl border border-emerald-300 bg-linear-to-r from-emerald-600 via-green-600 to-emerald-700 p-6 text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:p-8"
-        >
-          <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-emerald-300/20 blur-2xl" />
-
-          <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-            <div className="max-w-3xl">
-              <p className="mb-2 inline-flex rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-50">
-                Smart Mobility Hub
-              </p>
-              <h2 className="mb-3 flex items-center gap-2 text-3xl font-bold leading-tight sm:text-4xl">
-                Smart Commute & Logistics
-              </h2>
-              <p className="mb-5 text-base text-emerald-50 sm:text-lg">
-                Weather-based recommendations and carbon tracking for sustainable commuting.
-              </p>
-              <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-                <div className="flex items-center gap-2 rounded-xl border border-white/30 bg-white/15 px-3 py-2.5 font-medium backdrop-blur-sm">
-                  <span className="material-icons" style={{fontSize: '18px'}}>cloud</span>
-                  Weather Suggestions
-                </div>
-                <div className="flex items-center gap-2 rounded-xl border border-white/30 bg-white/15 px-3 py-2.5 font-medium backdrop-blur-sm">
-                  <span className="material-icons" style={{fontSize: '18px'}}>map</span>
-                  Heat Map Insights
-                </div>
-                <div className="flex items-center gap-2 rounded-xl border border-white/30 bg-white/15 px-3 py-2.5 font-medium backdrop-blur-sm">
-                  <span className="material-icons" style={{fontSize: '18px'}}>local_parking</span>
-                  Parking Impact
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center self-end rounded-full border border-white/40 bg-white/15 px-5 py-3 text-sm font-semibold backdrop-blur-sm transition group-hover:bg-white/25 md:self-center">
-              Open Module <span className="material-icons" style={{fontSize: '20px', marginLeft: '8px'}}>arrow_forward</span>
-            </div>
           </div>
         </div>
 

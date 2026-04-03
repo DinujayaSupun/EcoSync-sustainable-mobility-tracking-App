@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 import CommuteMap from '../components/CommuteMap';
 import { weatherAPI } from '../api/smartCommute';
 
 const CommuteLogger = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     startLocation: '',
     destination: '',
@@ -344,12 +346,11 @@ const CommuteLogger = () => {
           </div>
           <button
             type="button"
-            onClick={() => fetchWeather(formData.startLocation)}
-            disabled={weatherLoading || !formData.startLocation}
+            onClick={() => navigate('/weather-suggestion')}
             className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <span className="material-icons" style={{fontSize: '18px'}}>{weatherLoading ? 'schedule' : 'travel_explore'}</span>
-            {weatherLoading ? 'Checking...' : 'Check Weather'}
+            <span className="material-icons" style={{fontSize: '18px'}}>travel_explore</span>
+            Check Weather
           </button>
         </div>
 
