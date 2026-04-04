@@ -1,19 +1,29 @@
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
+import { useCommute } from '../context/CommuteContext'
 import CommuteLogger from './CommuteLogger'
 import PredictionCard from '../components/PredictionCard'
 import API from '../api/axios'
 
 const Home = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, refreshProfile } = useContext(AuthContext);
+  const { refreshTrigger } = useCommute();
   const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(true);
 
+  // Refresh emission summary when a commute is logged
   useEffect(() => {
     fetchEmissionSummary();
-  }, []);
+  }, [refreshTrigger]);
+
+  // Refresh user profile (includes total_co2_saved) when a commute is logged
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      refreshProfile();
+    }
+  }, [refreshTrigger, refreshProfile]);
 
   const fetchEmissionSummary = async () => {
     try {

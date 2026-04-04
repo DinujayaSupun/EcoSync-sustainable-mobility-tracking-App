@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useCommute } from '../context/CommuteContext';
 
 const TRANSPORT_TYPES = ['Car', 'Bus', 'Train', 'Bike', 'Walk'];
 
 const CommuteHistory = () => {
   const { user, logout } = useAuth();
+  const { refreshTrigger, onCommuteLogged } = useCommute();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -23,7 +25,7 @@ const CommuteHistory = () => {
 
   useEffect(() => {
     fetchHistory();
-  }, []);
+  }, [refreshTrigger]);
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -77,6 +79,8 @@ const CommuteHistory = () => {
       await API.delete(`/commute/${deleteId}`);
       setHistory((prev) => prev.filter((t) => t._id !== deleteId));
       setDeleteId(null);
+      // Trigger automatic refresh across all components
+      onCommuteLogged({ action: 'deleted' });
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to delete trip');
     } finally {
@@ -101,6 +105,8 @@ const CommuteHistory = () => {
         prev.map((t) => (t._id === editingTrip._id ? data.data : t))
       );
       setEditingTrip(null);
+      // Trigger automatic refresh across all components
+      onCommuteLogged({ action: 'updated', ...data.data });
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to update trip');
     } finally {

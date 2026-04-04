@@ -4,9 +4,11 @@ import API from '../api/axios';
 import LocationAutocomplete from '../components/LocationAutocomplete';
 import CommuteMap from '../components/CommuteMap';
 import { weatherAPI } from '../api/smartCommute';
+import { useCommute } from '../context/CommuteContext';
 
 const CommuteLogger = () => {
   const navigate = useNavigate();
+  const { onCommuteLogged } = useCommute();
   const [formData, setFormData] = useState({
     startLocation: '',
     destination: '',
@@ -112,6 +114,10 @@ const CommuteLogger = () => {
     try {
       const { data } = await API.post('/commute/log', formData);
       setResult(data.data);
+      
+      // Trigger automatic refresh across all components watching for commute updates
+      onCommuteLogged(data.data);
+      
       // Reset form
       setFormData({
         startLocation: '',
@@ -122,6 +128,11 @@ const CommuteLogger = () => {
       });
       setStartCoords(null);
       setEndCoords(null);
+      
+      // Show success result for 4 seconds, then clear it
+      setTimeout(() => {
+        setResult(null);
+      }, 4000);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to log commute. Please try again.');
     } finally {
