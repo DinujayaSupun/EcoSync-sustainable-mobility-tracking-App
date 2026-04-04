@@ -1,5 +1,6 @@
 const Commute = require("../models/Commute");
 const Trip = require("../models/Trip");
+const User = require("../models/User");
 const axios = require("axios");
 const mongoose = require("mongoose");
 
@@ -262,8 +263,16 @@ exports.logCommute = async (req, res) => {
       distance: routeData.distance,
       duration: routeData.duration,
       emissionEstimate,
+      co2Saved: co2Saved,
       ecoSuggestion,
     });
+
+    // Update user's total CO2 saved
+    await User.findByIdAndUpdate(
+      userId,
+      { $inc: { total_co2_saved: co2Saved } },
+      { new: true }
+    );
 
     // Also create a Trip record for admin statistics
     const transportModeMap = {
@@ -629,6 +638,15 @@ exports.deleteCommute = async (req, res) => {
     if (trip.userId.toString() !== req.user.id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorised' });
     }
+    
+    // Subtract the co2Saved from user's total before deleting
+    const co2SavedValue = trip.co2Saved || 0;
+    await User.findByIdAndUpdate(
+      trip.userId,
+      { $inc: { total_co2_saved: -co2SavedValue } },
+      { new: true }
+    );
+    
     await Commute.findByIdAndDelete(req.params.id);
     res.status(200).json({ success: true, message: 'Trip deleted successfully' });
   } catch (error) {
@@ -656,23 +674,87 @@ exports.updateCommute = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorised' });
     }
 
+    // Store old co2Saved value for later comparison
+    const oldCo2Saved = trip.co2Saved || 0;
+
     // Recalculate emission using the new transport type
     // Formula: emissions (kg CO2) = distance (km) × emission factor (kg CO2/km)
     // e.g. switching from Car (0.192) to Train (0.041) on a 10 km trip:
     //      old = 10 × 0.192 = 1.92 kg CO2
     //      new = 10 × 0.041 = 0.41 kg CO2  → saves 1.51 kg CO2
     const newEmission = EMISSION_FACTORS[transportType] * trip.distance;
+    
+    // Calculate new co2Saved compared to car baseline
+    const carEmission = trip.distance * EMISSION_FACTORS.Car;
+    const newCo2Saved = Math.max(0, carEmission - newEmission);
 
     // Update the trip document fields with new values
     trip.transportType = transportType;
     trip.emissionEstimate = newEmission;
+    trip.co2Saved = newCo2Saved;
 
     // Persist the updated document to MongoDB
     await trip.save();
+
+    // Update user's total co2Saved with the difference
+    const co2Difference = newCo2Saved - oldCo2Saved;
+    await User.findByIdAndUpdate(
+      trip.userId,
+      { $inc: { total_co2_saved: co2Difference } },
+      { new: true }
+    );
 
     res.status(200).json({ success: true, message: 'Trip updated successfully', data: trip });
   } catch (error) {
     console.error('Update commute error:', error.message);
     res.status(500).json({ success: false, message: 'Failed to update trip' });
+  }
+};
+
+// @desc  Recalculate total CO2 saved for user (for data migration)
+// @route POST /api/commute/recalculate-co2
+// @access Private
+exports.recalculateCo2Saved = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get all commutes for this user
+    const commutes = await Commute.find({ userId });
+
+    let totalCo2Saved = 0;
+
+    // Recalculate co2Saved for each commute if not already set
+    for (let commute of commutes) {
+      if (!commute.co2Saved) {
+        const carEmission = commute.distance * EMISSION_FACTORS.Car;
+        const co2Saved = Math.max(0, carEmission - commute.emissionEstimate);
+        commute.co2Saved = co2Saved;
+        await commute.save();
+      }
+      totalCo2Saved += commute.co2Saved;
+    }
+
+    // Update user's total
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { total_co2_saved: parseFloat(totalCo2Saved.toFixed(2)) },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'CO2 saved values recalculated successfully',
+      data: {
+        userId,
+        totalCo2Saved: user.total_co2_saved,
+        commutesProcessed: commutes.length,
+      },
+    });
+  } catch (error) {
+    console.error('Recalculate CO2 error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to recalculate CO2 saved',
+    });
   }
 };

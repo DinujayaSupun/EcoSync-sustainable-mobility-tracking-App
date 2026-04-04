@@ -65,6 +65,7 @@ exports.registerUser = async (req, res) => {
         email: user.email,
         role: user.role,
         faculty: user.faculty,
+        total_co2_saved: user.total_co2_saved,
       },
     });
   } catch (error) {
