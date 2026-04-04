@@ -9,6 +9,7 @@ const {
   predictEmission,
   deleteCommute,
   updateCommute,
+  recalculateCo2Saved,
 } = require("../controllers/commuteController");
 
 // All routes are protected with JWT authentication
@@ -19,5 +20,6 @@ router.get("/autocomplete", protect, autocompleteLocation);
 router.get("/predict", protect, predictEmission);
 router.delete("/:id", protect, deleteCommute);
 router.put("/:id", protect, updateCommute);
+router.post("/recalculate-co2", protect, recalculateCo2Saved);
 
 module.exports = router;

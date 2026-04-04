@@ -9,7 +9,8 @@ const axios = require('axios');
 exports.createWeatherSuggestion = async (req, res) => {
   try {
     const { userId, origin, destination, originLat, originLon, destLat, destLon } = req.body;
-
+    
+    //validate require fields
     if (!userId || !origin || !destination) {
       return res.status(400).json({
         success: false,

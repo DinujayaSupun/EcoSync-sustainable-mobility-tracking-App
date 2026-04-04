@@ -23,217 +23,211 @@ const SmartCommuteDashboard = () => {
     {
       id: 'weather',
       title: 'Weather-Based Suggestions',
-      icon: '☁️',
+      icon: 'cloud',
       description: 'Get eco-friendly transport recommendations based on current weather conditions',
-      color: 'from-blue-500 to-blue-700',
+      color: 'from-blue-600 to-indigo-700',
       path: '/smart-commute/weather',
       stats: ['Real-time weather data', 'Smart suggestions', 'History tracking'],
     },
   ];
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-800 mb-4">
-            🚀 Smart Commute & Logistics
-          </h1>
-          <p className="text-xl text-gray-600 mb-2">
-            University Carbon Tracking System - Smart Transport Module
-          </p>
-          {health && (
-            <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mt-4">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              {health.message} - v{health.version}
-            </div>
-          )}
-        </div>
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-emerald-50/40 to-green-50 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        {/* Hero */}
+        <section className="relative overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-xl">
+          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-emerald-200/40 blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl" />
 
-        {/* Feature Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <div className="relative px-6 py-10 sm:px-10 sm:py-12">
+            <div className="mx-auto max-w-4xl text-center">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 shadow-sm">
+                <span className="material-icons" style={{fontSize: '18px'}}>rocket_launch</span>
+                Smart Commute Module
+              </div>
+              <h1 className="flex flex-wrap items-center justify-center gap-3 text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                <span className="material-icons text-emerald-600" style={{fontSize: '44px'}}>electric_moped</span>
+                Smart Commute & Logistics
+              </h1>
+              <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-slate-600 sm:text-lg">
+                University Carbon Tracking System - Smart Transport Module
+              </p>
+
+              {health && (
+                <div className="mx-auto mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 shadow-sm">
+                  <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-500" />
+                  {health.message} - v{health.version}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Feature Card */}
+        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           {features.map((feature) => (
-            <div
+            <button
               key={feature.id}
               onClick={() => navigate(feature.path)}
-              className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2 overflow-hidden"
+              className="group overflow-hidden rounded-3xl border border-emerald-100 bg-white text-left shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
             >
-              {/* Card Header with Gradient */}
-              <div className={`bg-linear-to-r ${feature.color} p-6 text-white`}>
-                <div className="text-5xl mb-3">{feature.icon}</div>
-                <h2 className="text-2xl font-bold mb-2">{feature.title}</h2>
+              <div className={`bg-linear-to-r ${feature.color} px-6 py-6 text-white sm:px-7`}>
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
+                  <span className="material-icons text-white" style={{fontSize: '32px'}}>{feature.icon}</span>
+                </div>
+                <h2 className="text-3xl font-bold leading-tight sm:text-4xl">{feature.title}</h2>
+                <p className="mt-3 max-w-xl text-sm text-white/90 sm:text-base">{feature.description}</p>
               </div>
 
-              {/* Card Body */}
-              <div className="p-6">
-                <p className="text-gray-600 mb-4 min-h-15">
-                  {feature.description}
-                </p>
-
-                {/* Stats */}
-                <div className="space-y-2 mb-4">
-                  {feature.stats.map((stat, index) => (
-                    <div key={index} className="flex items-center gap-2 text-sm text-gray-700">
-                      <span className="text-green-500">✓</span>
-                      <span>{stat}</span>
+              <div className="space-y-5 px-6 py-6 sm:px-7">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {feature.stats.map((stat) => (
+                    <div key={stat} className="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3 text-sm font-semibold text-emerald-800 shadow-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="material-icons" style={{fontSize: '18px'}}>check_circle</span>
+                        <span>{stat}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Action Button */}
-                <button className="w-full bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-gray-900 transition-colors font-medium">
-                  Launch Feature →
-                </button>
+                <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-3 font-semibold text-white transition group-hover:bg-emerald-700">
+                  <span className="material-icons" style={{fontSize: '18px'}}>open_in_new</span>
+                  Launch Feature
+                  <span className="material-icons" style={{fontSize: '18px'}}>arrow_forward</span>
+                </div>
               </div>
-            </div>
+            </button>
           ))}
-        </div>
 
-        {/* Features Overview Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-          {/* Benefits Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">
-              🌟 Key Benefits
+          <div className="grid gap-6">
+            <div className="rounded-3xl border border-emerald-100 bg-white p-6 shadow-lg">
+              <div className="mb-6 flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+                  <span className="material-icons text-emerald-600" style={{fontSize: '28px'}}>insights</span>
+                  Module Snapshot
+                </h3>
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Live</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { value: '1', label: 'Feature', icon: 'extension' },
+                  { value: '18', label: 'API Endpoints', icon: 'api' },
+                  { value: '20+', label: 'Transport Modes', icon: 'commute' },
+                  { value: '∞', label: 'Possibilities', icon: 'all_inclusive' },
+                ].map((stat) => (
+                  <div key={stat.label} className="rounded-2xl border border-slate-100 bg-linear-to-br from-slate-50 to-emerald-50/50 p-4 shadow-sm">
+                    <div className="mb-3 flex items-center justify-between text-emerald-700">
+                      <span className="material-icons" style={{fontSize: '20px'}}>{stat.icon}</span>
+                    </div>
+                    <div className="text-3xl font-black text-slate-900">{stat.value}</div>
+                    <div className="mt-1 text-sm font-medium text-slate-600">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-4 text-sm font-medium text-emerald-800">
+                <div className="flex items-center gap-2">
+                  <span className="material-icons" style={{fontSize: '18px'}}>lightbulb</span>
+                  Powered by OpenWeatherMap API
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-emerald-100 bg-linear-to-br from-emerald-600 to-green-700 p-6 text-white shadow-lg">
+              <h3 className="mb-5 flex items-center gap-2 text-2xl font-bold">
+                <span className="material-icons" style={{fontSize: '28px'}}>route</span>
+                What You Get
+              </h3>
+              <div className="space-y-4">
+                {[
+                  ['Data-Driven Decisions', 'Make informed choices with real-time data and AI predictions', 'query_stats'],
+                  ['Reduce Carbon Footprint', 'Track and minimize your environmental impact', 'eco'],
+                  ['Save Money', 'Find the most cost-effective transport options', 'savings'],
+                  ['Real-Time Updates', 'Get weather, traffic, and route updates instantly', 'speed'],
+                ].map(([title, body, icon]) => (
+                  <div key={title} className="flex items-start gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm">
+                    <span className="material-icons mt-0.5" style={{fontSize: '22px'}}>{icon}</span>
+                    <div>
+                      <div className="font-semibold">{title}</div>
+                      <p className="text-sm text-emerald-50/90">{body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works */}
+        <section className="rounded-3xl border border-emerald-100 bg-white p-6 shadow-lg sm:p-8">
+          <div className="mb-8 text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-emerald-600">Workflow</p>
+            <h3 className="mt-2 flex items-center justify-center gap-2 text-3xl font-bold text-slate-900">
+              <span className="material-icons text-emerald-600" style={{fontSize: '30px'}}>tour</span>
+              How It Works
             </h3>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">📊</span>
-                <div>
-                  <div className="font-semibold text-gray-800">Data-Driven Decisions</div>
-                  <p className="text-sm text-gray-600">
-                    Make informed choices with real-time data and AI predictions
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">🌍</span>
-                <div>
-                  <div className="font-semibold text-gray-800">Reduce Carbon Footprint</div>
-                  <p className="text-sm text-gray-600">
-                    Track and minimize your environmental impact
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">💰</span>
-                <div>
-                  <div className="font-semibold text-gray-800">Save Money</div>
-                  <p className="text-sm text-gray-600">
-                    Find the most cost-effective transport options
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">⚡</span>
-                <div>
-                  <div className="font-semibold text-gray-800">Real-Time Updates</div>
-                  <p className="text-sm text-gray-600">
-                    Get weather, traffic, and route updates instantly
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* Quick Stats Card */}
-          <div className="bg-linear-to-br from-green-500 to-green-700 rounded-xl shadow-lg p-6 text-white">
-            <h3 className="text-2xl font-bold mb-4">📈 Module Statistics</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                <div className="text-3xl font-bold mb-1">1</div>
-                <div className="text-sm text-green-100">Features</div>
+          <div className="grid gap-5 md:grid-cols-3">
+            {[
+              { step: '01', title: 'Choose a Feature', body: 'Select the weather-based transport suggestion module.', icon: 'dashboard_customize', color: 'bg-blue-50 text-blue-700' },
+              { step: '02', title: 'Input Your Data', body: 'Enter your location, preferences, or tracking information.', icon: 'edit_location_alt', color: 'bg-emerald-50 text-emerald-700' },
+              { step: '03', title: 'Get Insights', body: 'Receive AI-powered recommendations and actionable insights.', icon: 'auto_awesome', color: 'bg-violet-50 text-violet-700' },
+            ].map((item) => (
+              <div key={item.step} className="rounded-3xl border border-slate-100 bg-linear-to-br from-white to-slate-50 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                <div className={`mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl ${item.color}`}>
+                  <span className="material-icons" style={{fontSize: '28px'}}>{item.icon}</span>
+                </div>
+                <div className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Step {item.step}</div>
+                <h4 className="text-xl font-bold text-slate-900">{item.title}</h4>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.body}</p>
               </div>
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                <div className="text-3xl font-bold mb-1">18</div>
-                <div className="text-sm text-green-100">API Endpoints</div>
-              </div>
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                <div className="text-3xl font-bold mb-1">20+</div>
-                <div className="text-sm text-green-100">Transport Modes</div>
-              </div>
-              <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                <div className="text-3xl font-bold mb-1">∞</div>
-                <div className="text-sm text-green-100">Possibilities</div>
-              </div>
-            </div>
-
-            <div className="mt-6 bg-white bg-opacity-20 rounded-lg p-4">
-              <p className="text-sm text-green-100">
-                💡 Powered by OpenWeatherMap API
-              </p>
-            </div>
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* How It Works Section */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-12">
-          <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            🎯 How It Works
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">1️⃣</span>
-              </div>
-              <h4 className="font-semibold text-gray-800 mb-2">Choose a Feature</h4>
-              <p className="text-sm text-gray-600">
-                Select from our Weather-Based Transport Suggestion feature
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">2️⃣</span>
-              </div>
-              <h4 className="font-semibold text-gray-800 mb-2">Input Your Data</h4>
-              <p className="text-sm text-gray-600">
-                Enter your location, preferences, or tracking information
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">3️⃣</span>
-              </div>
-              <h4 className="font-semibold text-gray-800 mb-2">Get Insights</h4>
-              <p className="text-sm text-gray-600">
-                Receive AI-powered recommendations and actionable insights
-              </p>
-            </div>
+        {/* API Integration */}
+        <section className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white shadow-2xl sm:p-8">
+          <div className="mb-6 flex items-center gap-2">
+            <span className="material-icons text-emerald-400" style={{fontSize: '28px'}}>integration_instructions</span>
+            <h3 className="text-2xl font-bold">API Integration</h3>
           </div>
-        </div>
 
-        {/* API Integration Info */}
-        <div className="bg-linear-to-r from-gray-800 to-gray-900 rounded-xl shadow-lg p-8 text-white">
-          <h3 className="text-2xl font-bold mb-4">🔌 API Integration</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-semibold mb-2">External APIs Used:</h4>
-              <ul className="space-y-2 text-sm text-gray-300">
-                <li>• OpenWeatherMap API - Real-time weather data</li>
-                <li>• Google Distance Matrix API - Route analysis</li>
-                <li>• Custom AI Algorithm - Transport predictions</li>
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+              <h4 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+                <span className="material-icons text-emerald-400" style={{fontSize: '20px'}}>dns</span>
+                External APIs Used
+              </h4>
+              <ul className="space-y-3 text-sm text-slate-300">
+                <li className="flex items-start gap-2"><span className="material-icons mt-0.5 text-emerald-400" style={{fontSize: '16px'}}>check_circle</span><span>OpenWeatherMap API - Real-time weather data</span></li>
+                <li className="flex items-start gap-2"><span className="material-icons mt-0.5 text-emerald-400" style={{fontSize: '16px'}}>check_circle</span><span>Google Distance Matrix API - Route analysis</span></li>
+                <li className="flex items-start gap-2"><span className="material-icons mt-0.5 text-emerald-400" style={{fontSize: '16px'}}>check_circle</span><span>Custom AI Algorithm - Transport predictions</span></li>
               </ul>
             </div>
-            <div>
-              <h4 className="font-semibold mb-2">Features:</h4>
-              <ul className="space-y-2 text-sm text-gray-300">
-                <li>• Real-time data processing</li>
-                <li>• Machine learning predictions</li>
-                <li>• Comprehensive CO₂ calculations</li>
-                <li>• RESTful API architecture</li>
+
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+              <h4 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+                <span className="material-icons text-emerald-400" style={{fontSize: '20px'}}>verified</span>
+                Platform Features
+              </h4>
+              <ul className="space-y-3 text-sm text-slate-300">
+                <li className="flex items-start gap-2"><span className="material-icons mt-0.5 text-emerald-400" style={{fontSize: '16px'}}>check_circle</span><span>Real-time data processing</span></li>
+                <li className="flex items-start gap-2"><span className="material-icons mt-0.5 text-emerald-400" style={{fontSize: '16px'}}>check_circle</span><span>Machine learning predictions</span></li>
+                <li className="flex items-start gap-2"><span className="material-icons mt-0.5 text-emerald-400" style={{fontSize: '16px'}}>check_circle</span><span>Comprehensive CO₂ calculations</span></li>
+                <li className="flex items-start gap-2"><span className="material-icons mt-0.5 text-emerald-400" style={{fontSize: '16px'}}>check_circle</span><span>RESTful API architecture</span></li>
               </ul>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Footer */}
-        <div className="mt-12 text-center text-gray-500 text-sm">
-          <p>Smart Commute & Logistics v1.0.0</p>
+        <footer className="pb-2 text-center text-sm text-slate-500">
+          <p className="font-medium text-slate-700">Smart Commute & Logistics v1.0.0</p>
           <p className="mt-1">Part of University Carbon Tracking System</p>
-        </div>
+        </footer>
       </div>
     </div>
   );
