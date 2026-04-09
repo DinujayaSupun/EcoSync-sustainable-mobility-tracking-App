@@ -625,10 +625,10 @@ const WeatherSuggestion = () => {
                     Distance Rules (good weather)
                   </p>
                   <ul className="space-y-2 text-sm text-emerald-800">
-                    <li className="flex items-center gap-2"><span className="font-semibold">0-2 km</span><span>-></span><span className="material-icons" style={{fontSize: '16px'}}>directions_walk</span><span>Walking</span></li>
-                    <li className="flex items-center gap-2"><span className="font-semibold">2-5 km</span><span>-></span><span className="material-icons" style={{fontSize: '16px'}}>directions_bike</span><span>Cycling</span></li>
-                    <li className="flex items-center gap-2"><span className="font-semibold">5-10 km</span><span>-></span><span className="material-icons" style={{fontSize: '16px'}}>local_taxi</span><span>Tuk-Tuk</span></li>
-                    <li className="flex items-center gap-2"><span className="font-semibold">10+ km</span><span>-></span><span className="material-icons" style={{fontSize: '16px'}}>directions_bus</span><span>Bus</span></li>
+                    <li className="flex items-center gap-2"><span className="font-semibold">0-2 km</span><span>&rarr;</span><span className="material-icons" style={{fontSize: '16px'}}>directions_walk</span><span>Walking</span></li>
+                    <li className="flex items-center gap-2"><span className="font-semibold">2-5 km</span><span>&rarr;</span><span className="material-icons" style={{fontSize: '16px'}}>directions_bike</span><span>Cycling</span></li>
+                    <li className="flex items-center gap-2"><span className="font-semibold">5-10 km</span><span>&rarr;</span><span className="material-icons" style={{fontSize: '16px'}}>local_taxi</span><span>Tuk-Tuk</span></li>
+                    <li className="flex items-center gap-2"><span className="font-semibold">10+ km</span><span>&rarr;</span><span className="material-icons" style={{fontSize: '16px'}}>directions_bus</span><span>Bus</span></li>
                   </ul>
                 </div>
               </div>
