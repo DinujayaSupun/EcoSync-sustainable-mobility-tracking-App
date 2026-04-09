@@ -51,6 +51,11 @@ const Login = () => {
                         Create an account
                     </Link>
                 </p>
+                <p className="mt-2 text-sm text-center text-gray-500">
+                    <Link to="/" className="hover:text-gray-700">
+                        Back to landing page
+                    </Link>
+                </p>
             </form>
         </div>
     );
