@@ -11,6 +11,10 @@ import CommuteHistory from './pages/CommuteHistory'
 import WeatherSuggestion from './pages/smartCommute/WeatherSuggestion'
 import UserManagement from './pages/UserManagement';
 import Reports from './pages/Reports';
+import AboutUs from './pages/AboutUs';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import ContactSupport from './pages/ContactSupport';
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
  
@@ -137,6 +141,42 @@ function AppRoutes() {
         element={
           <UserProtectedRoute>
             <Leaderboard />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/about-us"
+        element={
+          <UserProtectedRoute>
+            <AboutUs />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/privacy-policy"
+        element={
+          <UserProtectedRoute>
+            <PrivacyPolicy />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/terms-and-conditions"
+        element={
+          <UserProtectedRoute>
+            <TermsAndConditions />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/contact-support"
+        element={
+          <UserProtectedRoute>
+            <ContactSupport />
           </UserProtectedRoute>
         }
       />
