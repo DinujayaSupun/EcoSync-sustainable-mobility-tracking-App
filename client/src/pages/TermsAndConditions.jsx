@@ -1,11 +1,20 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Footer from '../components/common/Footer';
+import UserNavbar from '../components/common/UserNavbar';
 
 const TermsAndConditions = () => {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-emerald-100">
+    <div className="min-h-screen bg-linear-to-b from-emerald-50 via-white to-emerald-100">
+      <UserNavbar userName={user?.name} onLogout={handleLogout} />
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
         <section className="rounded-3xl border border-emerald-200 bg-white p-8 shadow-lg">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">

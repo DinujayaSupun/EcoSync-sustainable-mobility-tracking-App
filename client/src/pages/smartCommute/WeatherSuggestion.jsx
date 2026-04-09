@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import LocationAutocomplete from '../../components/LocationAutocomplete';
 import CommuteMap from '../../components/CommuteMap';
 import Footer from '../../components/common/Footer';
+import UserNavbar from '../../components/common/UserNavbar';
 
 const WeatherSuggestion = () => {
   const { user, logout } = useAuth();
@@ -204,72 +205,7 @@ const WeatherSuggestion = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <nav className="sticky top-0 z-2000 border-b border-emerald-100/80 bg-white/90 shadow-sm backdrop-blur-md">
-        <div className="flex w-full items-center justify-between gap-3 px-4 py-3">
-          <button
-            onClick={() => navigate('/home')}
-            className="mr-3 flex shrink-0 items-center gap-3 rounded-xl transition hover:opacity-90"
-            aria-label="Go to EcoSync home"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br from-emerald-500 to-green-700 shadow-md">
-              <span className="material-icons text-white" style={{fontSize: '22px'}}>eco</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-emerald-700">EcoSync</h1>
-              <p className="hidden text-xs font-medium text-emerald-700/80 md:block">Smarter, cleaner commuting</p>
-            </div>
-          </button>
-
-          <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-800 shadow-sm">
-              <span className="material-icons" style={{fontSize: '17px'}}>person</span>
-              Welcome, {user?.name}!
-            </span>
-            <button
-              onClick={() => navigate('/home')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
-            >
-              <span className="material-icons" style={{fontSize: '17px'}}>home</span>
-              Home
-            </button>
-            <button
-              onClick={() => navigate('/weather-suggestion')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300 bg-cyan-50 px-3.5 py-2 text-sm font-semibold text-cyan-900 transition hover:bg-cyan-100 hover:border-cyan-400"
-            >
-              <span className="material-icons" style={{fontSize: '17px'}}>cloud</span>
-              Check Weather
-            </button>
-            <button
-              onClick={() => navigate('/badges')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-100 hover:border-amber-400"
-            >
-              <span className="material-icons" style={{fontSize: '17px'}}>workspace_premium</span>
-              Badges
-            </button>
-            <button
-              onClick={() => navigate('/leaderboard')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-violet-300 bg-violet-50 px-3.5 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-100 hover:border-violet-400"
-            >
-              <span className="material-icons" style={{fontSize: '17px'}}>leaderboard</span>
-              Leaderboard
-            </button>
-            <button
-              onClick={() => navigate('/commute-history')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-blue-300 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-900 transition hover:bg-blue-100 hover:border-blue-400"
-            >
-              <span className="material-icons" style={{fontSize: '17px'}}>history</span>
-              Trip History
-            </button>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-3.5 py-2 text-sm font-semibold text-rose-900 transition hover:bg-rose-100 hover:border-rose-400"
-            >
-              <span className="material-icons" style={{fontSize: '17px'}}>logout</span>
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
+      <UserNavbar userName={user?.name} onLogout={handleLogout} />
 
       <main className="px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-7xl">
