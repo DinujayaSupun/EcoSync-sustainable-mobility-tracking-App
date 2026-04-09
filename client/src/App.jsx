@@ -1,7 +1,8 @@
 
 import './App.css'
 import { AuthContext } from './context/AuthContext'
-import Login from './pages/login'
+import Login from './pages/Login'
+import Register from './pages/Register'
 import Home from './pages/Home'
 import AdminDashboard from './pages/AdminDashboard'
 import CommuteLogger from './pages/CommuteLogger'
@@ -47,7 +48,7 @@ function AppRoutes() {
 
   // Redirect logic after login
   useEffect(() => {
-    if (!loading && user && location.pathname === '/login') {
+    if (!loading && user && (location.pathname === '/login' || location.pathname === '/register')) {
       const destination = user.role === 'admin' ? '/admin' : '/home';
       navigate(destination, { replace: true });
     }
@@ -65,6 +66,7 @@ function AppRoutes() {
     <Routes>
       {/* Public Routes */}
       <Route path="/login" element={!user ? <Login /> : <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace />} />
+      <Route path="/register" element={!user ? <Register /> : <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace />} />
 
       {/* 🏠 Student Routes */}
       <Route path="/home" element={
