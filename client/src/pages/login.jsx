@@ -1,4 +1,5 @@
 import { useState, useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const Login = () => {
@@ -44,6 +45,12 @@ const Login = () => {
                     required 
                 />
                 <button className="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded transition">Login</button>
+                <p className="mt-4 text-sm text-center text-gray-600">
+                    New here?{' '}
+                    <Link to="/register" className="text-green-700 hover:text-green-800 font-semibold">
+                        Create an account
+                    </Link>
+                </p>
             </form>
         </div>
     );
