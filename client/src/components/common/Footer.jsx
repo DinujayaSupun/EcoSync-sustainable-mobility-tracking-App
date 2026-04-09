@@ -11,7 +11,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gradient-to-b from-emerald-900 to-emerald-950 text-gray-100">
+    <footer className="bg-linear-to-b from-emerald-900 to-emerald-950 text-gray-100">
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 py-12 sm:py-16">
         {/* Footer Grid */}
@@ -19,7 +19,11 @@ const Footer = () => {
           
           {/* Brand Section */}
           <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center gap-3 mb-4">
+            <button
+              onClick={() => handleNavigation('/home')}
+              className="mb-4 flex items-center gap-3 rounded-xl transition hover:opacity-90"
+              aria-label="Go to EcoSync home"
+            >
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-linear-to-br from-emerald-400 to-green-500 shadow-lg">
                 <span className="material-icons text-white" style={{fontSize: '20px'}}>eco</span>
               </div>
@@ -27,7 +31,7 @@ const Footer = () => {
                 <h2 className="text-xl font-bold text-white">EcoSync</h2>
                 <p className="text-xs text-emerald-200">Smarter Commuting</p>
               </div>
-            </div>
+            </button>
             <p className="text-sm text-emerald-100 mb-4 leading-relaxed">
               Track your environmental impact and join a community of eco-conscious commuters making a difference.
             </p>
@@ -147,28 +151,40 @@ const Footer = () => {
             </h3>
             <ul className="space-y-3">
               <li>
-                <a href="#about" className="text-sm text-emerald-100 hover:text-white hover:translate-x-1 transition-all duration-300 flex items-center gap-2 group">
+                <button
+                  onClick={() => handleNavigation('/about-us')}
+                  className="text-sm text-emerald-100 hover:text-white hover:translate-x-1 transition-all duration-300 flex items-center gap-2 group"
+                >
                   <span className="w-0 h-px bg-emerald-400 group-hover:w-3 transition-all duration-300"></span>
                   About Us
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#privacy" className="text-sm text-emerald-100 hover:text-white hover:translate-x-1 transition-all duration-300 flex items-center gap-2 group">
+                <button
+                  onClick={() => handleNavigation('/privacy-policy')}
+                  className="text-sm text-emerald-100 hover:text-white hover:translate-x-1 transition-all duration-300 flex items-center gap-2 group"
+                >
                   <span className="w-0 h-px bg-emerald-400 group-hover:w-3 transition-all duration-300"></span>
                   Privacy Policy
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#terms" className="text-sm text-emerald-100 hover:text-white hover:translate-x-1 transition-all duration-300 flex items-center gap-2 group">
+                <button
+                  onClick={() => handleNavigation('/terms-and-conditions')}
+                  className="text-sm text-emerald-100 hover:text-white hover:translate-x-1 transition-all duration-300 flex items-center gap-2 group"
+                >
                   <span className="w-0 h-px bg-emerald-400 group-hover:w-3 transition-all duration-300"></span>
                   Terms & Conditions
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#contact" className="text-sm text-emerald-100 hover:text-white hover:translate-x-1 transition-all duration-300 flex items-center gap-2 group">
+                <button
+                  onClick={() => handleNavigation('/contact-support')}
+                  className="text-sm text-emerald-100 hover:text-white hover:translate-x-1 transition-all duration-300 flex items-center gap-2 group"
+                >
                   <span className="w-0 h-px bg-emerald-400 group-hover:w-3 transition-all duration-300"></span>
                   Contact Support
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -206,7 +222,7 @@ const Footer = () => {
           <div className="text-center md:text-right">
             <button 
               onClick={() => handleNavigation('/home')}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-green-600 text-white font-semibold text-sm hover:shadow-lg hover:scale-105 transition-all duration-300"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-linear-to-r from-emerald-500 to-green-600 text-white font-semibold text-sm hover:shadow-lg hover:scale-105 transition-all duration-300"
             >
               <span className="material-icons" style={{fontSize: '16px'}}>arrow_forward</span>
               Get Started
@@ -216,7 +232,7 @@ const Footer = () => {
       </div>
 
       {/* Top Border Accent */}
-      <div className="h-1 bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-500"></div>
+      <div className="h-1 bg-linear-to-r from-emerald-500 via-green-500 to-emerald-500"></div>
     </footer>
   );
 };

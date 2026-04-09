@@ -46,7 +46,11 @@ const Home = () => {
     <div className="min-h-screen bg-gray-100">
       <nav className="sticky top-0 z-2000 border-b border-emerald-100/80 bg-white/90 shadow-sm backdrop-blur-md">
         <div className="flex w-full items-center justify-between gap-3 px-4 py-3">
-          <div className="mr-3 flex shrink-0 items-center gap-3">
+          <button
+            onClick={() => navigate('/home')}
+            className="mr-3 flex shrink-0 items-center gap-3 rounded-xl transition hover:opacity-90"
+            aria-label="Go to EcoSync home"
+          >
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br from-emerald-500 to-green-700 shadow-md">
               <span className="material-icons text-white" style={{fontSize: '22px'}}>eco</span>
             </div>
@@ -54,7 +58,7 @@ const Home = () => {
               <h1 className="text-2xl font-extrabold tracking-tight text-emerald-700">EcoSync</h1>
               <p className="hidden text-xs font-medium text-emerald-700/80 md:block">Smarter, cleaner commuting</p>
             </div>
-          </div>
+          </button>
 
           <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-800 shadow-sm">
