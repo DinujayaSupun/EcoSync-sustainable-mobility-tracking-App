@@ -1,6 +1,7 @@
 // client/src/pages/Leaderboard.jsx
 import React, { useEffect, useState } from "react";
 import { LeaderboardAPI } from "../api/leaderboard.api";
+import { useCommute } from "../context/CommuteContext";
 
 const PERIODS = [
   { key: "daily", label: "Daily" },
@@ -17,6 +18,7 @@ function RankDisplay({ rank }) {
 }
 
 export default function Leaderboard() {
+  const { refreshTrigger } = useCommute();
   const [period, setPeriod] = useState("weekly");
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,10 +53,10 @@ export default function Leaderboard() {
     }
   }
 
-  // Reload whenever the selected period changes
+  // Reload whenever the selected period changes or a new commute is logged
   useEffect(() => {
     loadLeaderboard();
-  }, [period]);
+  }, [period, refreshTrigger]);
 
   return (
     <div className="min-h-screen bg-gray-100">

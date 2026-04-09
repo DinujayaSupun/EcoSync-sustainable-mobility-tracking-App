@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import BadgeCard from "../components/gamification/BadgeCard";
 import { BadgesAPI } from "../api/badges.api";
+import { useCommute } from "../context/CommuteContext";
 
 const TYPE_OPTIONS = [
   { key: "ALL", label: "All" },
@@ -28,6 +29,7 @@ function FilterChip({ active, children, onClick }) {
 }
 
 export default function Badges() {
+  const { refreshTrigger } = useCommute();
   const [badges, setBadges] = useState([]);
   const [earnedIds, setEarnedIds] = useState(new Set());
   const [activeTab, setActiveTab] = useState("all"); // "all" or "mine"
@@ -82,7 +84,7 @@ export default function Badges() {
 
   useEffect(() => {
     loadBadges();
-  }, []);
+  }, [refreshTrigger]);
 
   const filteredBadges = useMemo(() => {
     // First apply the My Badges / All Badges tab filter

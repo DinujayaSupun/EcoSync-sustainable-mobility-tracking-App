@@ -7,9 +7,9 @@ import Home from './pages/Home'
 import AdminDashboard from './pages/AdminDashboard'
 import CommuteLogger from './pages/CommuteLogger'
 import CommuteHistory from './pages/CommuteHistory'
+import WeatherSuggestion from './pages/smartCommute/WeatherSuggestion'
 import UserManagement from './pages/UserManagement';
 import Reports from './pages/Reports';
-import SmartCommuteRoutes from './pages/smartCommute/routes';
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
  
@@ -87,10 +87,9 @@ function AppRoutes() {
         </UserProtectedRoute>
       } />
 
-      {/* 🚀 Smart Commute & Logistics Module */}
-      <Route path="/smart-commute/*" element={
+      <Route path="/weather-suggestion" element={
         <UserProtectedRoute>
-          <SmartCommuteRoutes />
+          <WeatherSuggestion />
         </UserProtectedRoute>
       } />
 
