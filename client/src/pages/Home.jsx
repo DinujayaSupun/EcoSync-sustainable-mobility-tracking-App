@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext'
 import { useCommute } from '../context/CommuteContext'
 import CommuteLogger from './CommuteLogger'
 import PredictionCard from '../components/PredictionCard'
+import Footer from '../components/common/Footer'
 import API from '../api/axios'
 
 const Home = () => {
@@ -298,6 +299,8 @@ const Home = () => {
           </div>
         </div>
       </main>
+      
+      <Footer />
     </div>
   )
 }

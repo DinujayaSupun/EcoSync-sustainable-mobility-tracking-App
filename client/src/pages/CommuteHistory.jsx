@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCommute } from '../context/CommuteContext';
+import Footer from '../components/common/Footer';
 
 const TRANSPORT_TYPES = ['Car', 'Bus', 'Train', 'Bike', 'Walk'];
 
@@ -415,6 +416,8 @@ const CommuteHistory = () => {
           </div>
         </div>
       )}
+      
+      <Footer />
     </div>
   );
 };
