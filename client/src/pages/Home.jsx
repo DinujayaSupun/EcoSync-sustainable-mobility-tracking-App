@@ -71,35 +71,42 @@ const Home = () => {
             </button>
             <button
               onClick={() => navigate('/weather-suggestion')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300 bg-cyan-50 px-3.5 py-2 text-sm font-semibold text-cyan-900 transition hover:bg-cyan-100 hover:border-cyan-400"
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
             >
               <span className="material-icons" style={{fontSize: '17px'}}>cloud</span>
               Check Weather
             </button>
             <button
               onClick={() => navigate('/badges')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-100 hover:border-amber-400"
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
             >
               <span className="material-icons" style={{fontSize: '17px'}}>workspace_premium</span>
               Badges
             </button>
             <button
               onClick={() => navigate('/leaderboard')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-violet-300 bg-violet-50 px-3.5 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-100 hover:border-violet-400"
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
             >
               <span className="material-icons" style={{fontSize: '17px'}}>leaderboard</span>
               Leaderboard
             </button>
             <button
               onClick={() => navigate('/challenges')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3.5 py-2 text-sm font-semibold text-indigo-900 transition hover:bg-indigo-100 hover:border-indigo-400"
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
             >
               <span className="material-icons" style={{fontSize: '17px'}}>emoji_events</span>
               Challenges
             </button>
             <button
+              onClick={() => navigate('/trip-achievements')}
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
+            >
+              <span className="material-icons" style={{fontSize: '17px'}}>military_tech</span>
+              Achievements
+            </button>
+            <button
               onClick={() => navigate('/commute-history')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-blue-300 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-900 transition hover:bg-blue-100 hover:border-blue-400"
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
             >
               <span className="material-icons" style={{fontSize: '17px'}}>history</span>
               Trip History
@@ -269,7 +276,7 @@ const Home = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
           <button
             onClick={() => navigate('/challenges')}
             className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5 text-left shadow-sm transition hover:border-indigo-300 hover:bg-indigo-100"
@@ -280,18 +287,6 @@ const Home = () => {
             </div>
             <h4 className="text-lg font-bold text-indigo-900">Open Challenges</h4>
             <p className="mt-1 text-sm text-indigo-800">Join and complete challenge goals to earn reward points.</p>
-          </button>
-
-          <button
-            onClick={() => navigate('/badges')}
-            className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-left shadow-sm transition hover:border-amber-300 hover:bg-amber-100"
-          >
-            <div className="mb-2 flex items-center gap-2 text-amber-700">
-              <span className="material-icons" style={{ fontSize: '22px' }}>workspace_premium</span>
-              <p className="text-xs font-bold uppercase tracking-wider">Achievements</p>
-            </div>
-            <h4 className="text-lg font-bold text-amber-900">View Badges</h4>
-            <p className="mt-1 text-sm text-amber-800">Track your milestones and unlock your next achievement.</p>
           </button>
 
           <button

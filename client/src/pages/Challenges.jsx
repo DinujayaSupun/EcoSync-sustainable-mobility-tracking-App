@@ -16,6 +16,40 @@ const prettyNumber = (value) => {
   return number.toFixed(2);
 };
 
+function Pill({ active, children, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "rounded-full border px-3 py-1.5 text-sm font-medium transition",
+        active
+          ? "border-emerald-600 bg-emerald-600 text-white"
+          : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50",
+      ].join(" ")}
+    >
+      {children}
+    </button>
+  );
+}
+
+function statusStyle(status) {
+  if (status === "COMPLETED") return "bg-emerald-100 text-emerald-800 border-emerald-200";
+  if (status === "EXPIRED") return "bg-emerald-100 text-emerald-800 border-emerald-200";
+  if (status === "LEFT") return "bg-gray-100 text-gray-700 border-gray-200";
+  return "bg-emerald-100 text-emerald-800 border-emerald-200";
+}
+
+function isExpiredParticipation(participation) {
+  const challenge = participation?.challenge;
+  if (!challenge) return false;
+  if (challenge.status === "EXPIRED") return true;
+  if (!challenge.deadline) return false;
+  return new Date(challenge.deadline).getTime() < Date.now();
+}
+
+export default function Challenges() {
+  const { user, logout } = useAuth();
 const toLabel = (value) => {
   if (!value) return '-';
   return String(value)
@@ -273,6 +307,41 @@ const Challenges = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <nav className="sticky top-0 z-2000 border-b border-emerald-100/80 bg-white/90 shadow-sm backdrop-blur-md">
+        <div className="flex w-full items-center justify-between gap-3 px-4 py-3">
+          <div className="mr-3 flex shrink-0 items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br from-emerald-500 to-green-700 shadow-md">
+              <span className="material-icons text-white" style={{ fontSize: "22px" }}>eco</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold tracking-tight text-emerald-700">EcoSync</h1>
+              <p className="hidden text-xs font-medium text-emerald-700/80 md:block">Smarter, cleaner commuting</p>
+            </div>
+          </div>
+
+          <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-800 shadow-sm">
+              <span className="material-icons" style={{ fontSize: "17px" }}>person</span>
+              Welcome, {user?.name}!
+            </span>
+            <button onClick={() => navigate("/home")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>home</span>Home</button>
+            <button onClick={() => navigate("/weather-suggestion")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>cloud</span>Check Weather</button>
+            <button onClick={() => navigate("/badges")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>workspace_premium</span>Badges</button>
+            <button onClick={() => navigate("/leaderboard")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>leaderboard</span>Leaderboard</button>
+            <button onClick={() => navigate("/challenges")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400 bg-emerald-100 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-200 hover:border-emerald-500"><span className="material-icons" style={{ fontSize: "17px" }}>emoji_events</span>Challenges</button>
+            <button onClick={() => navigate("/trip-achievements")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>military_tech</span>Achievements</button>
+            <button onClick={() => navigate("/commute-history")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>history</span>Trip History</button>
+            <button onClick={handleLogout} className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-3.5 py-2 text-sm font-semibold text-rose-900 transition hover:bg-rose-100 hover:border-rose-400"><span className="material-icons" style={{ fontSize: "17px" }}>logout</span>Logout</button>
+          </div>
+        </div>
+      </nav>
+
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        <GamificationToast toast={toast} />
+
+        {expiredActionNotice && (
+          <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+            {expiredActionNotice}
       <UserNavbar userName={user?.name} onLogout={handleLogout} />
 
       <main className="mx-auto max-w-7xl px-4 py-8">
@@ -285,6 +354,44 @@ const Challenges = () => {
             </p>
           </div>
 
+        {autoSyncNotice && (
+          <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+            {autoSyncNotice}
+          </div>
+        )}
+
+        <div className="overflow-hidden rounded-3xl border-2 border-emerald-100 bg-white shadow-xl">
+          <div className="flex flex-col gap-4 border-b border-emerald-100 bg-linear-to-r from-emerald-700 to-green-600 px-6 py-5 text-white sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <span className="material-icons text-white" style={{ fontSize: "32px" }}>emoji_events</span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100">Gamification</p>
+                <h2 className="text-2xl font-bold sm:text-3xl">Challenges</h2>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-6 py-6 sm:px-7">
+            <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Active</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{stats.active}</p>
+              </div>
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Completed</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{stats.completed}</p>
+              </div>
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Rewarded Points</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{stats.rewarded}</p>
+              </div>
+            </div>
+
+            <div className="mb-6 flex flex-wrap gap-2 border-b border-emerald-100 pb-4">
+              <Pill active={tab === "available"} onClick={() => setTab("available")}>Available</Pill>
+              <Pill active={tab === "my"} onClick={() => setTab("my")}>My Challenges</Pill>
+              <Pill active={tab === "completed"} onClick={() => setTab("completed")}>Completed</Pill>
+            </div>
           <div className="border-b border-emerald-100 p-4 sm:p-6">
             <div className="flex flex-wrap gap-2">
               {[
@@ -395,6 +502,24 @@ const Challenges = () => {
                     No challenges found with current filters.
                   </p>
                 ) : (
+                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    {available.map((challenge) => {
+                      const alreadyJoined = joinedIds.has(String(challenge._id));
+                      return (
+                        <div key={challenge._id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
+                          <div className="mb-3 flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-gray-900">{challenge.title}</h3>
+                            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                              +{challenge.rewardPoints} pts
+                            </span>
+                          </div>
+                          <p className="mb-2 text-sm font-medium text-emerald-700">{challenge.tagline}</p>
+                          <p className="mb-4 text-sm text-gray-600">{challenge.description}</p>
+                          <div className="mb-4 flex flex-wrap gap-2 text-xs">
+                            <span className="rounded-full border border-gray-200 px-2.5 py-1">{challenge.transportMode}</span>
+                            <span className="rounded-full border border-gray-200 px-2.5 py-1">{challenge.difficulty}</span>
+                            <span className="rounded-full border border-gray-200 px-2.5 py-1">Saving Target: {challenge.emissionTarget} kg</span>
+                            <span className="rounded-full border border-gray-200 px-2.5 py-1">{challenge.durationDays} days</span>
                   challenges.map((challenge) => {
                     const challengeId = String(challenge._id);
                     const joined = joinedChallengeIds.has(challengeId);
@@ -432,6 +557,42 @@ const Challenges = () => {
                     );
                   })
                 )}
+              </>
+            )}
+
+            {tab === "my" && (
+              <>
+                {autoSyncing && (
+                  <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-800">
+                    Auto-syncing challenge progress from your latest trips...
+                  </div>
+                )}
+
+                {myActive.length === 0 ? (
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 text-gray-600">No active joined challenges.</div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    {myActive.map((participation) => {
+                      const challenge = participation.challenge;
+                      const challengeId = participation.challengeId || challenge?._id;
+                      const isExpired = isExpiredParticipation(participation);
+                      const deadlineText = challenge?.deadline
+                        ? new Date(challenge.deadline).toLocaleString()
+                        : "No deadline";
+                      const current = Number(participation.progress || 0);
+                      const target = Number(challenge?.emissionTarget || 1);
+                      const percent = Math.min(100, Math.round((current / target) * 100));
+                      return (
+                        <div key={challengeId} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
+                          <div className="mb-3 flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-gray-900">{challenge?.title || "Challenge"}</h3>
+                            <span className={[
+                              "rounded-full border px-2.5 py-1 text-xs font-semibold",
+                              statusStyle(participation.status),
+                            ].join(" ")}>
+                              {participation.status}
+                            </span>
+                          </div>
               </div>
 
               <div className="mt-6 flex items-center justify-between">
@@ -466,6 +627,9 @@ const Challenges = () => {
                   </button>
                 </div>
 
+                          {isExpired && (
+                            <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                              This challenge has expired. You can view progress but cannot sync new progress.
                 {recommendedLoading ? (
                   <p className="text-sm text-emerald-800">Loading recommended list...</p>
                 ) : recommended.length === 0 ? (
@@ -611,6 +775,32 @@ const Challenges = () => {
                     </select>
                   </label>
 
+            {tab === "completed" && (
+              <>
+                {completed.length === 0 ? (
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 text-gray-600">No completed challenges yet.</div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    {completed.map((participation) => {
+                      const challenge = participation.challenge;
+                      const id = participation.challengeId || challenge?._id;
+                      return (
+                        <div key={id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
+                          <div className="mb-3 flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-gray-900">{challenge?.title || "Challenge"}</h3>
+                            <span className="rounded-full border border-emerald-200 bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">COMPLETED</span>
+                          </div>
+                          <p className="mb-3 text-sm text-gray-600">{challenge?.description}</p>
+                          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-800">
+                            <p className="text-sm font-semibold">Reward Received: +{participation.rewardedPoints || 0} points</p>
+                            {participation.rewardGrantedAt && (
+                              <p className="mt-1 text-xs">
+                                Awarded at {new Date(participation.rewardGrantedAt).toLocaleString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
                   <label className="text-sm font-medium text-gray-700">
                     Type
                     <select
