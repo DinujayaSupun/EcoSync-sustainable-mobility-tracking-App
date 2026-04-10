@@ -971,10 +971,33 @@ Please provide a comprehensive analysis with:
 Format your response in clear sections with bullet points. Be specific and data-driven.
 Keep it professional and suitable for presentation to university administrators.`;
 
-    // Call Gemini API
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const aiInsights = response.text();
+    // Call Gemini API with one retry for transient high-demand errors
+    let aiInsights = "";
+    const maxAttempts = 2;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        aiInsights = response.text();
+        break;
+      } catch (geminiError) {
+        const message = String(geminiError?.message || "");
+        const isServiceUnavailable =
+          geminiError?.status === 503 ||
+          message.includes("503") ||
+          message.toLowerCase().includes("service unavailable") ||
+          message.toLowerCase().includes("high demand");
+
+        // Retry once if the model is temporarily overloaded
+        if (isServiceUnavailable && attempt < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+          continue;
+        }
+
+        throw geminiError;
+      }
+    }
 
     console.log(`🤖 AI Insights generated successfully using Google Gemini`);
 
@@ -989,23 +1012,36 @@ Keep it professional and suitable for presentation to university administrators.
     console.error("AI Insights error:", error.message);
 
     let userMessage = error.message || "Failed to generate AI insights";
+    let statusCode = 500;
 
     // Handle specific Gemini errors
     if (error.message?.includes("API_KEY_INVALID")) {
       userMessage =
         "Gemini API key is invalid. Please get a valid key at https://aistudio.google.com/app/apikey";
     } else if (error.message?.includes("QUOTA_EXCEEDED")) {
+      statusCode = 429;
       userMessage =
         "Gemini API quota exceeded. Please try again later or check your usage.";
     } else if (error.status === 429 || error.message?.includes("429")) {
+      statusCode = 429;
       userMessage =
         "API rate limit exceeded. Please try again in a few moments.";
     } else if (error.message?.includes("quota")) {
+      statusCode = 429;
       userMessage =
         "API quota exceeded. The free tier has generous limits - please try again later.";
+    } else if (
+      error.status === 503 ||
+      error.message?.includes("503") ||
+      error.message?.toLowerCase().includes("service unavailable") ||
+      error.message?.toLowerCase().includes("high demand")
+    ) {
+      statusCode = 503;
+      userMessage =
+        "The AI service is currently experiencing high global demand. Please wait a moment and try generating insights again.";
     }
 
-    res.status(500).json({
+    res.status(statusCode).json({
       success: false,
       message: userMessage,
       dataAvailable: true, // Data summary is still available even if AI fails

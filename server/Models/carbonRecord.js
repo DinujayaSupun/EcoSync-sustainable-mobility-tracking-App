@@ -20,6 +20,23 @@
 //       min: 0,
 //     },
 
+    emissionSaved: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    emissionProduced: {
+      type: Number,
+    },
+    efficiencyScore: {
+      type: Number,
+      default: 0,
+    },
+  },
+  { timestamps: true },
+);
+
+module.exports = mongoose.model("CarbonRecord", carbonRecordSchema);
 //     emissionSaved: {
 //       type: Number,
 //       required: true,

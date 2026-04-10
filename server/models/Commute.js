@@ -49,6 +49,10 @@ const commuteSchema = new mongoose.Schema(
       type: Number, // in kg CO2
       required: true,
     },
+    co2Saved: {
+      type: Number, // in kg CO2 saved compared to car
+      default: 0,
+    },
     ecoSuggestion: {
       type: String,
       required: true,

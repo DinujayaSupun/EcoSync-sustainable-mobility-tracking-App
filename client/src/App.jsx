@@ -1,14 +1,24 @@
 
 import './App.css'
 import { AuthContext } from './context/AuthContext'
-import Login from './pages/login'
+import Landing from './pages/Landing'
+import Login from './pages/Login'
+import Register from './pages/Register'
 import Home from './pages/Home'
 import AdminDashboard from './pages/AdminDashboard'
 import CommuteLogger from './pages/CommuteLogger'
 import CommuteHistory from './pages/CommuteHistory'
+import TripAchievements from './pages/TripAchievements'
+import WeatherSuggestion from './pages/smartCommute/WeatherSuggestion'
 import UserManagement from './pages/UserManagement';
 import Reports from './pages/Reports';
-import SmartCommuteRoutes from './pages/smartCommute/routes';
+import AdminSettings from './pages/AdminSettings';
+import AboutUs from './pages/AboutUs';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import ContactSupport from './pages/ContactSupport';
+import Challenges from './pages/Challenges';
+import ChallengeDetails from './pages/ChallengeDetails';
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
  
@@ -16,6 +26,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
 import Badges from "./pages/Badges";
 import Leaderboard from "./pages/Leaderboard";
 import BadgeManagement from "./pages/BadgeManagement";
+import AdminChallenges from './pages/AdminChallenges';
+import Challenges from "./pages/Challenges";
+import ChallengeManagement from "./pages/ChallengeManagement";
 
  //🛡️ Admin Guard Component
 const AdminProtectedRoute = ({ children }) => {
@@ -47,7 +60,7 @@ function AppRoutes() {
 
   // Redirect logic after login
   useEffect(() => {
-    if (!loading && user && location.pathname === '/login') {
+    if (!loading && user && (location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register')) {
       const destination = user.role === 'admin' ? '/admin' : '/home';
       navigate(destination, { replace: true });
     }
@@ -64,7 +77,9 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
+      <Route path="/" element={!user ? <Landing /> : <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace />} />
       <Route path="/login" element={!user ? <Login /> : <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace />} />
+      <Route path="/register" element={!user ? <Register /> : <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace />} />
 
       {/* 🏠 Student Routes */}
       <Route path="/home" element={
@@ -85,10 +100,15 @@ function AppRoutes() {
         </UserProtectedRoute>
       } />
 
-      {/* 🚀 Smart Commute & Logistics Module */}
-      <Route path="/smart-commute/*" element={
+      <Route path="/trip-achievements" element={
         <UserProtectedRoute>
-          <SmartCommuteRoutes />
+          <TripAchievements />
+        </UserProtectedRoute>
+      } />
+
+      <Route path="/weather-suggestion" element={
+        <UserProtectedRoute>
+          <WeatherSuggestion />
         </UserProtectedRoute>
       } />
 
@@ -120,6 +140,20 @@ function AppRoutes() {
         </AdminProtectedRoute>
       } />
 
+      <Route path="/admin/challenges" element={
+        <AdminProtectedRoute>
+          <AdminChallenges />
+          <ChallengeManagement />
+        </AdminProtectedRoute>
+      } />
+
+      {/* Admin Settings Route */}
+      <Route path="/admin/settings" element={
+        <AdminProtectedRoute>
+          <AdminSettings />
+        </AdminProtectedRoute>
+      } />
+
       <Route
         path="/badges"
         element={
@@ -138,8 +172,61 @@ function AppRoutes() {
         }
       />
 
+      <Route
+        path="/challenges"
+        element={
+          <UserProtectedRoute>
+            <Challenges />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/challenges/:id"
+        element={
+          <UserProtectedRoute>
+            <ChallengeDetails />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/about-us"
+        element={
+          <UserProtectedRoute>
+            <AboutUs />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/privacy-policy"
+        element={
+          <UserProtectedRoute>
+            <PrivacyPolicy />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/terms-and-conditions"
+        element={
+          <UserProtectedRoute>
+            <TermsAndConditions />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/contact-support"
+        element={
+          <UserProtectedRoute>
+            <Challenges />
+          </UserProtectedRoute>
+        }
+      />
+
       {/* Default Redirects */}
-      <Route path="/" element={<Navigate to={!user ? "/login" : (user.role === 'admin' ? "/admin" : "/home")} replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

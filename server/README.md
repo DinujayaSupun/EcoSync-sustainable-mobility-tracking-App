@@ -196,7 +196,70 @@ taskkill /PID <process_id> /F
 
 - `npm start` - Start production server
 - `npm run dev` - Start development server with nodemon
-- `npm test` - Run tests (to be implemented)
+- `npm test` - Run unit + integration tests
+- `npm run test:unit` - Run only unit tests in `tests/unit`
+- `npm run test:integration` - Run only integration tests in `tests/integration`
+- `npm run test:coverage` - Run coverage report
+- `npm run test:performance` - Run Artillery load tests using `performance/artillery.yml`
+
+## ✅ Additional Testing Setup
+
+### 1. Unit Testing
+
+- Unit tests are in `tests/unit`.
+- These validate isolated functions without external services.
+- Current examples:
+  - `tests/unit/carbon.service.unit.test.js`
+  - `tests/unit/emissionFactors.unit.test.js`
+
+Run with:
+
+```bash
+npm run test:unit
+```
+
+### 2. Integration Testing
+
+- Integration tests are in `tests/integration`.
+- These validate API route + controller + middleware + MongoDB behavior together.
+- Integration tests use `MONGODB_URI_TEST` (or fallback `MONGODB_URI`) for database connectivity.
+- Current example:
+  - `tests/integration/auth.integration.test.js`
+
+Set a dedicated test DB URI in your `.env`:
+
+```env
+MONGODB_URI_TEST=mongodb://localhost:27017/sustainability-project-test
+```
+
+Run with:
+
+```bash
+npm run test:integration
+```
+
+### 3. Performance Testing (Artillery)
+
+- Artillery scenario file: `performance/artillery.yml`
+- This simulates concurrent traffic with warm-up, ramp-up, and sustained load phases.
+
+Before running performance tests, start the server:
+
+```bash
+npm run dev
+```
+
+Then run load test in another terminal:
+
+```bash
+npm run test:performance
+```
+
+Recommended metrics to monitor:
+
+- p95 and p99 response time
+- Error rate (4xx/5xx)
+- Throughput (requests/sec)
 
 ## 🔐 Environment Variables
 
