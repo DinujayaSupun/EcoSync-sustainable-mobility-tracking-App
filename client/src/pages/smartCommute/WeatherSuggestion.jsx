@@ -13,6 +13,13 @@ const WeatherSuggestion = () => {
   const [loading, setLoading] = useState(false);
   const [currentWeather, setCurrentWeather] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [localWeather, setLocalWeather] = useState(null);
+  const [localHourly, setLocalHourly] = useState([]);
+  const [localDaily, setLocalDaily] = useState([]);
+  const [localWeatherLoading, setLocalWeatherLoading] = useState(false);
+  const [localWeatherError, setLocalWeatherError] = useState('');
+  const [weatherMetricTab, setWeatherMetricTab] = useState('temperature');
+  const [selectedDailyWeather, setSelectedDailyWeather] = useState(null);
   const [formData, setFormData] = useState({
     origin: '',
     destination: '',
@@ -23,6 +30,63 @@ const WeatherSuggestion = () => {
   const [liveCoords, setLiveCoords] = useState(null);
   const [useLiveStart, setUseLiveStart] = useState(false);
   const [liveLocating, setLiveLocating] = useState(false);
+
+  const formatDayLabel = () => new Date().toLocaleDateString([], { weekday: 'long' });
+  const formatHourLabel = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+  const loadLocalWeatherByCoords = async (lat, lon) => {
+    setLocalWeatherLoading(true);
+    setLocalWeatherError('');
+
+    try {
+      const [currentResponse, forecastResponse] = await Promise.all([
+        weatherAPI.getCurrentWeather('my-location', { lat, lon }),
+        weatherAPI.getForecast({ lat, lon }),
+      ]);
+
+      const current = currentResponse?.data || null;
+      const forecast = forecastResponse?.data || {};
+
+      setLocalWeather(current);
+      setLocalHourly(forecast.hourly || []);
+      const days = (forecast.daily || []).slice(0, 7);
+      setLocalDaily(days);
+      setSelectedDailyWeather((prev) => {
+        if (prev) {
+          return days.find((day) => day.date === prev.date) || days[0] || null;
+        }
+        return days[0] || null;
+      });
+    } catch (error) {
+      console.error('Local weather fetch error:', error);
+      setLocalWeatherError('Failed to load weather for your current location.');
+    } finally {
+      setLocalWeatherLoading(false);
+    }
+  };
+
+  const loadMyLocationWeather = () => {
+    if (!navigator.geolocation) {
+      setLocalWeatherError('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setLocalWeatherLoading(true);
+    setLocalWeatherError('');
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        await loadLocalWeatherByCoords(lat, lon);
+      },
+      (err) => {
+        console.error('Geolocation error:', err);
+        setLocalWeatherLoading(false);
+        setLocalWeatherError('Please allow location access to load your local weather.');
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  };
 
   const handleCoordSelect = (fieldName, lat, lon) => {
     if (fieldName === 'origin') {
@@ -46,6 +110,7 @@ const WeatherSuggestion = () => {
         setLiveCoords([lat, lon]);
         setUseLiveStart(true);
         setFormData((prev) => ({ ...prev, origin: `${lat.toFixed(6)}, ${lon.toFixed(6)}` }));
+        await loadLocalWeatherByCoords(lat, lon);
         setLiveLocating(false);
       },
       (err) => {
@@ -62,6 +127,7 @@ const WeatherSuggestion = () => {
     setLiveCoords([lat, lon]);
     setUseLiveStart(true);
     setFormData((prev) => ({ ...prev, origin: `${lat.toFixed(6)}, ${lon.toFixed(6)}` }));
+    loadLocalWeatherByCoords(lat, lon);
   };
 
   const effectiveStartCoords = useLiveStart && liveCoords ? liveCoords : startCoords;
@@ -72,6 +138,13 @@ const WeatherSuggestion = () => {
       fetchSuggestions();
     }
   }, [user]);
+
+  useEffect(() => {
+    loadMyLocationWeather();
+  }, []);
+
+  const activeDailyWeather = selectedDailyWeather || localDaily[0] || null;
+  const activeHourlySeries = activeDailyWeather?.hourly?.length ? activeDailyWeather.hourly : localHourly;
 
   const fetchSuggestions = async () => {
     try {
@@ -227,6 +300,165 @@ const WeatherSuggestion = () => {
           </div>
 
           <div className="space-y-6 p-5 sm:p-7">
+            <div className="rounded-3xl border border-[#10A5F5]/35 bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-2xl font-bold text-[#0859C6]">My Location Weather</h2>
+                  <p className="text-sm text-[#0C71E0]">Actual weather based on your live GPS coordinates</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={loadMyLocationWeather}
+                  disabled={localWeatherLoading}
+                  className="rounded-full bg-[#0C71E0] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0859C6] disabled:bg-gray-400"
+                >
+                  {localWeatherLoading ? 'Refreshing...' : 'Refresh My Weather'}
+                </button>
+              </div>
+
+              {localWeatherError && (
+                <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {localWeatherError}
+                </div>
+              )}
+
+              {localWeather && (
+                <>
+                  <div className="mb-4 grid grid-cols-1 gap-4 rounded-2xl border border-[#10A5F5]/25 bg-linear-to-r from-[#00FFFF]/8 to-[#00DBFF]/8 p-4 md:grid-cols-2">
+                    <div className="flex items-center gap-3">
+                      <span className="material-icons text-[#0C71E0]" style={{ fontSize: '42px' }}>
+                        {getWeatherIcon(activeDailyWeather?.condition || localWeather.weatherCondition)}
+                      </span>
+                      <div>
+                        <div className="text-5xl font-bold leading-none text-[#0859C6]">
+                          {activeDailyWeather ? activeDailyWeather.maxTemp : Math.round(localWeather.temperature)}
+                          <span className="ml-1 text-2xl">°C</span>
+                        </div>
+                        <div className="mt-1 text-sm capitalize text-[#0C71E0]">
+                          {activeDailyWeather ? activeDailyWeather.description : localWeather.description}
+                        </div>
+                        {activeDailyWeather && (
+                          <div className="mt-1 text-xs font-semibold text-[#0859C6]">
+                            {activeDailyWeather.dateLong}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="rounded-lg border border-[#10A5F5]/20 bg-white px-3 py-2">
+                        <p className="text-xs uppercase tracking-wide text-[#0C71E0]">Humidity</p>
+                        <p className="font-semibold text-[#0859C6]">{localWeather.humidity ?? '--'}%</p>
+                      </div>
+                      <div className="rounded-lg border border-[#10A5F5]/20 bg-white px-3 py-2">
+                        <p className="text-xs uppercase tracking-wide text-[#0C71E0]">Wind</p>
+                        <p className="font-semibold text-[#0859C6]">{Math.round((localWeather.windSpeed || 0) * 3.6)} km/h</p>
+                      </div>
+                      <div className="rounded-lg border border-[#10A5F5]/20 bg-white px-3 py-2">
+                        <p className="text-xs uppercase tracking-wide text-[#0C71E0]">Day</p>
+                        <p className="font-semibold text-[#0859C6]">{activeDailyWeather?.dayLabel || formatDayLabel()}</p>
+                      </div>
+                      <div className="rounded-lg border border-[#10A5F5]/20 bg-white px-3 py-2">
+                        <p className="text-xs uppercase tracking-wide text-[#0C71E0]">Time</p>
+                        <p className="font-semibold text-[#0859C6]">{formatHourLabel()}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mb-3 flex items-center gap-2 border-b border-[#10A5F5]/25 pb-2 text-sm font-semibold text-[#0C71E0]">
+                    {['temperature', 'precipitation', 'wind'].map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setWeatherMetricTab(tab)}
+                        className={`rounded-full px-3 py-1 capitalize transition-colors ${
+                          weatherMetricTab === tab
+                            ? 'bg-[#0C71E0] text-white'
+                            : 'bg-[#00FFFF]/12 text-[#0C71E0] hover:bg-[#00DBFF]/20'
+                        }`}
+                      >
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
+
+                  {activeHourlySeries.length > 0 && (
+                    <div className="mb-4 rounded-2xl border border-[#10A5F5]/20 bg-[#00FFFF]/6 p-4">
+                      <div className="flex h-36 items-end gap-3 overflow-x-auto pb-2">
+                        {activeHourlySeries.map((point, idx) => {
+                          const value = weatherMetricTab === 'temperature'
+                            ? point.temp
+                            : weatherMetricTab === 'precipitation'
+                              ? point.precipitation
+                              : point.windKmh;
+                          const max = Math.max(
+                            ...activeHourlySeries.map((p) => weatherMetricTab === 'temperature'
+                              ? p.temp
+                              : weatherMetricTab === 'precipitation'
+                                ? p.precipitation
+                                : p.windKmh),
+                            1,
+                          );
+                          const height = Math.max(12, Math.round((value / max) * 88));
+
+                          return (
+                            <button
+                              key={`${point.time}-${idx}`}
+                              type="button"
+                              className="w-20 shrink-0 text-center"
+                              onClick={() => {
+                                if (activeDailyWeather) {
+                                  setSelectedDailyWeather(activeDailyWeather);
+                                }
+                              }}
+                            >
+                              <div className="mb-2 text-xs font-semibold text-[#0C71E0] leading-none">
+                                {value}{weatherMetricTab === 'temperature' ? '°' : weatherMetricTab === 'precipitation' ? '%' : ''}
+                              </div>
+                              <div className="mx-auto w-9 rounded-t-md bg-linear-to-t from-[#10A5F5] to-[#00DBFF]" style={{ height: `${height}px` }} />
+                              <div className="mt-2 text-xs text-gray-600 leading-none">{point.timeLabel}</div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {localDaily.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+                      {localDaily.map((day, idx) => (
+                        <div
+                          key={`${day.date}-${idx}`}
+                          onClick={() => setSelectedDailyWeather(day)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              setSelectedDailyWeather(day);
+                            }
+                          }}
+                          className={`cursor-pointer rounded-xl border p-2 text-center transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                            activeDailyWeather?.date === day.date
+                              ? 'border-[#0C71E0]/60 bg-[#00DBFF]/18 shadow-md ring-2 ring-[#10A5F5]/20'
+                              : 'border-[#10A5F5]/20 bg-white'
+                          }`}
+                        >
+                          <p className="text-sm font-semibold text-[#0859C6]">{day.dayLabel}</p>
+                          <p className="text-[11px] text-[#0C71E0]">{day.dateLabel}</p>
+                          <span className="material-icons mt-1 text-[#0C71E0]" style={{ fontSize: '24px' }}>
+                            {getWeatherIcon(day.condition)}
+                          </span>
+                          <p className="mt-1 text-sm font-medium text-[#0859C6]">{day.maxTemp}° {day.minTemp}°</p>
+                          <p className="mt-1 text-[11px] capitalize text-gray-600">{day.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Left Column - Form */}
