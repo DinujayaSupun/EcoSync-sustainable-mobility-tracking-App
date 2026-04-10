@@ -15,6 +15,8 @@ import AboutUs from './pages/AboutUs';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import ContactSupport from './pages/ContactSupport';
+import Challenges from './pages/Challenges';
+import ChallengeDetails from './pages/ChallengeDetails';
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
  
@@ -22,6 +24,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
 import Badges from "./pages/Badges";
 import Leaderboard from "./pages/Leaderboard";
 import BadgeManagement from "./pages/BadgeManagement";
+import AdminChallenges from './pages/AdminChallenges';
 
  //🛡️ Admin Guard Component
 const AdminProtectedRoute = ({ children }) => {
@@ -127,6 +130,12 @@ function AppRoutes() {
         </AdminProtectedRoute>
       } />
 
+      <Route path="/admin/challenges" element={
+        <AdminProtectedRoute>
+          <AdminChallenges />
+        </AdminProtectedRoute>
+      } />
+
       <Route
         path="/badges"
         element={
@@ -141,6 +150,24 @@ function AppRoutes() {
         element={
           <UserProtectedRoute>
             <Leaderboard />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/challenges"
+        element={
+          <UserProtectedRoute>
+            <Challenges />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/challenges/:id"
+        element={
+          <UserProtectedRoute>
+            <ChallengeDetails />
           </UserProtectedRoute>
         }
       />
