@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
+import Footer from '../components/common/Footer';
+import UserNavbar from '../components/common/UserNavbar';
 
 const TripAchievements = () => {
   const navigate = useNavigate();
@@ -15,8 +17,21 @@ const TripAchievements = () => {
       setLoadingEvents(true);
       setEventsError('');
       try {
-        const { data } = await API.get('/achievements/my?limit=20');
-        setStoredEvents(data.data || []);
+        const pageSize = 100;
+        let page = 1;
+        let hasMore = true;
+        const allRows = [];
+
+        while (hasMore) {
+          const { data } = await API.get(`/achievements/my?limit=${pageSize}&page=${page}`);
+          const rows = data?.data || [];
+          allRows.push(...rows);
+
+          hasMore = Boolean(data?.hasMore);
+          page += 1;
+        }
+
+        setStoredEvents(allRows);
       } catch (err) {
         setEventsError(err.response?.data?.message || 'Failed to load achievement history.');
       } finally {
@@ -52,61 +67,7 @@ const TripAchievements = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-emerald-50/30 to-green-50">
-      <nav className="sticky top-0 z-2000 border-b border-emerald-100/80 bg-white/90 shadow-sm backdrop-blur-md">
-        <div className="flex w-full items-center justify-between gap-3 px-4 py-3">
-          <div className="mr-3 flex shrink-0 items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br from-emerald-500 to-green-700 shadow-md">
-              <span className="material-icons text-white" style={{fontSize: '22px'}}>eco</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-emerald-700">EcoSync</h1>
-              <p className="hidden text-xs font-medium text-emerald-700/80 md:block">Smarter, cleaner commuting</p>
-            </div>
-          </div>
-
-          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-800 shadow-sm max-sm:hidden">
-              <span className="material-icons" style={{fontSize: '17px'}}>person</span>
-              Welcome, {user?.name}!
-            </span>
-            <button
-              onClick={() => navigate('/home')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
-            >
-              <span className="material-icons" style={{fontSize: '17px'}}>home</span>
-              Home
-            </button>
-            <button
-              onClick={() => navigate('/commute-logger')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
-            >
-              <span className="material-icons" style={{fontSize: '17px'}}>directions</span>
-              Commute Logger
-            </button>
-            <button
-              onClick={() => navigate('/commute-history')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
-            >
-              <span className="material-icons" style={{fontSize: '17px'}}>history</span>
-              Trip History
-            </button>
-            <button
-              onClick={() => navigate('/trip-achievements')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400 bg-emerald-100 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-200 hover:border-emerald-500"
-            >
-              <span className="material-icons" style={{fontSize: '17px'}}>military_tech</span>
-              Achievements
-            </button>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-3.5 py-2 text-sm font-semibold text-rose-900 transition hover:bg-rose-100 hover:border-rose-400"
-            >
-              <span className="material-icons" style={{fontSize: '17px'}}>logout</span>
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
+      <UserNavbar userName={user?.name} onLogout={handleLogout} />
 
       <main className="mx-auto max-w-384 px-4 py-8">
         <div className="overflow-hidden rounded-3xl border-2 border-emerald-100 bg-white shadow-xl">
@@ -194,6 +155,8 @@ const TripAchievements = () => {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };
