@@ -1,7 +1,7 @@
-const Challenge = require("../models/Challenges/challenges");
+const Challenge = require("../models/challenges/challenges");
 const { generateChallengeContent } = require("../Services/chatgpt.service");
 
-const Participation = require("../models/Challenges/participation.model");
+const Participation = require("../models/challenges/participation.model");
 const Commute = require("../models/Commute");
 
 const CHALLENGE_MODE_TO_COMMUTE_TYPE = {
@@ -50,7 +50,8 @@ exports.createChallenge = async (req, res) => {
     } = req.body;
 
     const providedTitle = typeof title === "string" ? title.trim() : "";
-    const providedDescription = typeof description === "string" ? description.trim() : "";
+    const providedDescription =
+      typeof description === "string" ? description.trim() : "";
     const providedTagline = typeof tagline === "string" ? tagline.trim() : "";
 
     let aiContent = null;
@@ -69,7 +70,11 @@ exports.createChallenge = async (req, res) => {
     const resolvedTagline = providedTagline || aiContent?.tagline;
 
     if (!resolvedTitle || !resolvedDescription || !resolvedTagline) {
-      return res.status(400).json({ message: "Challenge title, description, and tagline are required." });
+      return res
+        .status(400)
+        .json({
+          message: "Challenge title, description, and tagline are required.",
+        });
     }
 
     let resolvedDurationDays = Number(durationDays);
@@ -88,7 +93,9 @@ exports.createChallenge = async (req, res) => {
     }
 
     if (!Number.isInteger(resolvedDurationDays) || resolvedDurationDays < 1) {
-      return res.status(400).json({ message: "Duration must be at least 1 day" });
+      return res
+        .status(400)
+        .json({ message: "Duration must be at least 1 day" });
     }
 
     const challenge = await Challenge.create({
@@ -123,7 +130,7 @@ exports.getChallenges = async (req, res) => {
         status: "ACTIVE",
         deadline: { $ne: null, $lt: new Date() },
       },
-      { $set: { status: "EXPIRED" } }
+      { $set: { status: "EXPIRED" } },
     );
 
     const filter = {
@@ -156,7 +163,14 @@ exports.getChallenges = async (req, res) => {
 
 exports.getAdminChallenges = async (req, res) => {
   try {
-    const { page = 1, limit = 100, type, difficulty, transportMode, status } = req.query;
+    const {
+      page = 1,
+      limit = 100,
+      type,
+      difficulty,
+      transportMode,
+      status,
+    } = req.query;
 
     await Challenge.updateMany(
       {
@@ -164,7 +178,7 @@ exports.getAdminChallenges = async (req, res) => {
         status: "ACTIVE",
         deadline: { $ne: null, $lt: new Date() },
       },
-      { $set: { status: "EXPIRED" } }
+      { $set: { status: "EXPIRED" } },
     );
 
     const filter = { isDeleted: false };
@@ -284,7 +298,9 @@ exports.updateChallenge = async (req, res) => {
     if (hasDurationUpdate) {
       const parsedDuration = Number(nextDurationDays);
       if (!Number.isInteger(parsedDuration) || parsedDuration < 1) {
-        return res.status(400).json({ message: "Duration must be at least 1 day" });
+        return res
+          .status(400)
+          .json({ message: "Duration must be at least 1 day" });
       }
       challenge.durationDays = parsedDuration;
     }
@@ -332,7 +348,7 @@ exports.getRecommendedChallenges = async (req, res) => {
         status: "ACTIVE",
         deadline: { $ne: null, $lt: new Date() },
       },
-      { $set: { status: "EXPIRED" } }
+      { $set: { status: "EXPIRED" } },
     );
 
     let filter = { status: "ACTIVE", isDeleted: false };
@@ -377,7 +393,9 @@ exports.joinChallenge = async (req, res) => {
 
     if (existingParticipation) {
       if (existingParticipation.status === "ACTIVE") {
-        return res.status(400).json({ message: "Already joined this challenge" });
+        return res
+          .status(400)
+          .json({ message: "Already joined this challenge" });
       }
 
       if (existingParticipation.status === "COMPLETED") {
@@ -426,8 +444,13 @@ exports.updateProgress = async (req, res) => {
     const autoSync = req.body.auto === true || req.body.auto === "true";
     const manualProgress = Number(req.body.progress);
 
-    if (!autoSync && (!Number.isFinite(manualProgress) || manualProgress <= 0)) {
-      return res.status(400).json({ message: "Progress increment must be a positive number" });
+    if (
+      !autoSync &&
+      (!Number.isFinite(manualProgress) || manualProgress <= 0)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Progress increment must be a positive number" });
     }
 
     const participation = await Participation.findOne({
@@ -464,8 +487,12 @@ exports.updateProgress = async (req, res) => {
     let progressIncrement = manualProgress;
 
     if (autoSync) {
-      const transportType = CHALLENGE_MODE_TO_COMMUTE_TYPE[challenge.transportMode];
-      const syncWindowStart = participation.lastAutoSyncAt || participation.joinedAt || participation.createdAt;
+      const transportType =
+        CHALLENGE_MODE_TO_COMMUTE_TYPE[challenge.transportMode];
+      const syncWindowStart =
+        participation.lastAutoSyncAt ||
+        participation.joinedAt ||
+        participation.createdAt;
 
       const commuteFilter = {
         userId: req.user.id,
@@ -480,7 +507,10 @@ exports.updateProgress = async (req, res) => {
         .select("co2Saved createdAt")
         .sort({ createdAt: 1 });
 
-      progressIncrement = commutes.reduce((sum, c) => sum + Number(c.co2Saved || 0), 0);
+      progressIncrement = commutes.reduce(
+        (sum, c) => sum + Number(c.co2Saved || 0),
+        0,
+      );
 
       if (commutes.length > 0) {
         participation.lastAutoSyncAt = commutes[commutes.length - 1].createdAt;

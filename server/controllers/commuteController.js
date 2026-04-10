@@ -1,8 +1,8 @@
 const Commute = require("../models/Commute");
 const Trip = require("../models/Trip");
 const User = require("../models/User");
-const Challenge = require("../models/Challenges/challenges");
-const Participation = require("../models/Challenges/participation.model");
+const Challenge = require("../models/challenges/challenges");
+const Participation = require("../models/challenges/participation.model");
 const AchievementEvent = require("../models/AchievementEvent");
 const axios = require("axios");
 const mongoose = require("mongoose");
@@ -127,13 +127,17 @@ async function updateChallengeProgressForCommute({ userId, commute }) {
     if (challenge.isDeleted) continue;
     if (challenge.status !== "ACTIVE") continue;
 
-    if (challenge.deadline && new Date(challenge.deadline).getTime() < Date.now()) {
+    if (
+      challenge.deadline &&
+      new Date(challenge.deadline).getTime() < Date.now()
+    ) {
       challenge.status = "EXPIRED";
       await challenge.save();
       continue;
     }
 
-    const mappedTransportType = CHALLENGE_MODE_TO_COMMUTE_TYPE[challenge.transportMode];
+    const mappedTransportType =
+      CHALLENGE_MODE_TO_COMMUTE_TYPE[challenge.transportMode];
     if (mappedTransportType && mappedTransportType !== commute.transportType) {
       continue;
     }
@@ -147,7 +151,8 @@ async function updateChallengeProgressForCommute({ userId, commute }) {
     participation.progress = updatedProgress;
     participation.lastAutoSyncAt = commute.createdAt || new Date();
 
-    const hasCompletedNow = updatedProgress >= Number(challenge.emissionTarget || 0);
+    const hasCompletedNow =
+      updatedProgress >= Number(challenge.emissionTarget || 0);
     if (hasCompletedNow) {
       participation.status = "COMPLETED";
 
@@ -248,11 +253,11 @@ const haversineDistance = (startCoords, destCoords) => {
   // sin²(Δlat/2) + cos(lat1) * cos(lat2) * sin²(Δlon/2)
   // This gives the square of half the chord length between the two points
   const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +          // sin²(Δlat/2)
-    Math.cos((startCoords.lat * Math.PI) / 180) *       // cos(lat1) in radians
-      Math.cos((destCoords.lat * Math.PI) / 180) *      // cos(lat2) in radians
-      Math.sin(dLon / 2) *                              // sin(Δlon/2)
-      Math.sin(dLon / 2);                               // squared
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) + // sin²(Δlat/2)
+    Math.cos((startCoords.lat * Math.PI) / 180) * // cos(lat1) in radians
+      Math.cos((destCoords.lat * Math.PI) / 180) * // cos(lat2) in radians
+      Math.sin(dLon / 2) * // sin(Δlon/2)
+      Math.sin(dLon / 2); // squared
 
   // Angular distance in radians using atan2 for numerical stability
   // c = 2 * atan2(√a, √(1−a)) — the central angle between the two points
@@ -391,10 +396,17 @@ exports.logCommute = async (req, res) => {
     const userId = req.user.id;
 
     // Validation
-    if (!startLocation || !destination || !transportType || !faculty || !dayType) {
+    if (
+      !startLocation ||
+      !destination ||
+      !transportType ||
+      !faculty ||
+      !dayType
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Please provide start location, destination, transport type, faculty, and day type",
+        message:
+          "Please provide start location, destination, transport type, faculty, and day type",
       });
     }
 
@@ -405,8 +417,10 @@ exports.logCommute = async (req, res) => {
       });
     }
 
-    const hasStartCoords = Number.isFinite(Number(startLat)) && Number.isFinite(Number(startLon));
-    const hasDestCoords = Number.isFinite(Number(destLat)) && Number.isFinite(Number(destLon));
+    const hasStartCoords =
+      Number.isFinite(Number(startLat)) && Number.isFinite(Number(startLon));
+    const hasDestCoords =
+      Number.isFinite(Number(destLat)) && Number.isFinite(Number(destLon));
 
     // Use exact coordinates from client when available (GPS/autocomplete), otherwise geocode text.
     const startCoords = hasStartCoords
@@ -464,7 +478,7 @@ exports.logCommute = async (req, res) => {
     await User.findByIdAndUpdate(
       userId,
       { $inc: { total_co2_saved: co2Saved } },
-      { new: true }
+      { new: true },
     );
 
     // Also create a Trip record for admin statistics
@@ -500,7 +514,10 @@ exports.logCommute = async (req, res) => {
       achievements.progressedChallenges = challengeResult.progressedChallenges;
       achievements.completedChallenges = challengeResult.completedChallenges;
     } catch (e) {
-      console.warn("Challenge progress sync failed during commute log:", e.message);
+      console.warn(
+        "Challenge progress sync failed during commute log:",
+        e.message,
+      );
     }
 
     //Auto-award badges (do NOT fail commute if badge logic fails)
@@ -530,9 +547,10 @@ exports.logCommute = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Commute logged successfully",
-      distanceSource: routeData.source === "haversine_fallback"
-        ? "Estimated (straight-line x1.3 road factor)"
-        : "OSRM routing",
+      distanceSource:
+        routeData.source === "haversine_fallback"
+          ? "Estimated (straight-line x1.3 road factor)"
+          : "OSRM routing",
       data: {
         ...commute.toObject(),
         co2Saved: co2Saved,
@@ -793,8 +811,8 @@ exports.predictEmission = async (req, res) => {
       // Map MongoDB aggregate results into clean { month, emission, yearMonth } objects
       // 'index + 1' gives sequential month numbers (1, 2, 3...) for regression x-axis
       historicalData = monthlyEmissions.map((entry, index) => ({
-        month: index + 1,                                          // x-axis: month sequence
-        emission: parseFloat(entry.totalEmission.toFixed(2)),      // y-axis: total CO2 that month
+        month: index + 1, // x-axis: month sequence
+        emission: parseFloat(entry.totalEmission.toFixed(2)), // y-axis: total CO2 that month
         yearMonth: `${entry._id.year}-${String(entry._id.month).padStart(2, "0")}`, // label e.g. "2026-01"
       }));
 
@@ -903,26 +921,32 @@ exports.deleteCommute = async (req, res) => {
   try {
     const trip = await Commute.findById(req.params.id);
     if (!trip) {
-      return res.status(404).json({ success: false, message: 'Trip not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Trip not found" });
     }
     // Only the owner can delete
     if (trip.userId.toString() !== req.user.id.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorised' });
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorised" });
     }
-    
+
     // Subtract the co2Saved from user's total before deleting
     const co2SavedValue = trip.co2Saved || 0;
     await User.findByIdAndUpdate(
       trip.userId,
       { $inc: { total_co2_saved: -co2SavedValue } },
-      { new: true }
+      { new: true },
     );
-    
+
     await Commute.findByIdAndDelete(req.params.id);
-    res.status(200).json({ success: true, message: 'Trip deleted successfully' });
+    res
+      .status(200)
+      .json({ success: true, message: "Trip deleted successfully" });
   } catch (error) {
-    console.error('Delete commute error:', error.message);
-    res.status(500).json({ success: false, message: 'Failed to delete trip' });
+    console.error("Delete commute error:", error.message);
+    res.status(500).json({ success: false, message: "Failed to delete trip" });
   }
 };
 
@@ -932,17 +956,23 @@ exports.deleteCommute = async (req, res) => {
 exports.updateCommute = async (req, res) => {
   try {
     const { transportType } = req.body;
-    const validTypes = ['Car', 'Bus', 'Train', 'Bike', 'Walk'];
+    const validTypes = ["Car", "Bus", "Train", "Bike", "Walk"];
     if (!transportType || !validTypes.includes(transportType)) {
-      return res.status(400).json({ success: false, message: 'Invalid transport type' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid transport type" });
     }
 
     const trip = await Commute.findById(req.params.id);
     if (!trip) {
-      return res.status(404).json({ success: false, message: 'Trip not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Trip not found" });
     }
     if (trip.userId.toString() !== req.user.id.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorised' });
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorised" });
     }
 
     // Preserve existing CO2 saved value if it exists
@@ -960,9 +990,13 @@ exports.updateCommute = async (req, res) => {
       //      old = 10 × 0.192 = 1.92 kg CO2
       //      new = 10 × 0.041 = 0.41 kg CO2  → saves 1.51 kg CO2
       const newEmission = EMISSION_FACTORS[transportType] * trip.distance;
-      
+
       // Calculate new co2Saved using the shared rule set.
-      newCo2Saved = calculateCo2Saved(trip.distance, newEmission, transportType);
+      newCo2Saved = calculateCo2Saved(
+        trip.distance,
+        newEmission,
+        transportType,
+      );
 
       // Update the trip document fields with new values
       trip.transportType = transportType;
@@ -977,29 +1011,29 @@ exports.updateCommute = async (req, res) => {
       await User.findByIdAndUpdate(
         trip.userId,
         { $inc: { total_co2_saved: co2Difference } },
-        { new: true }
+        { new: true },
       );
 
-      res.status(200).json({ 
-        success: true, 
-        message: 'Trip updated successfully', 
+      res.status(200).json({
+        success: true,
+        message: "Trip updated successfully",
         data: trip,
         co2DataPreserved: false,
-        co2Recalculated: true
+        co2Recalculated: true,
       });
     } else {
       // Transport type not changed, no update needed
-      res.status(200).json({ 
-        success: true, 
-        message: 'No changes made - same transport type', 
+      res.status(200).json({
+        success: true,
+        message: "No changes made - same transport type",
         data: trip,
         co2DataPreserved: true,
-        co2Recalculated: false
+        co2Recalculated: false,
       });
     }
   } catch (error) {
-    console.error('Update commute error:', error.message);
-    res.status(500).json({ success: false, message: 'Failed to update trip' });
+    console.error("Update commute error:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update trip" });
   }
 };
 
@@ -1034,12 +1068,12 @@ exports.recalculateCo2Saved = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       userId,
       { total_co2_saved: parseFloat(totalCo2Saved.toFixed(2)) },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json({
       success: true,
-      message: 'CO2 saved values recalculated successfully',
+      message: "CO2 saved values recalculated successfully",
       data: {
         userId,
         totalCo2Saved: user.total_co2_saved,
@@ -1047,10 +1081,10 @@ exports.recalculateCo2Saved = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Recalculate CO2 error:', error.message);
+    console.error("Recalculate CO2 error:", error.message);
     res.status(500).json({
       success: false,
-      message: 'Failed to recalculate CO2 saved',
+      message: "Failed to recalculate CO2 saved",
     });
   }
 };
@@ -1099,10 +1133,10 @@ exports.getCO2SavingsByTransportMode = async (req, res) => {
       data: formatted,
     });
   } catch (error) {
-    console.error('Get CO2 savings by mode error:', error.message);
+    console.error("Get CO2 savings by mode error:", error.message);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve CO2 savings breakdown',
+      message: "Failed to retrieve CO2 savings breakdown",
     });
   }
 };
@@ -1132,7 +1166,9 @@ exports.getCarUsageImpact = async (req, res) => {
 
     commutes.forEach((commute) => {
       // Get month key for grouping
-      const monthKey = new Date(commute.createdAt).toISOString().substring(0, 7); // YYYY-MM
+      const monthKey = new Date(commute.createdAt)
+        .toISOString()
+        .substring(0, 7); // YYYY-MM
 
       if (!monthlyStats[monthKey]) {
         monthlyStats[monthKey] = {
@@ -1166,15 +1202,19 @@ exports.getCarUsageImpact = async (req, res) => {
     // Calculate car usage percentage
     if (commutes.length > 0) {
       carUsageStats.carUsagePercentage = parseFloat(
-        ((carUsageStats.totalCarTrips / commutes.length) * 100).toFixed(2)
+        ((carUsageStats.totalCarTrips / commutes.length) * 100).toFixed(2),
       );
     }
 
     // Round all values
-    carUsageStats.totalCarDistance = parseFloat(carUsageStats.totalCarDistance.toFixed(2));
-    carUsageStats.totalCarEmissions = parseFloat(carUsageStats.totalCarEmissions.toFixed(2));
+    carUsageStats.totalCarDistance = parseFloat(
+      carUsageStats.totalCarDistance.toFixed(2),
+    );
+    carUsageStats.totalCarEmissions = parseFloat(
+      carUsageStats.totalCarEmissions.toFixed(2),
+    );
     carUsageStats.co2SavedByUsingAlternatives = parseFloat(
-      carUsageStats.co2SavedByUsingAlternatives.toFixed(2)
+      carUsageStats.co2SavedByUsingAlternatives.toFixed(2),
     );
 
     // Format monthly stats
@@ -1199,10 +1239,10 @@ exports.getCarUsageImpact = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Get car usage impact error:', error.message);
+    console.error("Get car usage impact error:", error.message);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve car usage impact',
+      message: "Failed to retrieve car usage impact",
     });
   }
 };
