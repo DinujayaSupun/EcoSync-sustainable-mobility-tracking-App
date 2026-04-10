@@ -2,7 +2,7 @@
 import './App.css'
 import { AuthContext } from './context/AuthContext'
 import Landing from './pages/Landing'
-import Login from './pages/Login'
+import Login from './pages/login'
 import Register from './pages/Register'
 import Home from './pages/Home'
 import AdminDashboard from './pages/AdminDashboard'
