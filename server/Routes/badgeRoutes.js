@@ -34,8 +34,8 @@ router.post(
     body("name").isString().trim().notEmpty(),
     body("description").isString().trim().notEmpty(),
     body("type").isIn(["TRIP_COUNT", "TOTAL_DISTANCE", "TOTAL_CO2_SAVED"]),
-    body("threshold").isNumeric().toFloat(),
-    body("imageUrl").optional().isString(),
+    body("threshold").isFloat({ min: 1 }).toFloat(),
+    body("imageUrl").optional().isURL(),
   ],
   badgeController.createBadge
 );
@@ -51,8 +51,8 @@ router.patch(
     body("type")
       .optional()
       .isIn(["TRIP_COUNT", "TOTAL_DISTANCE", "TOTAL_CO2_SAVED"]),
-    body("threshold").optional().isNumeric().toFloat(),
-    body("imageUrl").optional().isString(),
+    body("threshold").optional().isFloat({ min: 1 }).toFloat(),
+    body("imageUrl").optional().isURL(),
   ],
   badgeController.updateBadge
 );

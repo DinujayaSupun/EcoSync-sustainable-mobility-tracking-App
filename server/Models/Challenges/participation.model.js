@@ -20,6 +20,22 @@ const participationSchema = new mongoose.Schema({
       enum: ["ACTIVE", "COMPLETED", "LEFT"],
       default: "ACTIVE"
     },
+    rewardGranted: {
+      type: Boolean,
+      default: false
+    },
+    rewardedPoints: {
+      type: Number,
+      default: 0
+    },
+    rewardGrantedAt: {
+      type: Date,
+      default: null
+    },
+    lastAutoSyncAt: {
+      type: Date,
+      default: Date.now
+    },
     joinedAt: {
       type: Date,
       default: Date.now

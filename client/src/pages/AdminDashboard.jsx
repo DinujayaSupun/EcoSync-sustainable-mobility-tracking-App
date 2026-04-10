@@ -282,6 +282,13 @@ const AdminDashboard = () => {
               <h3 className="font-semibold text-gray-800">Manage Badges</h3>
               <p className="text-sm text-gray-600">Create, edit and delete badges</p>
             </Link>
+            <Link
+              to="/admin/challenges"
+              className="p-4 border-2 border-indigo-200 rounded-lg hover:bg-indigo-50 transition text-left block">
+              <Map className="text-indigo-600 mb-2" size={28} />
+              <h3 className="font-semibold text-gray-800">Manage Challenges</h3>
+              <p className="text-sm text-gray-600">Create, update and deactivate challenges</p>
+            </Link>
             <button className="p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition text-left">
               <Settings className="text-purple-600 mb-2" size={28} />
               <h3 className="font-semibold text-gray-800">System Settings</h3>

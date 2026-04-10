@@ -5,10 +5,13 @@ import LocationAutocomplete from '../components/LocationAutocomplete';
 import CommuteMap from '../components/CommuteMap';
 import { weatherAPI } from '../api/smartCommute';
 import { useCommute } from '../context/CommuteContext';
+import GamificationToast from '../components/common/GamificationToast';
+import { useGamificationToast } from '../hooks/useGamificationToast';
 
 const CommuteLogger = () => {
   const navigate = useNavigate();
   const { onCommuteLogged } = useCommute();
+  const { toast, showToast } = useGamificationToast(5000);
   const [formData, setFormData] = useState({
     startLocation: '',
     destination: '',
@@ -105,6 +108,50 @@ const CommuteLogger = () => {
     setFormData((prev) => ({ ...prev, startLocation: name }));
   };
 
+  const showAchievementToast = (achievements) => {
+    const badgeList = achievements?.newBadges || [];
+    const newBadges = badgeList.length;
+    const completedChallenges = achievements?.completedChallenges?.length || 0;
+    const progressedChallenges = achievements?.progressedChallenges?.length || 0;
+
+    if (!newBadges && !completedChallenges && !progressedChallenges) return;
+
+    if (newBadges) {
+      const names = badgeList.slice(0, 2).map((b) => b.name).join(", ");
+      const extra = newBadges > 2 ? ` (+${newBadges - 2} more)` : "";
+      showToast("success", `🏅 Badge Earned! ${names}${extra}`);
+    }
+
+    if (completedChallenges) {
+      const titles = (achievements?.completedChallenges || [])
+        .slice(0, 2)
+        .map((c) => c.title)
+        .join(", ");
+      const extra = completedChallenges > 2 ? ` (+${completedChallenges - 2} more)` : "";
+      showToast("success", `🎯 Challenge Completed! ${titles}${extra}`);
+    }
+
+    if (progressedChallenges) {
+      showToast(
+        "info",
+        `📈 Challenge progress updated for ${progressedChallenges} challenge${progressedChallenges > 1 ? "s" : ""}.`
+      );
+    }
+  };
+
+  const checkAndNotifyHybridPodium = async () => {
+    try {
+      const { data } = await API.get('/leaderboard?board=hybrid&period=daily&limit=10');
+      const rank = data?.meta?.me?.rank;
+      if (!rank || rank > 3) return;
+
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
+      showToast('success', `${medal} You are now #${rank} on the Hybrid leaderboard!`);
+    } catch {
+      // Do not fail commute UX if leaderboard check fails.
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -116,7 +163,14 @@ const CommuteLogger = () => {
       setResult(data.data);
       
       // Trigger automatic refresh across all components watching for commute updates
-      onCommuteLogged(data.data);
+      onCommuteLogged({
+        action: 'created',
+        commute: data.data,
+        achievements: data.achievements || null,
+      });
+
+      showAchievementToast(data.achievements || null);
+      void checkAndNotifyHybridPodium();
       
       // Reset form
       setFormData({
@@ -129,10 +183,10 @@ const CommuteLogger = () => {
       setStartCoords(null);
       setEndCoords(null);
       
-      // Show success result for 4 seconds, then clear it
+      // Show success result for 6 seconds, then clear it
       setTimeout(() => {
         setResult(null);
-      }, 4000);
+      }, 6000);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to log commute. Please try again.');
     } finally {
@@ -142,6 +196,7 @@ const CommuteLogger = () => {
 
   return (
     <div className="rounded-3xl border border-emerald-100 bg-linear-to-br from-emerald-50 via-white to-green-50 p-4 shadow-xl sm:p-6 lg:p-8">
+      <GamificationToast toast={toast} />
       <div className="mb-6 rounded-2xl bg-linear-to-r from-emerald-700 to-green-600 p-5 text-white shadow-lg sm:mb-8 sm:p-6">
         <p className="text-xs font-semibold uppercase tracking-wider text-emerald-100">Smart Mobility</p>
         <h2 className="mt-1 text-2xl font-bold sm:text-3xl">Smart Commute Logger</h2>
@@ -497,6 +552,17 @@ const CommuteLogger = () => {
           </div>
         </div>
       )}
+
+      <div className="mt-4 flex justify-end">
+        <button
+          type="button"
+          onClick={() => navigate('/trip-achievements')}
+          className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-900 transition hover:border-amber-400 hover:bg-amber-100"
+        >
+          <span className="material-icons" style={{ fontSize: '18px' }}>emoji_events</span>
+          View Achievements Page
+        </button>
+      </div>
     </div>
   );
 };

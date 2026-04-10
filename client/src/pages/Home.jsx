@@ -89,6 +89,13 @@ const Home = () => {
               Leaderboard
             </button>
             <button
+              onClick={() => navigate('/challenges')}
+              className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3.5 py-2 text-sm font-semibold text-indigo-900 transition hover:bg-indigo-100 hover:border-indigo-400"
+            >
+              <span className="material-icons" style={{fontSize: '17px'}}>emoji_events</span>
+              Challenges
+            </button>
+            <button
               onClick={() => navigate('/commute-history')}
               className="inline-flex items-center gap-1.5 rounded-full border border-blue-300 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-900 transition hover:bg-blue-100 hover:border-blue-400"
             >
@@ -257,6 +264,45 @@ const Home = () => {
         {/* Prediction Card */}
         <div className="mb-8">
           <PredictionCard />
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <button
+            onClick={() => navigate('/challenges')}
+            className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5 text-left shadow-sm transition hover:border-indigo-300 hover:bg-indigo-100"
+          >
+            <div className="mb-2 flex items-center gap-2 text-indigo-700">
+              <span className="material-icons" style={{ fontSize: '22px' }}>emoji_events</span>
+              <p className="text-xs font-bold uppercase tracking-wider">Gamification</p>
+            </div>
+            <h4 className="text-lg font-bold text-indigo-900">Open Challenges</h4>
+            <p className="mt-1 text-sm text-indigo-800">Join and complete challenge goals to earn reward points.</p>
+          </button>
+
+          <button
+            onClick={() => navigate('/badges')}
+            className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-left shadow-sm transition hover:border-amber-300 hover:bg-amber-100"
+          >
+            <div className="mb-2 flex items-center gap-2 text-amber-700">
+              <span className="material-icons" style={{ fontSize: '22px' }}>workspace_premium</span>
+              <p className="text-xs font-bold uppercase tracking-wider">Achievements</p>
+            </div>
+            <h4 className="text-lg font-bold text-amber-900">View Badges</h4>
+            <p className="mt-1 text-sm text-amber-800">Track your milestones and unlock your next achievement.</p>
+          </button>
+
+          <button
+            onClick={() => navigate('/leaderboard')}
+            className="rounded-2xl border border-violet-200 bg-violet-50 p-5 text-left shadow-sm transition hover:border-violet-300 hover:bg-violet-100"
+          >
+            <div className="mb-2 flex items-center gap-2 text-violet-700">
+              <span className="material-icons" style={{ fontSize: '22px' }}>leaderboard</span>
+              <p className="text-xs font-bold uppercase tracking-wider">Competition</p>
+            </div>
+            <h4 className="text-lg font-bold text-violet-900">Leaderboard</h4>
+            <p className="mt-1 text-sm text-violet-800">See how your eco score compares with other students.</p>
+          </button>
         </div>
 
         {/* Commute Logger */}
