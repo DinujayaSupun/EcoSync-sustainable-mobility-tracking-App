@@ -15,6 +15,7 @@ import AboutUs from './pages/AboutUs';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import ContactSupport from './pages/ContactSupport';
+import CarCO2Dashboard from './pages/CarCO2Dashboard';
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
  
@@ -96,6 +97,12 @@ function AppRoutes() {
       <Route path="/weather-suggestion" element={
         <UserProtectedRoute>
           <WeatherSuggestion />
+        </UserProtectedRoute>
+      } />
+
+      <Route path="/car-co2-dashboard" element={
+        <UserProtectedRoute>
+          <CarCO2Dashboard />
         </UserProtectedRoute>
       } />
 
