@@ -1,7 +1,33 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API from '../../api/axios';
 
 const Footer = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    activeUsers: 0,
+    totalCO2Saved: 0,
+    activeChallenges: 0,
+  });
+
+  useEffect(() => {
+    const loadFooterStats = async () => {
+      try {
+        const { data } = await API.get('/commute/footer-stats');
+        if (data?.success && data?.data) {
+          setStats({
+            activeUsers: data.data.activeUsers || 0,
+            totalCO2Saved: data.data.totalCO2Saved || 0,
+            activeChallenges: data.data.activeChallenges || 0,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load footer stats:', error);
+      }
+    };
+
+    loadFooterStats();
+  }, []);
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -9,6 +35,17 @@ const Footer = () => {
   };
 
   const currentYear = new Date().getFullYear();
+
+  const formatCompact = (value) => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M+`;
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}K+`;
+    return `${Math.round(value)}`;
+  };
+
+  const formatCo2 = (kgValue) => {
+    if (kgValue >= 1000) return `${(kgValue / 1000).toFixed(2)}T`;
+    return `${kgValue.toFixed(1)}kg`;
+  };
 
   return (
     <footer className="bg-linear-to-b from-emerald-900 to-emerald-950 text-gray-100">
@@ -29,7 +66,6 @@ const Footer = () => {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">EcoSync</h2>
-                <p className="text-xs text-emerald-200">Smarter Commuting</p>
               </div>
             </button>
             <p className="text-sm text-emerald-100 mb-4 leading-relaxed">
@@ -205,15 +241,15 @@ const Footer = () => {
           {/* Center - Stats */}
           <div className="hidden md:flex justify-center gap-6">
             <div className="text-center">
-              <p className="text-xl font-bold text-emerald-300">5K+</p>
+              <p className="text-xl font-bold text-emerald-300">{formatCompact(stats.activeUsers)}</p>
               <p className="text-xs text-emerald-200">Active Users</p>
             </div>
             <div className="text-center border-l border-r border-emerald-800 px-6">
-              <p className="text-xl font-bold text-emerald-300">50T</p>
+              <p className="text-xl font-bold text-emerald-300">{formatCo2(stats.totalCO2Saved)}</p>
               <p className="text-xs text-emerald-200">CO₂ Saved</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-emerald-300">100+</p>
+              <p className="text-xl font-bold text-emerald-300">{formatCompact(stats.activeChallenges)}</p>
               <p className="text-xs text-emerald-200">Challenges</p>
             </div>
           </div>

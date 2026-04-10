@@ -1,6 +1,7 @@
 const Commute = require("../models/Commute");
 const Trip = require("../models/Trip");
 const User = require("../models/User");
+const Challenge = require("../models/Challenges/challenges");
 const axios = require("axios");
 const mongoose = require("mongoose");
 
@@ -372,6 +373,48 @@ exports.getCommuteHistory = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to retrieve commute history",
+    });
+  }
+};
+
+// @desc    Get public footer stats
+// @route   GET /api/commute/footer-stats
+// @access  Public
+exports.getFooterStats = async (req, res) => {
+  try {
+    const [activeUserIds, co2Aggregate, activeChallenges] = await Promise.all([
+      Commute.distinct("userId"),
+      Commute.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalCO2Saved: { $sum: "$co2Saved" },
+          },
+        },
+      ]),
+      Challenge.countDocuments({ isDeleted: false, status: "ACTIVE" }),
+    ]);
+
+    const totalCO2Saved = co2Aggregate[0]?.totalCO2Saved || 0;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        activeUsers: activeUserIds.length,
+        totalCO2Saved: parseFloat(totalCO2Saved.toFixed(2)),
+        activeChallenges,
+      },
+    });
+  } catch (error) {
+    console.error("Get footer stats error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve footer stats",
+      data: {
+        activeUsers: 0,
+        totalCO2Saved: 0,
+        activeChallenges: 0,
+      },
     });
   }
 };
