@@ -15,6 +15,7 @@ const smartCommuteRoutes = require("./routes/smartCommute.routes");
 const challengeRoutes = require("./routes/challenge.routes");
 const carbonRoutes = require("./routes/carbon.routes");
 const badgeRoutes = require("./routes/badgeRoutes");
+const achievementRoutes = require("./routes/achievementRoutes");
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
 const weatherRoutes = require("./routes/weatherRoutes");
 
@@ -30,7 +31,20 @@ app.use(helmet());
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      const allowedOrigins = new Set([
+        process.env.CLIENT_URL || "http://localhost:5173",
+        "http://localhost:5173",
+        "http://localhost:5174",
+      ]);
+
+      // Allow server-to-server tools (no Origin header) and allowed browser origins.
+      if (!origin || allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   }),
 );
@@ -44,13 +58,27 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isDevelopment ? 500 : 100, // Looser limit in local development
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) => isDevelopment && req.path === "/auth/profile",
-  message: {
-    success: false,
-    message: "Too many requests, please try again later.",
+  max: 100, // Limit each IP to 100 requests per window
+  message: "Too many requests, please try again later.",
+  skip: (req) => {
+    const path = req.originalUrl || "";
+
+    if (path.startsWith("/api/auth")) return true;
+    if (path.startsWith("/api/commute")) return true;
+
+    // Gamification pages perform frequent reads and periodic sync.
+    // Exclude these endpoints from the shared global bucket so
+    // heavy commute usage does not block badges/leaderboard/challenges.
+    if (
+      path.startsWith("/api/challenges") ||
+      path.startsWith("/api/badges") ||
+      path.startsWith("/api/achievements") ||
+      path.startsWith("/api/leaderboard")
+    ) {
+      return true;
+    }
+
+    return false;
   },
 });
 app.use("/api/", limiter);
@@ -75,6 +103,7 @@ app.use("/api/smart-commute", smartCommuteRoutes);
 app.use("/api/challenges", challengeRoutes);
 app.use("/api/carbon", carbonRoutes);
 app.use("/api/badges", badgeRoutes);
+app.use("/api/achievements", achievementRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/weather", weatherRoutes);
 

@@ -10,7 +10,8 @@
     "test": "jest"
     "test": "jest",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed:gamification": "node scripts/seedGamification.js"
   },
   "keywords": [
     "sustainability",

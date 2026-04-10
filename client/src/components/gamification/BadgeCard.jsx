@@ -1,5 +1,5 @@
 // client/src/components/gamification/BadgeCard.jsx
-import React from "react";
+import React, { useMemo, useState } from "react";
 
 function typeLabel(type) {
   if (type === "TRIP_COUNT") return "Trip Count";
@@ -26,39 +26,97 @@ function thresholdText(type, threshold) {
   return `Threshold: ${t}`;
 }
 
-export default function BadgeCard({ badge, earned = false }) {
+export default function BadgeCard({ badge, earned = false, onClick }) {
   const imageUrl = badge?.imageUrl || badge?.image || badge?.iconUrl || "";
+  const [imgFailed, setImgFailed] = useState(false);
+  const initials = String(badge?.name || "B")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase() || "")
+    .join("");
+
+  const canShowImage = Boolean(imageUrl) && !imgFailed;
+
+  const fallbackTone = useMemo(() => {
+    if (badge?.type === "TRIP_COUNT") return "from-blue-100 to-cyan-200 text-blue-800";
+    if (badge?.type === "TOTAL_DISTANCE") return "from-green-100 to-emerald-200 text-emerald-800";
+    if (badge?.type === "TOTAL_CO2_SAVED") return "from-lime-100 to-teal-200 text-teal-800";
+    return "from-slate-100 to-slate-200 text-slate-700";
+  }, [badge?.type]);
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition border ${earned ? "border-green-400" : "border-gray-100"}`}>
-      {/* Position relative so the "Earned" banner can overlay the image */}
-      <div className="h-40 bg-gray-100 overflow-hidden relative">
-        {earned && (
-          <span className="absolute top-2 left-2 z-10 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-            ✓ Earned
-          </span>
-        )}
-        {imageUrl ? (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "group relative w-full overflow-hidden rounded-3xl border bg-white text-left shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/80",
+        earned ? "border-emerald-300" : "border-slate-200",
+      ].join(" ")}
+      aria-label={`Open badge details for ${badge?.name || "badge"}`}
+    >
+      <div
+        className={[
+          "absolute inset-x-0 top-0 h-1.5",
+          earned
+            ? "bg-linear-to-r from-emerald-400 via-lime-400 to-teal-500"
+            : "bg-linear-to-r from-slate-300 via-slate-200 to-slate-300",
+        ].join(" ")}
+      />
+
+      <div className="relative h-36 overflow-hidden bg-slate-100">
+        {canShowImage ? (
           <img
             src={imageUrl}
             alt={badge?.name || "Badge"}
-            className={`w-full h-full object-cover transition ${earned ? "" : "grayscale opacity-50"}`}
+            className={[
+              "h-full w-full object-cover transition duration-500 group-hover:scale-105",
+              earned ? "" : "grayscale opacity-80",
+            ].join(" ")}
+            referrerPolicy="no-referrer"
+            onError={() => setImgFailed(true)}
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
-            No Image
+          <div
+            className={[
+              "flex h-full w-full items-center justify-center bg-linear-to-br text-3xl font-black tracking-wide",
+              fallbackTone,
+            ].join(" ")}
+          >
+            {initials || "★"}
           </div>
         )}
+
+        <span
+          className={[
+            "absolute right-3 top-3 z-10 rounded-full border px-2.5 py-1 text-xs font-bold shadow-sm",
+            earned
+              ? "border-emerald-200 bg-emerald-500 text-white"
+              : "border-slate-300 bg-white text-slate-700",
+          ].join(" ")}
+        >
+          {earned ? "Earned" : "Locked"}
+        </span>
+
+        <div className="absolute -bottom-7 left-1/2 z-10 h-14 w-14 -translate-x-1/2 rounded-full bg-white shadow-lg" />
+        <div
+          className={[
+            "absolute -bottom-6 left-1/2 z-20 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border-2 text-lg",
+            earned
+              ? "border-amber-200 bg-linear-to-br from-amber-200 to-yellow-500 text-amber-900"
+              : "border-slate-300 bg-linear-to-br from-slate-200 to-slate-400 text-slate-700",
+          ].join(" ")}
+        >
+          ★
+        </div>
       </div>
 
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-base font-semibold text-gray-900 line-clamp-2">
-            {badge?.name || "Untitled Badge"}
-          </h3>
+      <div className="px-5 pb-5 pt-10">
+        <div className="mb-3 flex justify-center gap-2">
           <span
-            className={`shrink-0 text-xs px-2 py-1 rounded-full border ${typePillClass(
+            className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${typePillClass(
               badge?.type
             )}`}
             title={badge?.type}
@@ -67,21 +125,31 @@ export default function BadgeCard({ badge, earned = false }) {
           </span>
         </div>
 
+        <h3 className="text-center text-lg font-extrabold tracking-tight text-slate-900">
+          {badge?.name || "Untitled Badge"}
+        </h3>
+
         {badge?.description ? (
-          <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+          <p className="mt-2 line-clamp-2 text-center text-sm text-slate-600">
             {badge.description}
           </p>
         ) : (
-          <p className="mt-2 text-sm text-gray-500 italic">
+          <p className="mt-2 text-center text-sm italic text-slate-500">
             No description provided.
           </p>
         )}
 
-        <div className="mt-3 text-sm text-gray-700">
-          <span className="font-medium">Criteria:</span>{" "}
-          {thresholdText(badge?.type, badge?.threshold)}
+        <div
+          className={[
+            "mt-4 rounded-xl border px-3 py-2 text-center text-sm",
+            earned
+              ? "border-emerald-100 bg-emerald-50 text-emerald-800"
+              : "border-slate-200 bg-slate-50 text-slate-700",
+          ].join(" ")}
+        >
+          <span className="font-semibold">Criteria:</span> {thresholdText(badge?.type, badge?.threshold)}
         </div>
       </div>
-    </div>
+    </button>
   );
 }

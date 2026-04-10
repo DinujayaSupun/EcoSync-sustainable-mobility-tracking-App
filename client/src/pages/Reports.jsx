@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import html2pdf from 'html2pdf.js';
+import { getDefaultReportDateRange } from '../utils/adminSettings';
 import {
   FileText,
   Download,
@@ -108,13 +109,13 @@ const Reports = () => {
 
   const insightSections = parseInsightSections(aiInsights?.insights || '');
 
-  const fetchReport = async () => {
+  const fetchReport = async (activeFilters = filters) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (filters.startDate) params.append('startDate', filters.startDate);
-      if (filters.endDate) params.append('endDate', filters.endDate);
-      if (filters.faculty) params.append('faculty', filters.faculty);
+      if (activeFilters.startDate) params.append('startDate', activeFilters.startDate);
+      if (activeFilters.endDate) params.append('endDate', activeFilters.endDate);
+      if (activeFilters.faculty) params.append('faculty', activeFilters.faculty);
 
       const res = await API.get(`/admin/report?${params.toString()}`);
       if (res.data.success) {
@@ -129,7 +130,14 @@ const Reports = () => {
   };
 
   useEffect(() => {
-    fetchReport();
+    const dateRange = getDefaultReportDateRange();
+    const initialFilters = {
+      ...filters,
+      ...dateRange,
+    };
+
+    setFilters(initialFilters);
+    fetchReport(initialFilters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -364,7 +372,7 @@ const Reports = () => {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate('/admin/dashboard')}
+                onClick={() => navigate('/admin')}
                 className="text-white hover:bg-white/20 p-2 rounded-lg transition print:hidden"
               >
                 <ArrowLeft size={24} />

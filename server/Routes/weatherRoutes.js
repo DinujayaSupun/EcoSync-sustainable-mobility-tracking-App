@@ -5,6 +5,7 @@ const weatherController = require('../controllers/weatherController');
 // Weather suggestion routes
 router.post('/', weatherController.createWeatherSuggestion);
 router.get('/autocomplete', weatherController.autocompleteLocation);
+router.get('/forecast', weatherController.getWeatherForecast);
 router.get('/current/:location', weatherController.getCurrentWeatherSuggestion);
 router.get('/:userId', weatherController.getWeatherSuggestions);
 router.put('/:id', weatherController.updateWeatherSuggestion);

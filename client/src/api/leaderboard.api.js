@@ -10,10 +10,17 @@ function normalizePeriod(period) {
   return "weekly"; // default
 }
 
+function normalizeBoard(board) {
+  const b = String(board || "").toLowerCase();
+  if (b === "hybrid" || b === "impact" || b === "efficiency") return b;
+  return "hybrid";
+}
+
 export const LeaderboardAPI = {
-  async getLeaderboard(period = "weekly") {
+  async getLeaderboard(period = "weekly", board = "hybrid") {
     const safePeriod = normalizePeriod(period);
-    const res = await API.get(`${BASE}?period=${safePeriod}`);
+    const safeBoard = normalizeBoard(board);
+    const res = await API.get(`${BASE}?period=${safePeriod}&board=${safeBoard}`);
     return res.data;
   },
 };

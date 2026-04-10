@@ -8,9 +8,11 @@ import Home from './pages/Home'
 import AdminDashboard from './pages/AdminDashboard'
 import CommuteLogger from './pages/CommuteLogger'
 import CommuteHistory from './pages/CommuteHistory'
+import TripAchievements from './pages/TripAchievements'
 import WeatherSuggestion from './pages/smartCommute/WeatherSuggestion'
 import UserManagement from './pages/UserManagement';
 import Reports from './pages/Reports';
+import AdminSettings from './pages/AdminSettings';
 import AboutUs from './pages/AboutUs';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
@@ -25,6 +27,8 @@ import Badges from "./pages/Badges";
 import Leaderboard from "./pages/Leaderboard";
 import BadgeManagement from "./pages/BadgeManagement";
 import AdminChallenges from './pages/AdminChallenges';
+import Challenges from "./pages/Challenges";
+import ChallengeManagement from "./pages/ChallengeManagement";
 
  //🛡️ Admin Guard Component
 const AdminProtectedRoute = ({ children }) => {
@@ -96,6 +100,12 @@ function AppRoutes() {
         </UserProtectedRoute>
       } />
 
+      <Route path="/trip-achievements" element={
+        <UserProtectedRoute>
+          <TripAchievements />
+        </UserProtectedRoute>
+      } />
+
       <Route path="/weather-suggestion" element={
         <UserProtectedRoute>
           <WeatherSuggestion />
@@ -133,6 +143,14 @@ function AppRoutes() {
       <Route path="/admin/challenges" element={
         <AdminProtectedRoute>
           <AdminChallenges />
+          <ChallengeManagement />
+        </AdminProtectedRoute>
+      } />
+
+      {/* Admin Settings Route */}
+      <Route path="/admin/settings" element={
+        <AdminProtectedRoute>
+          <AdminSettings />
         </AdminProtectedRoute>
       } />
 
@@ -203,7 +221,7 @@ function AppRoutes() {
         path="/contact-support"
         element={
           <UserProtectedRoute>
-            <ContactSupport />
+            <Challenges />
           </UserProtectedRoute>
         }
       />

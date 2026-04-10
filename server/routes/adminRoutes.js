@@ -1540,7 +1540,7 @@ router.post("/email-report", protect, isAdmin, reportLimiter, emailReport);
  *                   type: string
  *                   example: Gemini API key not configured. Please add GEMINI_API_KEY to .env file. Get your free key at https://aistudio.google.com/app/apikey
  */
-router.post("/ai-insights", reportLimiter, getAIInsights);
+router.post("/ai-insights", protect, isAdmin, reportLimiter, getAIInsights);
 
 /**
  * @swagger
