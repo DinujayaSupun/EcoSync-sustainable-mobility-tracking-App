@@ -14,13 +14,16 @@ const {
   getCarUsageImpact,
   getFooterStats,
 } = require("../controllers/commuteController");
+const { autocompleteLimiter, commuteLimiter } = require("../middleware/rateLimiter");
+
+router.use(commuteLimiter);
 
 // All routes are protected with JWT authentication
 router.get("/footer-stats", getFooterStats);
 router.post("/log", protect, logCommute);
 router.get("/history", protect, getCommuteHistory);
 router.get("/emission-summary", protect, getEmissionSummary);
-router.get("/autocomplete", protect, autocompleteLocation);
+router.get("/autocomplete", protect, autocompleteLimiter, autocompleteLocation);
 router.get("/predict", protect, predictEmission);
 router.get("/co2-savings-by-mode", protect, getCO2SavingsByTransportMode);
 router.get("/car-usage-impact", protect, getCarUsageImpact);

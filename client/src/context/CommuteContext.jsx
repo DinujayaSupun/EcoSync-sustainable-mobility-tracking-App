@@ -24,9 +24,24 @@ export const CommuteProvider = ({ children }) => {
     }, []);
 
     // Function to call when a commute is successfully logged
-    const onCommuteLogged = useCallback((commuteData) => {
+    const onCommuteLogged = useCallback((payload) => {
+        const isStructuredPayload =
+            payload && (payload.commute || payload.achievements || payload.action);
+
+        const normalizedData = isStructuredPayload
+            ? {
+                  action: payload.action || 'created',
+                  ...(payload.commute ? payload.commute : payload),
+                  achievements: payload.achievements || null,
+              }
+            : {
+                  ...(payload || {}),
+                  action: 'created',
+                  achievements: null,
+              };
+
         setLastLoggedCommute({
-            ...commuteData,
+            ...normalizedData,
             timestamp: Date.now(),
         });
         // Trigger all components to refresh their data
