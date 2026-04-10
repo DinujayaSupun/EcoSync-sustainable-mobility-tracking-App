@@ -201,7 +201,17 @@ const generateEcoSuggestion = (transportType, distance) => {
 // @access  Private
 exports.logCommute = async (req, res) => {
   try {
-    const { startLocation, destination, transportType, faculty, dayType } = req.body;
+    const {
+      startLocation,
+      destination,
+      transportType,
+      faculty,
+      dayType,
+      startLat,
+      startLon,
+      destLat,
+      destLon,
+    } = req.body;
     const userId = req.user.id;
 
     // Validation
@@ -219,9 +229,17 @@ exports.logCommute = async (req, res) => {
       });
     }
 
-    // Geocode both locations
-    const startCoords = await geocodeLocation(startLocation);
-    const destCoords = await geocodeLocation(destination);
+    const hasStartCoords = Number.isFinite(Number(startLat)) && Number.isFinite(Number(startLon));
+    const hasDestCoords = Number.isFinite(Number(destLat)) && Number.isFinite(Number(destLon));
+
+    // Use exact coordinates from client when available (GPS/autocomplete), otherwise geocode text.
+    const startCoords = hasStartCoords
+      ? { lat: Number(startLat), lon: Number(startLon) }
+      : await geocodeLocation(startLocation);
+
+    const destCoords = hasDestCoords
+      ? { lat: Number(destLat), lon: Number(destLon) }
+      : await geocodeLocation(destination);
 
     // Calculate route
     const routeData = await calculateRoute(

@@ -21,10 +21,15 @@ const WeatherSuggestion = () => {
   const [startCoords, setStartCoords] = useState(null);
   const [endCoords, setEndCoords] = useState(null);
   const [liveCoords, setLiveCoords] = useState(null);
+  const [useLiveStart, setUseLiveStart] = useState(false);
   const [liveLocating, setLiveLocating] = useState(false);
 
   const handleCoordSelect = (fieldName, lat, lon) => {
-    if (fieldName === 'origin') setStartCoords([lat, lon]);
+    if (fieldName === 'origin') {
+      setUseLiveStart(false);
+      setLiveCoords(null);
+      setStartCoords([lat, lon]);
+    }
     else if (fieldName === 'destination') setEndCoords([lat, lon]);
   };
 
@@ -39,17 +44,8 @@ const WeatherSuggestion = () => {
       async (pos) => {
         const { latitude: lat, longitude: lon } = pos.coords;
         setLiveCoords([lat, lon]);
-        setStartCoords([lat, lon]);
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
-          );
-          const data = await res.json();
-          const name = data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-          setFormData((prev) => ({ ...prev, origin: name }));
-        } catch {
-          setFormData((prev) => ({ ...prev, origin: `${lat.toFixed(5)}, ${lon.toFixed(5)}` }));
-        }
+        setUseLiveStart(true);
+        setFormData((prev) => ({ ...prev, origin: `${lat.toFixed(6)}, ${lon.toFixed(6)}` }));
         setLiveLocating(false);
       },
       (err) => {
@@ -57,16 +53,18 @@ const WeatherSuggestion = () => {
         alert('Unable to retrieve your location. Please allow location access.');
         setLiveLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
   // Callback from LocateControl button inside the map
   const handleMapLocate = (lat, lon, name) => {
     setLiveCoords([lat, lon]);
-    setStartCoords([lat, lon]);
-    setFormData((prev) => ({ ...prev, origin: name }));
+    setUseLiveStart(true);
+    setFormData((prev) => ({ ...prev, origin: `${lat.toFixed(6)}, ${lon.toFixed(6)}` }));
   };
+
+  const effectiveStartCoords = useLiveStart && liveCoords ? liveCoords : startCoords;
 
   // Fetch user's suggestions
   useEffect(() => {
@@ -86,6 +84,11 @@ const WeatherSuggestion = () => {
   };
 
   const handleInputChange = (e) => {
+    if (e.target.name === 'origin') {
+      setUseLiveStart(false);
+      setLiveCoords(null);
+    }
+
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -120,8 +123,8 @@ const WeatherSuggestion = () => {
         userId: userId,
         origin: formData.origin,
         destination: formData.destination,
-        originLat: startCoords ? startCoords[0] : undefined,
-        originLon: startCoords ? startCoords[1] : undefined,
+        originLat: effectiveStartCoords ? effectiveStartCoords[0] : undefined,
+        originLon: effectiveStartCoords ? effectiveStartCoords[1] : undefined,
         destLat: endCoords ? endCoords[0] : undefined,
         destLon: endCoords ? endCoords[1] : undefined,
       });
@@ -131,6 +134,8 @@ const WeatherSuggestion = () => {
       setFormData({ origin: '', destination: '' });
       setStartCoords(null);
       setEndCoords(null);
+      setLiveCoords(null);
+      setUseLiveStart(false);
     } catch (error) {
       console.error('Error details:', error.response?.data);
       alert(error.response?.data?.message || 'Failed to get weather suggestion');
@@ -148,7 +153,7 @@ const WeatherSuggestion = () => {
     setLoading(true);
     try {
       console.log('Fetching weather for:', formData.origin);
-      const params = startCoords ? { lat: startCoords[0], lon: startCoords[1] } : {};
+      const params = effectiveStartCoords ? { lat: effectiveStartCoords[0], lon: effectiveStartCoords[1] } : {};
       const response = await weatherAPI.getCurrentWeather(formData.origin, params);
       setCurrentWeather(response.data);
     } catch (error) {
@@ -270,7 +275,7 @@ const WeatherSuggestion = () => {
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50/30 p-4 shadow-sm">
               <p className="mb-2 text-sm text-gray-600"><span className="material-icons" style={{fontSize: '18px', verticalAlign: 'middle', marginRight: '4px', display: 'inline-flex'}}>location_on</span>Select locations below to see them on the map</p>
               <CommuteMap
-                startCoords={startCoords}
+                startCoords={effectiveStartCoords}
                 endCoords={endCoords}
                 startLabel={formData.origin}
                 endLabel={formData.destination}
