@@ -71,7 +71,10 @@ const Register = () => {
                 password: form.password,
                 faculty: form.faculty || undefined,
             });
-            navigate('/home', { replace: true });
+            navigate('/login', {
+                replace: true,
+                state: { message: 'Registration successful. Please login to continue.' },
+            });
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed. Please try again.');
         } finally {

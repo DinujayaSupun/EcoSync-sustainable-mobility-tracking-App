@@ -1,6 +1,7 @@
 
 import './App.css'
 import { AuthContext } from './context/AuthContext'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Home from './pages/Home'
@@ -11,6 +12,10 @@ import TripAchievements from './pages/TripAchievements'
 import WeatherSuggestion from './pages/smartCommute/WeatherSuggestion'
 import UserManagement from './pages/UserManagement';
 import Reports from './pages/Reports';
+import AboutUs from './pages/AboutUs';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import ContactSupport from './pages/ContactSupport';
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
  
@@ -51,7 +56,7 @@ function AppRoutes() {
 
   // Redirect logic after login
   useEffect(() => {
-    if (!loading && user && (location.pathname === '/login' || location.pathname === '/register')) {
+    if (!loading && user && (location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register')) {
       const destination = user.role === 'admin' ? '/admin' : '/home';
       navigate(destination, { replace: true });
     }
@@ -68,6 +73,7 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
+      <Route path="/" element={!user ? <Landing /> : <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace />} />
       <Route path="/login" element={!user ? <Login /> : <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace />} />
       <Route path="/register" element={!user ? <Register /> : <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace />} />
 
@@ -164,7 +170,6 @@ function AppRoutes() {
       />
 
       {/* Default Redirects */}
-      <Route path="/" element={<Navigate to={!user ? "/login" : (user.role === 'admin' ? "/admin" : "/home")} replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

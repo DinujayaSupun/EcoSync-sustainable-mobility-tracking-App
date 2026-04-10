@@ -233,7 +233,7 @@ const UserManagement = () => {
       filtered = filtered.filter(user => 
         user.name.toLowerCase().includes(search) ||
         user.email.toLowerCase().includes(search) ||
-        user.faculty.toLowerCase().includes(search)
+        (user.faculty || '').toLowerCase().includes(search)
       );
     }
     
@@ -260,23 +260,35 @@ const UserManagement = () => {
     setCurrentPage(pageNumber);
   };
 
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+    setSelectedUser(null);
+    setValidationErrors([]);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Navigation */}
-        <Link 
-          to="/admin" 
-          className="inline-flex items-center text-purple-600 hover:text-purple-800 mb-6 font-medium transition-colors"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Back to Dashboard
-        </Link>
-        
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">User Management</h2>
-          <span className="bg-purple-100 text-purple-700 px-4 py-1 rounded-full text-sm font-semibold">
-            {users.length} Total Users
-          </span>
+        <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden border border-gray-200">
+          <div className="bg-linear-to-r from-purple-600 to-indigo-600 px-6 py-5 text-white flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <p className="text-purple-100 text-xs uppercase tracking-wider font-semibold">Admin Panel</p>
+              <h2 className="text-3xl font-bold">User Management</h2>
+              <p className="text-purple-100 text-sm mt-1">Manage account roles, permissions, and user lifecycle.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="bg-white/20 text-white px-4 py-1.5 rounded-full text-sm font-semibold border border-white/30">
+                {users.length} Total Users
+              </span>
+              <Link
+                to="/admin"
+                className="inline-flex items-center bg-white text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-50 font-medium transition"
+              >
+                <ArrowLeft size={18} className="mr-2" />
+                Back to Dashboard
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* Error State */}
@@ -318,7 +330,7 @@ const UserManagement = () => {
         )}
 
         {/* Search and Filter Bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search Input */}
             <div className="flex-1 relative">
@@ -354,7 +366,7 @@ const UserManagement = () => {
         </div>
 
         {/* Table Container */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
           {isLoading ? (
             <div className="p-20 text-center text-gray-500">Loading users from Atlas...</div>
           ) : (
@@ -394,7 +406,7 @@ const UserManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded-md">
-                          {user.faculty}
+                          {user.faculty || 'N/A'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -501,13 +513,31 @@ const UserManagement = () => {
 
         {/* Edit Role Modal */}
         {editModalOpen && selectedUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Edit User Role</h3>
+          <div className="fixed inset-0 z-50 bg-slate-900/45 backdrop-blur-[2px] flex items-center justify-center p-4">
+            <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+              <div className="bg-linear-to-r from-purple-600 to-indigo-600 px-6 py-5 text-white">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-purple-100">Role Management</p>
+                    <h3 className="mt-1 text-2xl font-bold">Edit User Role</h3>
+                    <p className="mt-1 text-sm text-purple-100">Update access level for this account.</p>
+                  </div>
+                  <button
+                    onClick={closeEditModal}
+                    disabled={isUpdating}
+                    className="rounded-lg border border-white/30 px-2.5 py-1.5 text-sm font-semibold text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Close edit role modal"
+                  >
+                    X
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
               
               {/* Validation Errors Display */}
               {validationErrors.length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4">
                   <div className="flex items-start gap-2">
                     <svg className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
@@ -526,37 +556,37 @@ const UserManagement = () => {
               
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                     User Name
                   </label>
                   <input
                     type="text"
                     value={selectedUser.name}
                     disabled
-                    className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 cursor-not-allowed"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-700 cursor-not-allowed"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Email
                   </label>
                   <input
                     type="text"
                     value={selectedUser.email}
                     disabled
-                    className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 cursor-not-allowed"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-700 cursor-not-allowed"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Select Role
                   </label>
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-800 transition-all focus:border-transparent focus:ring-2 focus:ring-purple-500"
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
@@ -564,33 +594,32 @@ const UserManagement = () => {
                 </div>
 
                 {newRole !== selectedUser.role && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <p className="text-sm text-yellow-800">
-                      <strong>Warning:</strong> Changing role from <span className="font-semibold uppercase">{selectedUser.role}</span> to <span className="font-semibold uppercase">{newRole}</span>
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5">
+                    <p className="text-sm text-amber-900">
+                      <span className="font-semibold">Warning:</span> You are changing role from{' '}
+                      <span className="inline-block rounded-full bg-gray-900 px-2 py-0.5 text-[11px] font-bold uppercase text-white">{selectedUser.role}</span>
+                      {' '}to{' '}
+                      <span className="inline-block rounded-full bg-purple-700 px-2 py-0.5 text-[11px] font-bold uppercase text-white">{newRole}</span>
                     </p>
                   </div>
                 )}
               </div>
 
-              <div className="flex gap-3 justify-end">
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
-                  onClick={() => {
-                    setEditModalOpen(false);
-                    setSelectedUser(null);
-                    setValidationErrors([]);
-                  }}
+                  onClick={closeEditModal}
                   disabled={isUpdating}
-                  className="px-5 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleRoleUpdate}
                   disabled={newRole === selectedUser.role || isUpdating}
-                  className={`px-5 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                  className={`rounded-xl px-5 py-2.5 font-semibold transition-colors flex items-center justify-center gap-2 ${
                     newRole === selectedUser.role || isUpdating
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-purple-600 text-white hover:bg-purple-700'
+                      : 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm'
                   }`}
                 >
                   {isUpdating ? (
@@ -604,6 +633,7 @@ const UserManagement = () => {
                 </button>
               </div>
             </div>
+          </div>
           </div>
         )}
       </div>
