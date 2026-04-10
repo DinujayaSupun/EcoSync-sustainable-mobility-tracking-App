@@ -91,15 +91,39 @@ export default function Leaderboard() {
       .replace(/'/g, "&#39;");
   }
 
+  // Preflight image availability so missing logo assets never block PDF export.
+  async function canLoadImage(src) {
+    return await new Promise((resolve) => {
+      const img = new Image();
+      let settled = false;
+
+      const done = (ok) => {
+        if (settled) return;
+        settled = true;
+        resolve(ok);
+      };
+
+      img.onload = () => done(true);
+      img.onerror = () => done(false);
+
+      // Avoid blocking export forever if the request hangs.
+      setTimeout(() => done(false), 1500);
+      img.src = src;
+    });
+  }
+
   async function handleExportPdf() {
     if (loading || error || exportingPdf) return;
 
     setExportingPdf(true);
+    let exportRoot = null;
 
     try {
       const today = new Date();
       const datePart = today.toISOString().slice(0, 10);
       const generatedAt = today.toLocaleString();
+      const ecoSyncLogoSrc = `${window.location.origin}/ecosync-logo.svg`;
+      const logoAvailable = await canLoadImage(ecoSyncLogoSrc);
 
       const scoreHeader =
         board === "hybrid"
@@ -135,19 +159,29 @@ export default function Leaderboard() {
         })
         .join("");
 
-      const exportRoot = document.createElement("div");
+      exportRoot = document.createElement("div");
       exportRoot.style.background = "#ffffff";
       exportRoot.style.padding = "24px";
       exportRoot.style.fontFamily = "Segoe UI, Arial, sans-serif";
       exportRoot.style.color = "#0f172a";
       exportRoot.style.width = "1000px";
 
+      // Fallback to a text-only header when logo loading fails.
+      const logoHtml = logoAvailable
+        ? `<img src="${ecoSyncLogoSrc}" alt="EcoSync logo" style="height:52px;width:52px;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.18);" />`
+        : "";
+
       exportRoot.innerHTML = `
         <div style="border:2px solid #86efac;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(90deg,#047857,#15803d);color:#ffffff;padding:18px 20px;">
-            <div style="font-size:12px;letter-spacing:0.14em;text-transform:uppercase;opacity:0.9;">EcoSync</div>
-            <h1 style="margin:6px 0 2px 0;font-size:28px;">Leaderboard Report</h1>
-            <div style="font-size:13px;opacity:0.95;">Board: ${escapeHtml(boardLabel)} | Period: ${escapeHtml(periodLabel)} | Generated: ${escapeHtml(generatedAt)}</div>
+            <div style="display:flex;align-items:center;gap:14px;">
+              ${logoHtml}
+              <div>
+                <div style="font-size:12px;letter-spacing:0.14em;text-transform:uppercase;opacity:0.9;">EcoSync</div>
+                <h1 style="margin:6px 0 2px 0;font-size:28px;">Leaderboard Report</h1>
+                <div style="font-size:13px;opacity:0.95;">Board: ${escapeHtml(boardLabel)} | Period: ${escapeHtml(periodLabel)} | Generated: ${escapeHtml(generatedAt)}</div>
+              </div>
+            </div>
           </div>
 
           <div style="padding:16px 18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
@@ -201,11 +235,14 @@ export default function Leaderboard() {
         .from(exportRoot)
         .save();
 
-      document.body.removeChild(exportRoot);
       showToast("success", "Leaderboard exported as PDF.");
     } catch (e) {
       showToast("error", e?.message || "Failed to export leaderboard PDF.");
     } finally {
+      if (exportRoot && document.body.contains(exportRoot)) {
+        // Always clean up the temporary export container.
+        document.body.removeChild(exportRoot);
+      }
       setExportingPdf(false);
     }
   }
