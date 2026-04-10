@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext'
 import { Users, Activity, BarChart3, Settings, LogOut, Wind, Map, Leaf } from 'lucide-react'
 import API from '../api/axios'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { getAdminSettings } from '../utils/adminSettings'
 
 const AdminDashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -79,8 +80,11 @@ const AdminDashboard = () => {
     fetchStats();
     fetchRecentTrips();
     
-    // Refresh recent trips every 30 seconds
-    const interval = setInterval(fetchRecentTrips, 30000);
+    const { liveFeedRefreshSeconds } = getAdminSettings();
+    const refreshMs = Math.max(5, Number(liveFeedRefreshSeconds || 30)) * 1000;
+
+    // Refresh recent trips using configured admin settings
+    const interval = setInterval(fetchRecentTrips, refreshMs);
     return () => clearInterval(interval);
   }, []);
 
