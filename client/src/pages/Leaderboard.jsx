@@ -189,13 +189,13 @@ export default function Leaderboard() {
               <div style="font-size:11px;text-transform:uppercase;color:#047857;font-weight:700;">Period</div>
               <div style="font-size:20px;color:#064e3b;font-weight:700;">${escapeHtml(periodLabel)}</div>
             </div>
-            <div style="border:1px solid #bfdbfe;background:#eff6ff;border-radius:10px;padding:10px;">
-              <div style="font-size:11px;text-transform:uppercase;color:#1d4ed8;font-weight:700;">Ranked Users</div>
-              <div style="font-size:20px;color:#1e3a8a;font-weight:700;">${entries.length}</div>
+            <div style="border:1px solid #d1fae5;background:#ecfdf5;border-radius:10px;padding:10px;">
+              <div style="font-size:11px;text-transform:uppercase;color:#047857;font-weight:700;">Ranked Users</div>
+              <div style="font-size:20px;color:#064e3b;font-weight:700;">${entries.length}</div>
             </div>
-            <div style="border:1px solid #fde68a;background:#fffbeb;border-radius:10px;padding:10px;">
-              <div style="font-size:11px;text-transform:uppercase;color:#b45309;font-weight:700;">Top Metric</div>
-              <div style="font-size:20px;color:#78350f;font-weight:700;">${topMetricValue.toFixed(board === "efficiency" ? 4 : 2)}</div>
+            <div style="border:1px solid #d1fae5;background:#ecfdf5;border-radius:10px;padding:10px;">
+              <div style="font-size:11px;text-transform:uppercase;color:#047857;font-weight:700;">Top Metric</div>
+              <div style="font-size:20px;color:#064e3b;font-weight:700;">${topMetricValue.toFixed(board === "efficiency" ? 4 : 2)}</div>
             </div>
           </div>
 
@@ -319,11 +319,12 @@ export default function Leaderboard() {
               Welcome, {user?.name}!
             </span>
             <button onClick={() => navigate("/home")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>home</span>Home</button>
-            <button onClick={() => navigate("/weather-suggestion")} className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300 bg-cyan-50 px-3.5 py-2 text-sm font-semibold text-cyan-900 transition hover:bg-cyan-100 hover:border-cyan-400"><span className="material-icons" style={{ fontSize: "17px" }}>cloud</span>Check Weather</button>
-            <button onClick={() => navigate("/badges")} className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-100 hover:border-amber-400"><span className="material-icons" style={{ fontSize: "17px" }}>workspace_premium</span>Badges</button>
-            <button onClick={() => navigate("/leaderboard")} className="inline-flex items-center gap-1.5 rounded-full border border-violet-300 bg-violet-100 px-3.5 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-200 hover:border-violet-400"><span className="material-icons" style={{ fontSize: "17px" }}>leaderboard</span>Leaderboard</button>
-            <button onClick={() => navigate("/challenges")} className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3.5 py-2 text-sm font-semibold text-indigo-900 transition hover:bg-indigo-100 hover:border-indigo-400"><span className="material-icons" style={{ fontSize: "17px" }}>emoji_events</span>Challenges</button>
-            <button onClick={() => navigate("/commute-history")} className="inline-flex items-center gap-1.5 rounded-full border border-blue-300 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-900 transition hover:bg-blue-100 hover:border-blue-400"><span className="material-icons" style={{ fontSize: "17px" }}>history</span>Trip History</button>
+            <button onClick={() => navigate("/weather-suggestion")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>cloud</span>Check Weather</button>
+            <button onClick={() => navigate("/badges")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>workspace_premium</span>Badges</button>
+            <button onClick={() => navigate("/leaderboard")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400 bg-emerald-100 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-200 hover:border-emerald-500"><span className="material-icons" style={{ fontSize: "17px" }}>leaderboard</span>Leaderboard</button>
+            <button onClick={() => navigate("/challenges")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>emoji_events</span>Challenges</button>
+            <button onClick={() => navigate("/trip-achievements")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>military_tech</span>Achievements</button>
+            <button onClick={() => navigate("/commute-history")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>history</span>Trip History</button>
             <button onClick={handleLogout} className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-3.5 py-2 text-sm font-semibold text-rose-900 transition hover:bg-rose-100 hover:border-rose-400"><span className="material-icons" style={{ fontSize: "17px" }}>logout</span>Logout</button>
           </div>
         </div>
@@ -403,26 +404,26 @@ export default function Leaderboard() {
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Current Period</p>
                 <p className="mt-2 text-3xl font-bold text-emerald-900">{periodLabel}</p>
               </div>
-              <div className="rounded-2xl border-2 border-blue-200 bg-linear-to-br from-blue-50 via-white to-emerald-50 p-5 shadow-sm transition hover:shadow-md">
-                <p className="text-xs font-bold uppercase tracking-wider text-blue-700">Ranked Users</p>
-                <p className="mt-2 text-3xl font-bold text-blue-900">{entries.length}</p>
+              <div className="rounded-2xl border-2 border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-green-100 p-5 shadow-sm transition hover:shadow-md">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Ranked Users</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{entries.length}</p>
               </div>
-              <div className="rounded-2xl border-2 border-amber-200 bg-linear-to-br from-amber-50 via-white to-lime-50 p-5 shadow-sm transition hover:shadow-md">
-                <p className="text-xs font-bold uppercase tracking-wider text-amber-700">
+              <div className="rounded-2xl border-2 border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-green-100 p-5 shadow-sm transition hover:shadow-md">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">
                   {board === "hybrid"
                     ? "Top Hybrid Score"
                     : board === "efficiency"
                     ? "Top CO2 per KM"
                     : "Top CO2 Saved"}
                 </p>
-                <p className="mt-2 text-3xl font-bold text-amber-900">
+                <p className="mt-2 text-3xl font-bold text-emerald-900">
                   {topMetricValue.toFixed(board === "efficiency" ? 4 : 2)}{" "}
                   <span className="text-base">{board === "hybrid" ? "pts" : board === "efficiency" ? "kg/km" : "kg"}</span>
                 </p>
               </div>
             </div>
 
-            <div className="mb-4 rounded-xl border border-indigo-100 bg-indigo-50/70 px-4 py-3 text-sm text-indigo-900">
+            <div className="mb-4 rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-900">
               <span className="font-semibold">{boardHelp.title}:</span> {boardHelp.text}
             </div>
 
@@ -435,7 +436,7 @@ export default function Leaderboard() {
             )}
 
             {!loading && !error && meta?.me?.rank && (
-              <div className="mb-4 rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-sm text-blue-800">
+              <div className="mb-4 rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-800">
                 Your rank in this board: #{meta.me.rank}
               </div>
             )}
@@ -497,21 +498,21 @@ export default function Leaderboard() {
                         <p className="font-semibold text-emerald-700">{(entry.totalCo2Saved ?? 0).toFixed(2)}</p>
                         <p className="text-xs text-emerald-600">kg CO2</p>
                       </div>
-                      <div className="rounded-xl border border-violet-100 bg-violet-50 px-3 py-2 text-center">
+                      <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-center">
                         {board === "hybrid" ? (
                           <>
-                            <p className="font-semibold text-violet-700">{(entry.hybridScore ?? 0).toFixed(2)}</p>
-                            <p className="text-xs text-violet-600">hybrid pts</p>
+                            <p className="font-semibold text-emerald-700">{(entry.hybridScore ?? 0).toFixed(2)}</p>
+                            <p className="text-xs text-emerald-600">hybrid pts</p>
                           </>
                         ) : board === "efficiency" ? (
                           <>
-                            <p className="font-semibold text-violet-700">{(entry.co2PerKm ?? 0).toFixed(4)}</p>
-                            <p className="text-xs text-violet-600">kg/km</p>
+                            <p className="font-semibold text-emerald-700">{(entry.co2PerKm ?? 0).toFixed(4)}</p>
+                            <p className="text-xs text-emerald-600">kg/km</p>
                           </>
                         ) : (
                           <>
-                            <p className="font-semibold text-violet-700">{entry.activeDays ?? 0}</p>
-                            <p className="text-xs text-violet-600">active days</p>
+                            <p className="font-semibold text-emerald-700">{entry.activeDays ?? 0}</p>
+                            <p className="text-xs text-emerald-600">active days</p>
                           </>
                         )}
                       </div>

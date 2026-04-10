@@ -293,7 +293,7 @@ const AdminDashboard = () => {
               <h3 className="font-semibold text-gray-800">Manage Challenges</h3>
               <p className="text-sm text-gray-600">Create, update and deactivate challenges</p>
             </Link>
-            <button className="p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition text-left">
+            <Link
               to="/admin/settings"
               className="p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition text-left block"
             >

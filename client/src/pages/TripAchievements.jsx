@@ -78,17 +78,24 @@ const TripAchievements = () => {
             </button>
             <button
               onClick={() => navigate('/commute-logger')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-teal-300 bg-teal-50 px-3.5 py-2 text-sm font-semibold text-teal-900 transition hover:bg-teal-100 hover:border-teal-400"
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
             >
               <span className="material-icons" style={{fontSize: '17px'}}>directions</span>
               Commute Logger
             </button>
             <button
               onClick={() => navigate('/commute-history')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-blue-300 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-900 transition hover:bg-blue-100 hover:border-blue-400"
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"
             >
               <span className="material-icons" style={{fontSize: '17px'}}>history</span>
               Trip History
+            </button>
+            <button
+              onClick={() => navigate('/trip-achievements')}
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400 bg-emerald-100 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-200 hover:border-emerald-500"
+            >
+              <span className="material-icons" style={{fontSize: '17px'}}>military_tech</span>
+              Achievements
             </button>
             <button
               onClick={handleLogout}
@@ -118,14 +125,14 @@ const TripAchievements = () => {
             <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <button
                 onClick={() => navigate('/badges')}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 transition hover:border-amber-400 hover:bg-amber-100"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 transition hover:border-emerald-400 hover:bg-emerald-100"
               >
                 <span className="material-icons" style={{ fontSize: '20px' }}>workspace_premium</span>
                 Open Badges
               </button>
               <button
                 onClick={() => navigate('/challenges')}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-indigo-300 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-900 transition hover:border-indigo-400 hover:bg-indigo-100"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 transition hover:border-emerald-400 hover:bg-emerald-100"
               >
                 <span className="material-icons" style={{ fontSize: '20px' }}>emoji_events</span>
                 Open Challenges
@@ -133,13 +140,13 @@ const TripAchievements = () => {
             </div>
 
             <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-blue-700">Stored Events</p>
-                <p className="mt-1 text-lg font-bold text-blue-900">{formattedHistory.length}</p>
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">Stored Events</p>
+                <p className="mt-1 text-lg font-bold text-emerald-900">{formattedHistory.length}</p>
               </div>
-              <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-amber-700">Badges + Challenges</p>
-                <p className="mt-1 text-lg font-bold text-amber-900">Persistent Tracking</p>
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">Badges + Challenges</p>
+                <p className="mt-1 text-lg font-bold text-emerald-900">Persistent Tracking</p>
               </div>
             </div>
 

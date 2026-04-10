@@ -22,7 +22,7 @@ function FilterChip({ active, children, onClick }) {
       className={[
         "px-3 py-1.5 rounded-full text-sm border transition",
         active
-          ? "bg-green-600 text-white border-green-600"
+          ? "bg-emerald-600 text-white border-emerald-600"
           : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50",
       ].join(" ")}
     >
@@ -46,6 +46,7 @@ export default function Badges() {
   const { toast, showToast } = useGamificationToast();
   const selectedBadgeImage =
     selectedBadge?.imageUrl || selectedBadge?.image || selectedBadge?.iconUrl || "";
+  const selectedBadgeEarned = selectedBadge ? earnedIds.has(selectedBadge?._id) : false;
 
   async function loadBadges(options = {}) {
     const { notifySuccess = false, silentError = false } = options;
@@ -171,11 +172,12 @@ export default function Badges() {
               Welcome, {user?.name}!
             </span>
             <button onClick={() => navigate("/home")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>home</span>Home</button>
-            <button onClick={() => navigate("/weather-suggestion")} className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300 bg-cyan-50 px-3.5 py-2 text-sm font-semibold text-cyan-900 transition hover:bg-cyan-100 hover:border-cyan-400"><span className="material-icons" style={{ fontSize: "17px" }}>cloud</span>Check Weather</button>
-            <button onClick={() => navigate("/badges")} className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3.5 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200 hover:border-amber-400"><span className="material-icons" style={{ fontSize: "17px" }}>workspace_premium</span>Badges</button>
-            <button onClick={() => navigate("/leaderboard")} className="inline-flex items-center gap-1.5 rounded-full border border-violet-300 bg-violet-50 px-3.5 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-100 hover:border-violet-400"><span className="material-icons" style={{ fontSize: "17px" }}>leaderboard</span>Leaderboard</button>
-            <button onClick={() => navigate("/challenges")} className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3.5 py-2 text-sm font-semibold text-indigo-900 transition hover:bg-indigo-100 hover:border-indigo-400"><span className="material-icons" style={{ fontSize: "17px" }}>emoji_events</span>Challenges</button>
-            <button onClick={() => navigate("/commute-history")} className="inline-flex items-center gap-1.5 rounded-full border border-blue-300 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-900 transition hover:bg-blue-100 hover:border-blue-400"><span className="material-icons" style={{ fontSize: "17px" }}>history</span>Trip History</button>
+            <button onClick={() => navigate("/weather-suggestion")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>cloud</span>Check Weather</button>
+            <button onClick={() => navigate("/badges")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400 bg-emerald-100 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-200 hover:border-emerald-500"><span className="material-icons" style={{ fontSize: "17px" }}>workspace_premium</span>Badges</button>
+            <button onClick={() => navigate("/leaderboard")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>leaderboard</span>Leaderboard</button>
+            <button onClick={() => navigate("/challenges")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>emoji_events</span>Challenges</button>
+            <button onClick={() => navigate("/trip-achievements")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>military_tech</span>Achievements</button>
+            <button onClick={() => navigate("/commute-history")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>history</span>Trip History</button>
             <button onClick={handleLogout} className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-3.5 py-2 text-sm font-semibold text-rose-900 transition hover:bg-rose-100 hover:border-rose-400"><span className="material-icons" style={{ fontSize: "17px" }}>logout</span>Logout</button>
           </div>
         </div>
@@ -200,13 +202,13 @@ export default function Badges() {
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Total Badges</p>
                 <p className="mt-2 text-3xl font-bold text-emerald-900">{badges.length}</p>
               </div>
-              <div className="rounded-2xl border-2 border-blue-200 bg-linear-to-br from-blue-50 via-white to-emerald-50 p-5 shadow-sm transition hover:shadow-md">
-                <p className="text-xs font-bold uppercase tracking-wider text-blue-700">Earned</p>
-                <p className="mt-2 text-3xl font-bold text-blue-900">{earnedIds.size}</p>
+              <div className="rounded-2xl border-2 border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-green-100 p-5 shadow-sm transition hover:shadow-md">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Earned</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{earnedIds.size}</p>
               </div>
-              <div className="rounded-2xl border-2 border-amber-200 bg-linear-to-br from-amber-50 via-white to-lime-50 p-5 shadow-sm transition hover:shadow-md">
-                <p className="text-xs font-bold uppercase tracking-wider text-amber-700">Completion Rate</p>
-                <p className="mt-2 text-3xl font-bold text-amber-900">{completionRate}%</p>
+              <div className="rounded-2xl border-2 border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-green-100 p-5 shadow-sm transition hover:shadow-md">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Completion Rate</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{completionRate}%</p>
               </div>
             </div>
 
@@ -307,12 +309,20 @@ export default function Badges() {
                 <img
                   src={selectedBadgeImage}
                   alt={selectedBadge?.name || "Badge"}
-                  className="absolute inset-0 h-full w-full object-cover"
+                  className={[
+                    "absolute inset-0 h-full w-full object-cover transition",
+                    selectedBadgeEarned ? "" : "grayscale opacity-55",
+                  ].join(" ")}
                   referrerPolicy="no-referrer"
                   onError={() => setModalImageFailed(true)}
                 />
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-emerald-300 to-teal-500 text-6xl font-black text-white/90">
+                <div
+                  className={[
+                    "absolute inset-0 flex items-center justify-center bg-linear-to-br from-emerald-300 to-teal-500 text-6xl font-black text-white/90 transition",
+                    selectedBadgeEarned ? "" : "grayscale opacity-60",
+                  ].join(" ")}
+                >
                   {(selectedBadge?.name || "B")
                     .split(" ")
                     .filter(Boolean)
@@ -322,6 +332,10 @@ export default function Badges() {
                 </div>
               )}
               <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-slate-900/25 via-emerald-900/45 to-slate-900/60" />
+
+              {!selectedBadgeEarned && (
+                <div className="pointer-events-none absolute inset-0 z-30 bg-slate-700/45" />
+              )}
 
               <button
                 type="button"
@@ -333,7 +347,12 @@ export default function Badges() {
 
               <div className="pointer-events-none absolute inset-0 bg-radial-[ellipse_at_center] from-white/30 via-transparent to-transparent" />
 
-              <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 flex h-36 w-36 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-amber-200 bg-linear-to-br from-amber-200 to-yellow-500 text-5xl text-amber-900 shadow-xl animate-pulse">
+              <div
+                className={[
+                  "pointer-events-none absolute left-1/2 top-1/2 z-20 flex h-36 w-36 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-amber-200 bg-linear-to-br from-amber-200 to-yellow-500 text-5xl text-amber-900 shadow-xl animate-pulse transition",
+                  selectedBadgeEarned ? "" : "grayscale opacity-65",
+                ].join(" ")}
+              >
                 ★
               </div>
 
@@ -351,16 +370,6 @@ export default function Badges() {
                 {selectedBadge?.description || "No description provided."}
               </p>
 
-              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Type</p>
-                  <p className="mt-1 text-sm font-semibold text-emerald-900">{selectedBadge?.type || "Unknown"}</p>
-                </div>
-                <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-amber-700">Threshold</p>
-                  <p className="mt-1 text-sm font-semibold text-amber-900">{selectedBadge?.threshold ?? "-"}</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
