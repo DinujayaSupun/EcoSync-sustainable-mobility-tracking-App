@@ -63,7 +63,8 @@ const challengeSchema = new mongoose.Schema({
 
   deadline: {
     type: Date,
-    required: true
+    required: false,
+    default: null
   },
 
   isDeleted: {

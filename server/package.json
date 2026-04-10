@@ -15,7 +15,8 @@
     "test:coverage": "jest --config jest.config.js --coverage",
     "test:performance": "npx artillery run ./performance/artillery.yml",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed:gamification": "node scripts/seedGamification.js"
   },
   "keywords": [
     "sustainability",

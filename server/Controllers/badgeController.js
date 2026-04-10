@@ -22,6 +22,12 @@ async function createBadge(req, res, next) {
     const badge = await badgeService.createBadge(req.body);
     res.status(201).json({ success: true, data: badge });
   } catch (err) {
+    if (err?.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "A badge with this name already exists.",
+      });
+    }
     next(err);
   }
 }
@@ -54,12 +60,26 @@ async function updateBadge(req, res, next) {
 
     res.json({ success: true, data: updated });
   } catch (err) {
+    if (err?.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "A badge with this name already exists.",
+      });
+    }
     next(err);
   }
 }
 
 async function deleteBadge(req, res, next) {
   try {
+    const hasAwards = await UserBadge.exists({ badgeId: req.params.id });
+    if (hasAwards) {
+      return res.status(409).json({
+        success: false,
+        message: "Cannot delete a badge that has already been awarded.",
+      });
+    }
+
     const deleted = await badgeService.deleteBadge(req.params.id);
     if (!deleted) return res.status(404).json({ success: false, message: "Badge not found" });
 

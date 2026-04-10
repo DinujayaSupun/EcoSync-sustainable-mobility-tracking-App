@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Badge = require("../models/Badge");
 const UserBadge = require("../models/UserBadge");
-const Trip = require("../models/Trip");
+const Commute = require("../models/Commute");
 
 /**
  * Convert userId string -> ObjectId safely
@@ -14,7 +14,7 @@ function toObjectId(id) {
 }
 
 /**
- * Calculates user stats from Trip collection.
+ * Calculates user stats from Commute collection.
  */
 async function getUserTripStats(userId) {
   const userObjectId = toObjectId(userId);
@@ -22,11 +22,11 @@ async function getUserTripStats(userId) {
     return { tripCount: 0, totalDistance: 0, totalCo2Saved: 0 };
   }
 
-  const rows = await Trip.aggregate([
-    { $match: { user: userObjectId } }, // Trip.user is ObjectId
+  const rows = await Commute.aggregate([
+    { $match: { userId: userObjectId } },
     {
       $group: {
-        _id: "$user",
+        _id: "$userId",
         tripCount: { $sum: 1 },
         totalDistance: { $sum: "$distance" },
         totalCo2Saved: { $sum: "$co2Saved" },
@@ -88,12 +88,19 @@ async function awardBadgeToUser(userId, badgeId) {
  */
 async function evaluateBadgesForUser(userId) {
   const userObjectId = toObjectId(userId);
-  if (!userObjectId) return { newAwards: 0, stats: { tripCount: 0, totalDistance: 0, totalCo2Saved: 0 } };
+  if (!userObjectId) {
+    return {
+      newAwards: 0,
+      awardedBadges: [],
+      stats: { tripCount: 0, totalDistance: 0, totalCo2Saved: 0 },
+    };
+  }
 
   const stats = await getUserTripStats(userObjectId);
   const badges = await Badge.find();
 
   let newAwards = 0;
+  const awardedBadges = [];
 
   for (const badge of badges) {
     if (!meetsCriteria(badge, stats)) continue;
@@ -104,13 +111,21 @@ async function evaluateBadgesForUser(userId) {
     try {
       await UserBadge.create({ userId: userObjectId, badgeId: badge._id, awardedAt: new Date() });
       newAwards += 1;
+      awardedBadges.push({
+        _id: badge._id,
+        name: badge.name,
+        description: badge.description,
+        imageUrl: badge.imageUrl,
+        type: badge.type,
+        threshold: badge.threshold,
+      });
     } catch (err) {
       // Ignore duplicates (race conditions)
       if (err?.code !== 11000) throw err;
     }
   }
 
-  return { newAwards, stats };
+  return { newAwards, awardedBadges, stats };
 }
 
 module.exports = {

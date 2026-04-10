@@ -13,7 +13,7 @@ const badgeSchema = new mongoose.Schema(
     },
 
     // Threshold to earn this badge
-    threshold: { type: Number, required: true, min: 0 },
+    threshold: { type: Number, required: true, min: 1 },
 
     // Optional image url (we will auto-fill using Unsplash if not provided)
     imageUrl: { type: String, default: "" },
