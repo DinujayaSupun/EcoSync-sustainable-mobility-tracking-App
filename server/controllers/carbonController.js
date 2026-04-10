@@ -1,10 +1,10 @@
-const CarbonRecord = require("../Models/carbonRecord");
+const CarbonRecord = require("../models/carbonRecord");
 
 const {
   getUserTotalSaved,
   forecastMonthlySavings,
   getUserPercentile,
-} = require("../Services/analytics.service");
+} = require("../services/analytics.service");
 
 // CREATE
 const {
@@ -13,7 +13,7 @@ const {
   calculateEfficiencyScore,
   generateRecommendation,
   compareAllOptions,
-} = require("../Services/carbon.service"); 
+} = require("../services/carbon.service");
 
 // CREATE + CALCULATE
 const createCarbonRecord = async (req, res, next) => {
@@ -120,23 +120,19 @@ const updateRecord = async (req, res, next) => {
     }
 
     let updatedVehicle = vehicleType || record.vehicleType;
-    let updatedDistance =
-      distance !== undefined ? distance : record.distance;
+    let updatedDistance = distance !== undefined ? distance : record.distance;
 
     // Recalculate everything properly
-    const emissionProduced = calculateEmission(
-      updatedVehicle,
-      updatedDistance
-    );
+    const emissionProduced = calculateEmission(updatedVehicle, updatedDistance);
 
     const emissionSaved = calculateEmissionSaved(
       updatedVehicle,
-      updatedDistance
+      updatedDistance,
     );
 
     const efficiencyScore = calculateEfficiencyScore(
       emissionProduced,
-      updatedDistance
+      updatedDistance,
     );
 
     record.vehicleType = updatedVehicle;

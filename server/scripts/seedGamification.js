@@ -13,10 +13,10 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 
 const Badge = require("../models/Badge");
-const Challenge = require("../models/challenges/challenges");
+const Challenge = require("../models/Challenges/challenges");
 const User = require("../models/User");
 const UserBadge = require("../models/UserBadge");
-const Participation = require("../models/challenges/participation.model");
+const Participation = require("../models/Challenges/participation.model");
 
 const shouldReset = process.argv.includes("--reset");
 

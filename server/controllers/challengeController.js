@@ -1,7 +1,7 @@
-const Challenge = require("../models/challenges/challenges");
-const { generateChallengeContent } = require("../Services/chatgpt.service");
+const Challenge = require("../models/Challenges/challenges");
+const { generateChallengeContent } = require("../services/chatgpt.service");
 
-const Participation = require("../models/challenges/participation.model");
+const Participation = require("../models/Challenges/participation.model");
 const Commute = require("../models/Commute");
 
 const CHALLENGE_MODE_TO_COMMUTE_TYPE = {
@@ -70,11 +70,9 @@ exports.createChallenge = async (req, res) => {
     const resolvedTagline = providedTagline || aiContent?.tagline;
 
     if (!resolvedTitle || !resolvedDescription || !resolvedTagline) {
-      return res
-        .status(400)
-        .json({
-          message: "Challenge title, description, and tagline are required.",
-        });
+      return res.status(400).json({
+        message: "Challenge title, description, and tagline are required.",
+      });
     }
 
     let resolvedDurationDays = Number(durationDays);
