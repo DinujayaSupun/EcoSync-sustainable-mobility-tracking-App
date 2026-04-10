@@ -1,6 +1,9 @@
 const Commute = require("../models/Commute");
 const Trip = require("../models/Trip");
 const User = require("../models/User");
+const Challenge = require("../models/Challenges/challenges");
+const Participation = require("../models/Challenges/participation.model");
+const AchievementEvent = require("../models/AchievementEvent");
 const axios = require("axios");
 const mongoose = require("mongoose");
 
@@ -22,6 +25,165 @@ const EMISSION_FACTORS = {
   Bike: 0,
   Walk: 0,
 };
+
+const CHALLENGE_MODE_TO_COMMUTE_TYPE = {
+  BUS: "Bus",
+  TRAIN: "Train",
+  BIKE: "Bike",
+  WALK: "Walk",
+  CAR: "Car",
+  VAN: "Car",
+};
+
+const CHALLENGE_MODE_TO_ICON = {
+  BUS: "directions_bus",
+  TRAIN: "train",
+  BIKE: "directions_bike",
+  WALK: "directions_walk",
+  CAR: "directions_car",
+  VAN: "airport_shuttle",
+};
+
+async function persistAchievementEvents({ userId, commuteId, achievements }) {
+  const ops = [];
+
+  for (const badge of achievements.newBadges || []) {
+    if (!badge?._id) continue;
+    const eventKey = `badge:${userId}:${badge._id}`;
+
+    ops.push({
+      updateOne: {
+        filter: { eventKey },
+        update: {
+          $setOnInsert: {
+            user: userId,
+            eventKey,
+            type: "BADGE_EARNED",
+            badge: badge._id,
+            sourceCommute: commuteId,
+            title: `Badge Earned: ${badge.name}`,
+            message: badge.description || "You earned a new badge.",
+            icon: "workspace_premium",
+            metadata: {
+              badgeName: badge.name,
+              badgeType: badge.type,
+              threshold: badge.threshold,
+            },
+          },
+        },
+        upsert: true,
+      },
+    });
+  }
+
+  for (const challenge of achievements.completedChallenges || []) {
+    if (!challenge?._id) continue;
+    const eventKey = `challenge_completed:${userId}:${challenge._id}`;
+
+    ops.push({
+      updateOne: {
+        filter: { eventKey },
+        update: {
+          $setOnInsert: {
+            user: userId,
+            eventKey,
+            type: "CHALLENGE_COMPLETED",
+            challenge: challenge._id,
+            sourceCommute: commuteId,
+            title: `Challenge Completed: ${challenge.title}`,
+            message: `Reward: +${challenge.rewardPoints || 0} points`,
+            icon: challenge.icon || "emoji_events",
+            metadata: {
+              challengeTitle: challenge.title,
+              rewardPoints: challenge.rewardPoints || 0,
+              transportMode: challenge.transportMode,
+            },
+          },
+        },
+        upsert: true,
+      },
+    });
+  }
+
+  if (!ops.length) return 0;
+
+  const result = await AchievementEvent.bulkWrite(ops, { ordered: false });
+  return result.upsertedCount || 0;
+}
+
+async function updateChallengeProgressForCommute({ userId, commute }) {
+  const progressedChallenges = [];
+  const completedChallenges = [];
+
+  const participationDocs = await Participation.find({
+    user: userId,
+    status: "ACTIVE",
+  }).populate("challenge");
+
+  for (const participation of participationDocs) {
+    const challenge = participation.challenge;
+
+    if (!challenge) continue;
+    if (challenge.isDeleted) continue;
+    if (challenge.status !== "ACTIVE") continue;
+
+    if (challenge.deadline && new Date(challenge.deadline).getTime() < Date.now()) {
+      challenge.status = "EXPIRED";
+      await challenge.save();
+      continue;
+    }
+
+    const mappedTransportType = CHALLENGE_MODE_TO_COMMUTE_TYPE[challenge.transportMode];
+    if (mappedTransportType && mappedTransportType !== commute.transportType) {
+      continue;
+    }
+
+    const progressIncrement = Number(commute.co2Saved || 0);
+    if (progressIncrement <= 0) continue;
+
+    const previousProgress = Number(participation.progress || 0);
+    const updatedProgress = previousProgress + progressIncrement;
+
+    participation.progress = updatedProgress;
+    participation.lastAutoSyncAt = commute.createdAt || new Date();
+
+    const hasCompletedNow = updatedProgress >= Number(challenge.emissionTarget || 0);
+    if (hasCompletedNow) {
+      participation.status = "COMPLETED";
+
+      if (!participation.rewardGranted) {
+        participation.rewardGranted = true;
+        participation.rewardedPoints = challenge.rewardPoints || 0;
+        participation.rewardGrantedAt = new Date();
+      }
+    }
+
+    await participation.save();
+
+    progressedChallenges.push({
+      _id: challenge._id,
+      title: challenge.title,
+      progressBefore: previousProgress,
+      progressAfter: updatedProgress,
+      increment: progressIncrement,
+      emissionTarget: challenge.emissionTarget,
+      icon: CHALLENGE_MODE_TO_ICON[challenge.transportMode] || "emoji_events",
+      transportMode: challenge.transportMode,
+    });
+
+    if (hasCompletedNow) {
+      completedChallenges.push({
+        _id: challenge._id,
+        title: challenge.title,
+        rewardPoints: challenge.rewardPoints || 0,
+        icon: CHALLENGE_MODE_TO_ICON[challenge.transportMode] || "emoji_events",
+        transportMode: challenge.transportMode,
+      });
+    }
+  }
+
+  return { progressedChallenges, completedChallenges };
+}
 
 // Helper function to geocode location using Nominatim API
 const geocodeLocation = async (locationName) => {
@@ -292,11 +454,46 @@ exports.logCommute = async (req, res) => {
       co2Saved: co2Saved,
     });
 
+    const achievements = {
+      newBadges: [],
+      progressedChallenges: [],
+      completedChallenges: [],
+    };
+
+    // Auto-update challenge progress from this commute (do NOT fail commute if challenge logic fails)
+    try {
+      const challengeResult = await updateChallengeProgressForCommute({
+        userId,
+        commute,
+      });
+      achievements.progressedChallenges = challengeResult.progressedChallenges;
+      achievements.completedChallenges = challengeResult.completedChallenges;
+    } catch (e) {
+      console.warn("Challenge progress sync failed during commute log:", e.message);
+    }
+
     //Auto-award badges (do NOT fail commute if badge logic fails)
     try {
-      await evaluateBadgesForUser(userId);
+      const badgeResult = await evaluateBadgesForUser(userId);
+      achievements.newBadges = badgeResult.awardedBadges || [];
     } catch (e) {
       console.warn("Badge evaluation failed:", e.message);
+    }
+
+    achievements.hasAny =
+      achievements.newBadges.length > 0 ||
+      achievements.completedChallenges.length > 0;
+
+    // Persist earned achievements in a dedicated collection (idempotent upserts).
+    try {
+      const insertedEvents = await persistAchievementEvents({
+        userId,
+        commuteId: commute._id,
+        achievements,
+      });
+      achievements.persistedEvents = insertedEvents;
+    } catch (e) {
+      console.warn("Achievement event persistence failed:", e.message);
     }
 
     res.status(201).json({
@@ -309,6 +506,7 @@ exports.logCommute = async (req, res) => {
         ...commute.toObject(),
         co2Saved: co2Saved,
       },
+      achievements,
     });
   } catch (error) {
     console.error("Commute logging error:", error.message);

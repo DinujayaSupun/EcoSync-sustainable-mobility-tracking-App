@@ -8,6 +8,7 @@ import Home from './pages/Home'
 import AdminDashboard from './pages/AdminDashboard'
 import CommuteLogger from './pages/CommuteLogger'
 import CommuteHistory from './pages/CommuteHistory'
+import TripAchievements from './pages/TripAchievements'
 import WeatherSuggestion from './pages/smartCommute/WeatherSuggestion'
 import UserManagement from './pages/UserManagement';
 import Reports from './pages/Reports';
@@ -22,6 +23,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
 import Badges from "./pages/Badges";
 import Leaderboard from "./pages/Leaderboard";
 import BadgeManagement from "./pages/BadgeManagement";
+import Challenges from "./pages/Challenges";
+import ChallengeManagement from "./pages/ChallengeManagement";
 
  //🛡️ Admin Guard Component
 const AdminProtectedRoute = ({ children }) => {
@@ -93,6 +96,12 @@ function AppRoutes() {
         </UserProtectedRoute>
       } />
 
+      <Route path="/trip-achievements" element={
+        <UserProtectedRoute>
+          <TripAchievements />
+        </UserProtectedRoute>
+      } />
+
       <Route path="/weather-suggestion" element={
         <UserProtectedRoute>
           <WeatherSuggestion />
@@ -127,6 +136,12 @@ function AppRoutes() {
         </AdminProtectedRoute>
       } />
 
+      <Route path="/admin/challenges" element={
+        <AdminProtectedRoute>
+          <ChallengeManagement />
+        </AdminProtectedRoute>
+      } />
+
       <Route
         path="/badges"
         element={
@@ -146,37 +161,10 @@ function AppRoutes() {
       />
 
       <Route
-        path="/about-us"
+        path="/challenges"
         element={
           <UserProtectedRoute>
-            <AboutUs />
-          </UserProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/privacy-policy"
-        element={
-          <UserProtectedRoute>
-            <PrivacyPolicy />
-          </UserProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/terms-and-conditions"
-        element={
-          <UserProtectedRoute>
-            <TermsAndConditions />
-          </UserProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/contact-support"
-        element={
-          <UserProtectedRoute>
-            <ContactSupport />
+            <Challenges />
           </UserProtectedRoute>
         }
       />

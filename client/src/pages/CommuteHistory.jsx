@@ -136,6 +136,13 @@ const CommuteHistory = () => {
                 <h2 className="text-2xl font-bold sm:text-3xl">Trip History</h2>
               </div>
             </div>
+            <button
+              onClick={() => navigate('/trip-achievements')}
+              className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white/95 px-4 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-50"
+            >
+              <span className="material-icons" style={{fontSize: '18px'}}>emoji_events</span>
+              View Achievements Page
+            </button>
           </div>
 
           <div className="px-6 py-6 sm:px-7">
