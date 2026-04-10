@@ -206,6 +206,44 @@ exports.getCurrentWeatherSuggestion = async (req, res) => {
 };
 
 /**
+ * Get weather forecast (hourly + daily)
+ * @route GET /api/weather-suggestion/forecast
+ */
+exports.getWeatherForecast = async (req, res) => {
+  try {
+    const { location, lat, lon } = req.query;
+
+    const parsedLat = lat ? parseFloat(lat) : null;
+    const parsedLon = lon ? parseFloat(lon) : null;
+
+    let forecastData;
+    if (parsedLat && parsedLon) {
+      forecastData = await weatherService.getForecastByCoords(parsedLat, parsedLon);
+    } else {
+      if (!location) {
+        return res.status(400).json({
+          success: false,
+          message: 'Provide either lat/lon or a location',
+        });
+      }
+
+      forecastData = await weatherService.getForecast(location);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: forecastData,
+    });
+  } catch (error) {
+    console.error('Error fetching weather forecast:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to fetch weather forecast',
+    });
+  }
+};
+
+/**
  * Autocomplete location suggestions for weather feature
  * @route GET /api/weather-suggestion/autocomplete
  */

@@ -148,7 +148,7 @@ const Home = () => {
                 <p className="text-xs font-bold uppercase tracking-widest text-lime-600">Eco Impact</p>
               </div>
               <h3 className="mb-1 text-sm font-semibold text-lime-700">CO₂ Saved</h3>
-              <p className="text-2xl font-bold text-lime-900">{user?.total_co2_saved || 0} <span className="text-sm">kg</span></p>
+              <p className="text-2xl font-bold text-lime-900">{(user?.total_co2_saved || 0).toFixed(2)} <span className="text-sm">kg</span></p>
             </div>
           </div>
 

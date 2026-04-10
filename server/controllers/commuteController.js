@@ -184,6 +184,20 @@ async function updateChallengeProgressForCommute({ userId, commute }) {
 
   return { progressedChallenges, completedChallenges };
 }
+// Small eco-driving credit for car users (kg CO2 saved per km).
+// This allows car trips to contribute a small positive value.
+const CAR_ECO_CREDIT_PER_KM = 0.005;
+
+// Centralized CO2 saved calculation used across create/update/recalculate flows.
+const calculateCo2Saved = (distance, emissionEstimate, transportType) => {
+  const carEmission = distance * EMISSION_FACTORS.Car;
+
+  if (transportType === "Car") {
+    return parseFloat((distance * CAR_ECO_CREDIT_PER_KM).toFixed(4));
+  }
+
+  return parseFloat(Math.max(0, carEmission - emissionEstimate).toFixed(4));
+};
 
 // Helper function to geocode location using Nominatim API
 const geocodeLocation = async (locationName) => {
@@ -363,7 +377,17 @@ const generateEcoSuggestion = (transportType, distance) => {
 // @access  Private
 exports.logCommute = async (req, res) => {
   try {
-    const { startLocation, destination, transportType, faculty, dayType } = req.body;
+    const {
+      startLocation,
+      destination,
+      transportType,
+      faculty,
+      dayType,
+      startLat,
+      startLon,
+      destLat,
+      destLon,
+    } = req.body;
     const userId = req.user.id;
 
     // Validation
@@ -381,9 +405,17 @@ exports.logCommute = async (req, res) => {
       });
     }
 
-    // Geocode both locations
-    const startCoords = await geocodeLocation(startLocation);
-    const destCoords = await geocodeLocation(destination);
+    const hasStartCoords = Number.isFinite(Number(startLat)) && Number.isFinite(Number(startLon));
+    const hasDestCoords = Number.isFinite(Number(destLat)) && Number.isFinite(Number(destLon));
+
+    // Use exact coordinates from client when available (GPS/autocomplete), otherwise geocode text.
+    const startCoords = hasStartCoords
+      ? { lat: Number(startLat), lon: Number(startLon) }
+      : await geocodeLocation(startLocation);
+
+    const destCoords = hasDestCoords
+      ? { lat: Number(destLat), lon: Number(destLon) }
+      : await geocodeLocation(destination);
 
     // Calculate route
     const routeData = await calculateRoute(
@@ -398,13 +430,12 @@ exports.logCommute = async (req, res) => {
     const emissionEstimate =
       routeData.distance * EMISSION_FACTORS[transportType];
 
-    // Calculate how much CO2 was saved compared to driving a car
-    // Step 1: Calculate what emissions WOULD have been if user drove a car
-    const carEmission = routeData.distance * EMISSION_FACTORS.Car;
-    // Step 2: Difference = CO2 saved by choosing a greener transport
-    // Math.max(0, ...) ensures co2Saved is never negative (car is the baseline)
-    // Example: Bus trip 10 km → carEmission=1.92, busEmission=1.05 → saved=0.87 kg
-    const co2Saved = Math.max(0, carEmission - emissionEstimate);
+    // Calculate CO2 saved. Car trips receive a small eco-driving credit.
+    const co2Saved = calculateCo2Saved(
+      routeData.distance,
+      emissionEstimate,
+      transportType,
+    );
 
     // Generate eco suggestion
     const ecoSuggestion = generateEcoSuggestion(
@@ -538,6 +569,48 @@ exports.getCommuteHistory = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to retrieve commute history",
+    });
+  }
+};
+
+// @desc    Get public footer stats
+// @route   GET /api/commute/footer-stats
+// @access  Public
+exports.getFooterStats = async (req, res) => {
+  try {
+    const [activeUserIds, co2Aggregate, activeChallenges] = await Promise.all([
+      Commute.distinct("userId"),
+      Commute.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalCO2Saved: { $sum: "$co2Saved" },
+          },
+        },
+      ]),
+      Challenge.countDocuments({ isDeleted: false, status: "ACTIVE" }),
+    ]);
+
+    const totalCO2Saved = co2Aggregate[0]?.totalCO2Saved || 0;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        activeUsers: activeUserIds.length,
+        totalCO2Saved: parseFloat(totalCO2Saved.toFixed(2)),
+        activeChallenges,
+      },
+    });
+  } catch (error) {
+    console.error("Get footer stats error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve footer stats",
+      data: {
+        activeUsers: 0,
+        totalCO2Saved: 0,
+        activeChallenges: 0,
+      },
     });
   }
 };
@@ -872,37 +945,58 @@ exports.updateCommute = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorised' });
     }
 
-    // Store old co2Saved value for later comparison
+    // Preserve existing CO2 saved value if it exists
+    // Only recalculate if the transport type is being changed
     const oldCo2Saved = trip.co2Saved || 0;
+    const oldTransportType = trip.transportType;
 
-    // Recalculate emission using the new transport type
-    // Formula: emissions (kg CO2) = distance (km) × emission factor (kg CO2/km)
-    // e.g. switching from Car (0.192) to Train (0.041) on a 10 km trip:
-    //      old = 10 × 0.192 = 1.92 kg CO2
-    //      new = 10 × 0.041 = 0.41 kg CO2  → saves 1.51 kg CO2
-    const newEmission = EMISSION_FACTORS[transportType] * trip.distance;
-    
-    // Calculate new co2Saved compared to car baseline
-    const carEmission = trip.distance * EMISSION_FACTORS.Car;
-    const newCo2Saved = Math.max(0, carEmission - newEmission);
+    let newCo2Saved = oldCo2Saved; // Default: preserve existing value
 
-    // Update the trip document fields with new values
-    trip.transportType = transportType;
-    trip.emissionEstimate = newEmission;
-    trip.co2Saved = newCo2Saved;
+    // Only recalculate CO2 saved if transport type is actually changing
+    if (oldTransportType !== transportType) {
+      // Recalculate emission using the new transport type
+      // Formula: emissions (kg CO2) = distance (km) × emission factor (kg CO2/km)
+      // e.g. switching from Car (0.192) to Train (0.041) on a 10 km trip:
+      //      old = 10 × 0.192 = 1.92 kg CO2
+      //      new = 10 × 0.041 = 0.41 kg CO2  → saves 1.51 kg CO2
+      const newEmission = EMISSION_FACTORS[transportType] * trip.distance;
+      
+      // Calculate new co2Saved using the shared rule set.
+      newCo2Saved = calculateCo2Saved(trip.distance, newEmission, transportType);
 
-    // Persist the updated document to MongoDB
-    await trip.save();
+      // Update the trip document fields with new values
+      trip.transportType = transportType;
+      trip.emissionEstimate = newEmission;
+      trip.co2Saved = newCo2Saved;
 
-    // Update user's total co2Saved with the difference
-    const co2Difference = newCo2Saved - oldCo2Saved;
-    await User.findByIdAndUpdate(
-      trip.userId,
-      { $inc: { total_co2_saved: co2Difference } },
-      { new: true }
-    );
+      // Persist the updated document to MongoDB
+      await trip.save();
 
-    res.status(200).json({ success: true, message: 'Trip updated successfully', data: trip });
+      // Update user's total co2Saved with the difference
+      const co2Difference = newCo2Saved - oldCo2Saved;
+      await User.findByIdAndUpdate(
+        trip.userId,
+        { $inc: { total_co2_saved: co2Difference } },
+        { new: true }
+      );
+
+      res.status(200).json({ 
+        success: true, 
+        message: 'Trip updated successfully', 
+        data: trip,
+        co2DataPreserved: false,
+        co2Recalculated: true
+      });
+    } else {
+      // Transport type not changed, no update needed
+      res.status(200).json({ 
+        success: true, 
+        message: 'No changes made - same transport type', 
+        data: trip,
+        co2DataPreserved: true,
+        co2Recalculated: false
+      });
+    }
   } catch (error) {
     console.error('Update commute error:', error.message);
     res.status(500).json({ success: false, message: 'Failed to update trip' });
@@ -921,11 +1015,15 @@ exports.recalculateCo2Saved = async (req, res) => {
 
     let totalCo2Saved = 0;
 
-    // Recalculate co2Saved for each commute if not already set
+    // Recalculate co2Saved only when value is truly missing.
+    // This preserves existing stored values, including valid 0 entries.
     for (let commute of commutes) {
-      if (!commute.co2Saved) {
-        const carEmission = commute.distance * EMISSION_FACTORS.Car;
-        const co2Saved = Math.max(0, carEmission - commute.emissionEstimate);
+      if (commute.co2Saved === null || commute.co2Saved === undefined) {
+        const co2Saved = calculateCo2Saved(
+          commute.distance,
+          commute.emissionEstimate,
+          commute.transportType,
+        );
         commute.co2Saved = co2Saved;
         await commute.save();
       }
@@ -953,6 +1051,158 @@ exports.recalculateCo2Saved = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to recalculate CO2 saved',
+    });
+  }
+};
+
+// @desc  Get CO2 savings breakdown by transport mode
+// @route GET /api/commute/co2-savings-by-mode
+// @access Private
+exports.getCO2SavingsByTransportMode = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Aggregate CO2 savings by transport type
+    const co2SavingsByMode = await Commute.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+        },
+      },
+      {
+        $group: {
+          _id: "$transportType",
+          count: { $sum: 1 },
+          totalCO2Saved: { $sum: "$co2Saved" },
+          totalEmissions: { $sum: "$emissionEstimate" },
+          totalDistance: { $sum: "$distance" },
+          avgCO2PerKm: { $avg: "$emissionEstimate" },
+        },
+      },
+      {
+        $sort: { totalCO2Saved: -1 },
+      },
+    ]);
+
+    // Format results with precision
+    const formatted = co2SavingsByMode.map((mode) => ({
+      transportType: mode._id,
+      count: mode.count,
+      totalCO2Saved: parseFloat(mode.totalCO2Saved.toFixed(2)),
+      totalEmissions: parseFloat(mode.totalEmissions.toFixed(2)),
+      totalDistance: parseFloat(mode.totalDistance.toFixed(2)),
+      avgCO2PerKm: parseFloat(mode.avgCO2PerKm.toFixed(4)),
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: formatted,
+    });
+  } catch (error) {
+    console.error('Get CO2 savings by mode error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve CO2 savings breakdown',
+    });
+  }
+};
+
+// @desc  Get car usage and CO2 savings impact
+// @route GET /api/commute/car-usage-impact
+// @access Private
+exports.getCarUsageImpact = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get all commutes for this user
+    const commutes = await Commute.find({ userId }).sort({ createdAt: -1 });
+
+    // Calculate car usage statistics
+    let carUsageStats = {
+      totalCarTrips: 0,
+      totalCarDistance: 0,
+      totalCarEmissions: 0,
+      carUsagePercentage: 0,
+      co2SavedByUsingAlternatives: 0,
+      monthlyCarStats: {},
+    };
+
+    // Track monthly car usage
+    const monthlyStats = {};
+
+    commutes.forEach((commute) => {
+      // Get month key for grouping
+      const monthKey = new Date(commute.createdAt).toISOString().substring(0, 7); // YYYY-MM
+
+      if (!monthlyStats[monthKey]) {
+        monthlyStats[monthKey] = {
+          month: monthKey,
+          carTrips: 0,
+          carDistance: 0,
+          carEmissions: 0,
+          alternativeTrips: 0,
+          co2Saved: 0,
+        };
+      }
+
+      if (commute.transportType === "Car") {
+        // Car usage stats
+        carUsageStats.totalCarTrips += 1;
+        carUsageStats.totalCarDistance += commute.distance;
+        carUsageStats.totalCarEmissions += commute.emissionEstimate;
+
+        // Monthly car stats
+        monthlyStats[monthKey].carTrips += 1;
+        monthlyStats[monthKey].carDistance += commute.distance;
+        monthlyStats[monthKey].carEmissions += commute.emissionEstimate;
+      } else {
+        // Alternative transport usage
+        monthlyStats[monthKey].alternativeTrips += 1;
+        monthlyStats[monthKey].co2Saved += commute.co2Saved;
+        carUsageStats.co2SavedByUsingAlternatives += commute.co2Saved;
+      }
+    });
+
+    // Calculate car usage percentage
+    if (commutes.length > 0) {
+      carUsageStats.carUsagePercentage = parseFloat(
+        ((carUsageStats.totalCarTrips / commutes.length) * 100).toFixed(2)
+      );
+    }
+
+    // Round all values
+    carUsageStats.totalCarDistance = parseFloat(carUsageStats.totalCarDistance.toFixed(2));
+    carUsageStats.totalCarEmissions = parseFloat(carUsageStats.totalCarEmissions.toFixed(2));
+    carUsageStats.co2SavedByUsingAlternatives = parseFloat(
+      carUsageStats.co2SavedByUsingAlternatives.toFixed(2)
+    );
+
+    // Format monthly stats
+    const formattedMonthlyStats = Object.keys(monthlyStats)
+      .sort()
+      .reverse()
+      .map((month) => ({
+        month: monthlyStats[month].month,
+        carTrips: monthlyStats[month].carTrips,
+        carDistance: parseFloat(monthlyStats[month].carDistance.toFixed(2)),
+        carEmissions: parseFloat(monthlyStats[month].carEmissions.toFixed(2)),
+        alternativeTrips: monthlyStats[month].alternativeTrips,
+        co2Saved: parseFloat(monthlyStats[month].co2Saved.toFixed(2)),
+      }));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        summary: carUsageStats,
+        monthlyBreakdown: formattedMonthlyStats,
+        totalTrips: commutes.length,
+      },
+    });
+  } catch (error) {
+    console.error('Get car usage impact error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve car usage impact',
     });
   }
 };
