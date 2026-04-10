@@ -1,0 +1,34 @@
+config:
+  target: "http://localhost:5000"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: Warm up
+    - duration: 60
+      arrivalRate: 20
+      rampTo: 50
+      name: Ramp up traffic
+    - duration: 60
+      arrivalRate: 50
+      name: Sustained load
+  defaults:
+    headers:
+      Content-Type: application/json
+
+scenarios:
+  - name: Health and Auth Mix
+    flow:
+      - get:
+          url: "/"
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "Load User {{ $randomString() }}"
+            email: "load.{{ $randomString() }}@example.com"
+            password: "password123"
+            faculty: "Engineering"
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "nonexistent.user@example.com"
+            password: "wrong-password"

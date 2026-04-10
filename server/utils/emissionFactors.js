@@ -63,7 +63,8 @@ const fuelEmissions = {
  */
 function getEmissionFactor(mode) {
   const normalizedMode = mode.toUpperCase().replace(/\s+/g, '_');
-  return emissionFactors[normalizedMode] || emissionFactors.CAR;
+  const factor = emissionFactors[normalizedMode];
+  return factor === undefined ? emissionFactors.CAR : factor;
 }
 
 /**

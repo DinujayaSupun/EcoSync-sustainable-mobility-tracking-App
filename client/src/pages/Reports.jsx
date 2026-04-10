@@ -33,6 +33,63 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
+const parseInsightSections = (content = '') => {
+  const lines = content
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  if (lines.length === 0) {
+    return [];
+  }
+
+  const sections = [];
+  let currentSection = {
+    title: 'Overview',
+    bullets: [],
+    paragraphs: []
+  };
+
+  const headingRegex = /^(?:\d+\.|\d+\)|#{1,6})\s+(.+)$/;
+  const titleLineRegex = /^[A-Z][A-Za-z0-9\s/&()%-]{3,60}:$/;
+
+  lines.forEach((line) => {
+    const markdownHeading = line.match(headingRegex);
+    const isTitleLine = titleLineRegex.test(line);
+    const isBullet = /^[-*•]\s+/.test(line);
+
+    if (markdownHeading || isTitleLine) {
+      if (currentSection.bullets.length > 0 || currentSection.paragraphs.length > 0) {
+        sections.push(currentSection);
+      }
+
+      const title = markdownHeading
+        ? markdownHeading[1].replace(/:\s*$/, '')
+        : line.replace(/:\s*$/, '');
+
+      currentSection = {
+        title,
+        bullets: [],
+        paragraphs: []
+      };
+      return;
+    }
+
+    if (isBullet) {
+      currentSection.bullets.push(line.replace(/^[-*•]\s+/, ''));
+      return;
+    }
+
+    currentSection.paragraphs.push(line);
+  });
+
+  if (currentSection.bullets.length > 0 || currentSection.paragraphs.length > 0) {
+    sections.push(currentSection);
+  }
+
+  return sections;
+};
+
 const Reports = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -48,6 +105,8 @@ const Reports = () => {
   });
 
   const COLORS = ['#10b981', '#8b5cf6', '#3b82f6', '#f59e0b', '#ef4444'];
+
+  const insightSections = parseInsightSections(aiInsights?.insights || '');
 
   const fetchReport = async () => {
     setLoading(true);
@@ -675,12 +734,43 @@ const Reports = () => {
                 </div>
 
                 {/* AI Insights Content */}
-                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                  <div className="prose max-w-none">
-                    <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-                      {aiInsights.insights}
+                <div className="space-y-4">
+                  {insightSections.length > 0 ? (
+                    insightSections.map((section, index) => (
+                      <div key={`${section.title}-${index}`} className="rounded-xl border border-gray-200 bg-gray-50 p-5">
+                        <h3 className="text-base font-bold text-gray-900 mb-3">
+                          {section.title}
+                        </h3>
+
+                        {section.paragraphs.length > 0 && (
+                          <div className="space-y-2 mb-3">
+                            {section.paragraphs.map((paragraph, pIndex) => (
+                              <p key={`${section.title}-p-${pIndex}`} className="text-sm leading-relaxed text-gray-700">
+                                {paragraph}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+
+                        {section.bullets.length > 0 && (
+                          <ul className="space-y-2">
+                            {section.bullets.map((bullet, bIndex) => (
+                              <li key={`${section.title}-b-${bIndex}`} className="flex items-start gap-2 text-sm text-gray-800">
+                                <span className="mt-2 inline-block h-1.5 w-1.5 rounded-full bg-purple-600"></span>
+                                <span>{bullet}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-5">
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800">
+                        {aiInsights.insights}
+                      </p>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}

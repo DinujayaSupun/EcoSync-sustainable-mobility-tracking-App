@@ -9,7 +9,12 @@ if (!process.env.JWT_SECRET) {
   process.env.JWT_SECRET = "test-jwt-secret-key-for-testing";
 }
 
-if (!process.env.MONGODB_URI && !process.env.MONGODB_URI_TEST) {
+if (
+  !process.env.MONGODB_URI &&
+  !process.env.MONGODB_URI_TEST &&
+  !process.env.MONGO_URI &&
+  !process.env.MONGO_URI_TEST
+) {
   console.warn("⚠️  Warning: No test database URI found. Tests may fail.");
 }
 

@@ -40,10 +40,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting
+const isDevelopment = process.env.NODE_ENV !== "production";
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  message: "Too many requests, please try again later.",
+  max: isDevelopment ? 500 : 100, // Looser limit in local development
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => isDevelopment && req.path === "/auth/profile",
+  message: {
+    success: false,
+    message: "Too many requests, please try again later.",
+  },
 });
 app.use("/api/", limiter);
 
