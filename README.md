@@ -41,6 +41,12 @@ Main capabilities include:
 - Admin reports, user management, and activity logs
 - Swagger-powered API documentation
 
+### Live Deployment URLs
+
+- Frontend (Vercel): https://ecosync-pi.vercel.app
+- Backend API (Render): https://application-framework-project-se.onrender.com
+- Backend Swagger: https://application-framework-project-se.onrender.com/api-docs
+
 ## 2) Key Features
 
 ### User-facing
@@ -193,11 +199,18 @@ Create client/.env (optional but recommended):
 VITE_API_URL=http://localhost:5000/api
 ```
 
+Production example (Vercel):
+
+```env
+VITE_API_URL=https://application-framework-project-se.onrender.com/api
+```
+
 Notes:
 
 - server/config/db.js uses MONGO_URI.
 - client/src/api/axios.js falls back to http://localhost:5000/api when VITE_API_URL is not set.
 - JWT token is expected in localStorage key token.
+- For deployed frontend/backend communication, set server CLIENT_URL (or ALLOWED_ORIGINS) to https://ecosync-pi.vercel.app.
 
 ## 8) Installation
 
@@ -262,7 +275,11 @@ npm run preview
 
 Base URL: http://localhost:5000/api
 
+Production Base URL: https://application-framework-project-se.onrender.com/api
+
 Swagger UI: http://localhost:5000/api-docs
+
+Production Swagger UI: https://application-framework-project-se.onrender.com/api-docs
 
 Mounted route groups from server/app.js:
 
@@ -458,6 +475,8 @@ npm run seed:gamification
 ### CORS issues in browser
 
 - Set CLIENT_URL correctly in server/.env
+- In production set CLIENT_URL=https://ecosync-pi.vercel.app
+- If using multiple frontend origins, set ALLOWED_ORIGINS with comma-separated domains
 - Start frontend on an allowed origin (5173 or 5174)
 
 ### Auth issues
