@@ -101,9 +101,41 @@ const reportLimiter = rateLimit({
   },
 });
 
+/**
+ * Rate limiter for autocomplete lookups
+ * Higher allowance because UI queries on typing.
+ */
+const autocompleteLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many autocomplete requests. Please slow down.",
+  },
+});
+
+/**
+ * Rate limiter for commute endpoints.
+ * Higher allowance to support frequent commute logging/history refreshes.
+ */
+const commuteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 400,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many commute requests. Please slow down and try again shortly.",
+  },
+});
+
 module.exports = {
   adminLimiter,
   strictAdminLimiter,
   loginLimiter,
   reportLimiter,
+  autocompleteLimiter,
+  commuteLimiter,
 };

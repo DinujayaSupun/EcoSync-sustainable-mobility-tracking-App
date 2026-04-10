@@ -4,6 +4,7 @@ const Badge = require("../models/Badge");
 const User = require("../models/User");
 const UserBadge = require("../models/UserBadge");
 const { awardBadgeToUser, evaluateBadgesForUser } = require("../services/badgeAwardService");
+const { fetchEcoImageByPage } = require("../services/unsplashService");
 
 function handleValidation(req, res) {
   const errors = validationResult(req);
@@ -21,6 +22,12 @@ async function createBadge(req, res, next) {
     const badge = await badgeService.createBadge(req.body);
     res.status(201).json({ success: true, data: badge });
   } catch (err) {
+    if (err?.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "A badge with this name already exists.",
+      });
+    }
     next(err);
   }
 }
@@ -53,12 +60,26 @@ async function updateBadge(req, res, next) {
 
     res.json({ success: true, data: updated });
   } catch (err) {
+    if (err?.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "A badge with this name already exists.",
+      });
+    }
     next(err);
   }
 }
 
 async function deleteBadge(req, res, next) {
   try {
+    const hasAwards = await UserBadge.exists({ badgeId: req.params.id });
+    if (hasAwards) {
+      return res.status(409).json({
+        success: false,
+        message: "Cannot delete a badge that has already been awarded.",
+      });
+    }
+
     const deleted = await badgeService.deleteBadge(req.params.id);
     if (!deleted) return res.status(404).json({ success: false, message: "Badge not found" });
 
@@ -120,6 +141,20 @@ async function getMyBadges(req, res, next) {
   }
 }
 
+/**
+ * Returns a single Unsplash image for the given query and page.
+ * Used by the badge image picker in the admin UI.
+ */
+async function getImageSuggestion(req, res, next) {
+  try {
+    const { query = "eco badge", page = 1 } = req.query;
+    const result = await fetchEcoImageByPage(query, Number(page));
+    res.json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   createBadge,
   getAllBadges,
@@ -128,4 +163,5 @@ module.exports = {
   deleteBadge,
   awardBadge,
   getMyBadges,
+  getImageSuggestion,
 };

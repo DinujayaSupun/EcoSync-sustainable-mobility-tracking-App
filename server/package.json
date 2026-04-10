@@ -3,22 +3,22 @@
   "version": "1.0.0",
   "description": "Sustainability Project Backend API",
   "main": "index.js",
-  "directories": {
-    "test": "tests"
-  },
+  "type": "commonjs",
   "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "jest"
     "test": "jest",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed:gamification": "node scripts/seedGamification.js"
   },
   "keywords": [
     "sustainability",
     "backend",
     "api"
   ],
-  "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@sendgrid/mail": "^8.1.6",
@@ -35,6 +35,14 @@
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.1.0",
     "mongoose": "^9.1.6",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0",
+    "supertest": "^7.2.2",
+    "nodemon": "^3.1.11"
     "nodemailer": "^8.0.1",
     "openai": "^6.25.0",
     "swagger-jsdoc": "^6.2.8",

@@ -32,6 +32,12 @@ export const weatherAPI = {
     return response.data;
   },
 
+  // Get weather forecast (hourly + daily)
+  getForecast: async (params = {}) => {
+    const response = await axios.get('/smart-commute/weather-suggestion/forecast', { params });
+    return response.data;
+  },
+
   // Update suggestion
   updateSuggestion: async (id, data) => {
     const response = await axios.put(`/smart-commute/weather-suggestion/${id}`, data);

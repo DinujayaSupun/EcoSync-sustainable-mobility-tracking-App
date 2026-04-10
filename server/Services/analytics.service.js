@@ -1,4 +1,4 @@
-const CarbonRecord = require("../models/carbonRecord");
+const CarbonRecord = require("../Models/carbonRecord");
 
 // Total CO2 saved by user
 const getUserTotalSaved = async (userId) => {
@@ -60,6 +60,7 @@ const getUserPercentile = async (userId) => {
   const sorted = allUsers.sort((a, b) => a.total - b.total);
 
   const rank = sorted.findIndex((u) => u._id === userId);
+  
 
   if (rank === -1) return 0;
 

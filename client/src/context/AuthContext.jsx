@@ -35,13 +35,29 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user);
     };
 
+    const register = async (payload) => {
+        const { data } = await API.post('/auth/register', payload);
+        return data;
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         setUser(null);
     };
 
+    const refreshProfile = async () => {
+        try {
+            const { data } = await API.get('/auth/profile');
+            setUser(data.user);
+            return data.user;
+        } catch (error) {
+            console.error('Failed to refresh profile:', error);
+            return null;
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, loading, refreshProfile }}>
             {children}
         </AuthContext.Provider>
     );

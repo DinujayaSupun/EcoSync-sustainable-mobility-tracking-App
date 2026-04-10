@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext'
 import { Users, Activity, BarChart3, Settings, LogOut, Wind, Map, Leaf } from 'lucide-react'
 import API from '../api/axios'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { getAdminSettings } from '../utils/adminSettings'
 
 const AdminDashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -79,8 +80,11 @@ const AdminDashboard = () => {
     fetchStats();
     fetchRecentTrips();
     
-    // Refresh recent trips every 30 seconds
-    const interval = setInterval(fetchRecentTrips, 30000);
+    const { liveFeedRefreshSeconds } = getAdminSettings();
+    const refreshMs = Math.max(5, Number(liveFeedRefreshSeconds || 30)) * 1000;
+
+    // Refresh recent trips using configured admin settings
+    const interval = setInterval(fetchRecentTrips, refreshMs);
     return () => clearInterval(interval);
   }, []);
 
@@ -275,11 +279,32 @@ const AdminDashboard = () => {
               <h3 className="font-semibold text-gray-800">View Reports</h3>
               <p className="text-sm text-gray-600">Check sustainability reports</p>
             </Link>
+            <Link
+              to="/admin/badges"
+              className="p-4 border-2 border-yellow-200 rounded-lg hover:bg-yellow-50 transition text-left block">
+              <Leaf className="text-yellow-600 mb-2" size={28} />
+              <h3 className="font-semibold text-gray-800">Manage Badges</h3>
+              <p className="text-sm text-gray-600">Create, edit and delete badges</p>
+            </Link>
+            <Link
+              to="/admin/challenges"
+              className="p-4 border-2 border-emerald-200 rounded-lg hover:bg-emerald-50 transition text-left block">
+              <Map className="text-emerald-600 mb-2" size={28} />
+              <h3 className="font-semibold text-gray-800">Manage Challenges</h3>
+              <p className="text-sm text-gray-600">Update status, rewards and challenge lifecycle</p>
+              className="p-4 border-2 border-indigo-200 rounded-lg hover:bg-indigo-50 transition text-left block">
+              <Map className="text-indigo-600 mb-2" size={28} />
+              <h3 className="font-semibold text-gray-800">Manage Challenges</h3>
+              <p className="text-sm text-gray-600">Create, update and deactivate challenges</p>
+            </Link>
             <button className="p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition text-left">
+              to="/admin/settings"
+              className="p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition text-left block"
+            >
               <Settings className="text-purple-600 mb-2" size={28} />
               <h3 className="font-semibold text-gray-800">System Settings</h3>
               <p className="text-sm text-gray-600">Configure application settings</p>
-            </button>
+            </Link>
           </div>
         </div>
       </main>

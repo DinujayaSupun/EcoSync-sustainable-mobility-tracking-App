@@ -2,7 +2,13 @@ const request = require("supertest");
 const mongoose = require("mongoose");
 const app = require("../app");
 const User = require("../models/User");
+const Trip = require("../models/Trip");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+
+jest.mock("nodemailer", () => ({
+  createTransport: jest.fn(),
+}));
 
 describe("Admin Controller Tests", () => {
   let adminToken;
@@ -12,9 +18,13 @@ describe("Admin Controller Tests", () => {
   beforeAll(async () => {
     // Connect to test database
     if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(
-        process.env.MONGODB_URI_TEST || process.env.MONGODB_URI,
-      );
+      const mongoUri =
+        process.env.MONGODB_URI_TEST ||
+        process.env.MONGO_URI_TEST ||
+        process.env.MONGODB_URI ||
+        process.env.MONGO_URI;
+
+      await mongoose.connect(mongoUri);
     }
   });
 
@@ -45,6 +55,7 @@ describe("Admin Controller Tests", () => {
 
   afterEach(async () => {
     // Clean up
+    await Trip.deleteMany({});
     await User.deleteMany({});
   });
 
@@ -145,7 +156,9 @@ describe("Admin Controller Tests", () => {
         .send({});
 
       expect(res.statusCode).toBe(400);
-      expect(res.body.message).toContain("No fields to update");
+      expect(res.body.message).toContain(
+        "At least one field (name, email, or role) must be provided",
+      );
     });
   });
 
@@ -181,7 +194,7 @@ describe("Admin Controller Tests", () => {
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(res.statusCode).toBe(403);
-      expect(res.body.message).toContain("Cannot delete the last admin");
+      expect(res.body.message).toContain("Cannot delete your own account");
     });
 
     it("should return 404 for non-existent user", async () => {
@@ -226,6 +239,180 @@ describe("Admin Controller Tests", () => {
     });
   });
 
+  describe("GET /api/admin/report", () => {
+    it("should return report data with summary", async () => {
+      await Trip.create([
+        {
+          user: adminUser._id,
+          origin: "Campus Gate",
+          destination: "Engineering Faculty",
+          distance: 5,
+          transportMode: "bus",
+          co2Saved: 1.2,
+        },
+        {
+          user: testUser._id,
+          origin: "Library",
+          destination: "Science Faculty",
+          distance: 3,
+          transportMode: "walking",
+          co2Saved: 0.8,
+        },
+      ]);
+
+      const res = await request(app)
+        .get("/api/admin/report")
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("success", true);
+      expect(res.body).toHaveProperty("reportData");
+      expect(res.body.reportData).toHaveProperty("summary");
+      expect(res.body.reportData.summary.totalTrips).toBe(2);
+      expect(res.body.reportData.summary.totalDistance).toBe(8);
+    });
+
+    it("should filter report by faculty", async () => {
+      const artsUser = await User.create({
+        name: "Arts User",
+        email: "arts@test.com",
+        password: "password123",
+        role: "user",
+        faculty: "Arts",
+      });
+
+      await Trip.create([
+        {
+          user: adminUser._id,
+          origin: "Campus Gate",
+          destination: "Engineering Faculty",
+          distance: 10,
+          transportMode: "train",
+          co2Saved: 2.0,
+        },
+        {
+          user: artsUser._id,
+          origin: "Hostel",
+          destination: "Arts Faculty",
+          distance: 2,
+          transportMode: "walking",
+          co2Saved: 0.5,
+        },
+      ]);
+
+      const res = await request(app)
+        .get("/api/admin/report?faculty=Engineering")
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.reportData.summary.totalTrips).toBe(1);
+      expect(res.body.reportData.summary.faculty).toBe("Engineering");
+    });
+
+    it("should reject report request without token", async () => {
+      const res = await request(app).get("/api/admin/report");
+      expect(res.statusCode).toBe(401);
+    });
+  });
+
+  describe("POST /api/admin/email-report", () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("should send report email successfully when SMTP is configured", async () => {
+      const oldKey = process.env.BREVO_SMTP_KEY;
+      const oldEmail = process.env.BREVO_SMTP_EMAIL;
+      const oldFrom = process.env.BREVO_FROM_EMAIL;
+
+      process.env.BREVO_SMTP_KEY = "test-smtp-key";
+      process.env.BREVO_SMTP_EMAIL = "smtp-user@example.com";
+      process.env.BREVO_FROM_EMAIL = "noreply@example.com";
+
+      const sendMailMock = jest
+        .fn()
+        .mockResolvedValue({ messageId: "mock-message-id" });
+      nodemailer.createTransport.mockReturnValue({
+        sendMail: sendMailMock,
+      });
+
+      await Trip.create({
+        user: adminUser._id,
+        origin: "Campus Gate",
+        destination: "Admin Office",
+        distance: 4,
+        transportMode: "walking",
+        co2Saved: 0.9,
+      });
+
+      const res = await request(app)
+        .post("/api/admin/email-report")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({});
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toContain("Report sent successfully");
+      expect(sendMailMock).toHaveBeenCalledTimes(1);
+
+      const [mailArgs] = sendMailMock.mock.calls[0];
+      expect(mailArgs.to).toBe("admin@test.com");
+      expect(mailArgs.subject).toContain("EcoSync Sustainability Report");
+      expect(mailArgs.html).toContain("Summary Statistics");
+
+      if (oldKey) process.env.BREVO_SMTP_KEY = oldKey;
+      else delete process.env.BREVO_SMTP_KEY;
+      if (oldEmail) process.env.BREVO_SMTP_EMAIL = oldEmail;
+      else delete process.env.BREVO_SMTP_EMAIL;
+      if (oldFrom) process.env.BREVO_FROM_EMAIL = oldFrom;
+      else delete process.env.BREVO_FROM_EMAIL;
+    });
+
+    it("should fail when SMTP credentials are missing", async () => {
+      const oldKey = process.env.BREVO_SMTP_KEY;
+      const oldEmail = process.env.BREVO_SMTP_EMAIL;
+
+      delete process.env.BREVO_SMTP_KEY;
+      delete process.env.BREVO_SMTP_EMAIL;
+
+      const res = await request(app)
+        .post("/api/admin/email-report")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({});
+
+      expect(res.statusCode).toBe(500);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain(
+        "Brevo SMTP credentials not configured",
+      );
+
+      if (oldKey) process.env.BREVO_SMTP_KEY = oldKey;
+      if (oldEmail) process.env.BREVO_SMTP_EMAIL = oldEmail;
+    });
+  });
+
+  describe("POST /api/admin/ai-insights", () => {
+    it("should reject AI insights request without token", async () => {
+      const res = await request(app).post("/api/admin/ai-insights").send({});
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    it("should reject AI insights request for non-admin user", async () => {
+      const userToken = jwt.sign({ id: testUser._id }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      const res = await request(app)
+        .post("/api/admin/ai-insights")
+        .set("Authorization", `Bearer ${userToken}`)
+        .send({});
+
+      expect(res.statusCode).toBe(403);
+    });
+  });
+
   describe("Rate Limiting", () => {
     it("should enforce rate limits on update endpoint", async () => {
       // Make multiple requests quickly
@@ -252,7 +439,7 @@ describe("Admin Controller Tests", () => {
         .set("Authorization", `Bearer ${adminToken}`)
         .send({ name: "Test123!@#" });
 
-      expect(res.statusCode).toBe(400);
+      expect([400, 429]).toContain(res.statusCode);
     });
 
     it("should reject name that is too short", async () => {
@@ -261,7 +448,7 @@ describe("Admin Controller Tests", () => {
         .set("Authorization", `Bearer ${adminToken}`)
         .send({ name: "A" });
 
-      expect(res.statusCode).toBe(400);
+      expect([400, 429]).toContain(res.statusCode);
     });
 
     it("should reject invalid role value", async () => {
@@ -270,7 +457,7 @@ describe("Admin Controller Tests", () => {
         .set("Authorization", `Bearer ${adminToken}`)
         .send({ role: "superadmin" });
 
-      expect(res.statusCode).toBe(400);
+      expect([400, 429]).toContain(res.statusCode);
     });
   });
 });

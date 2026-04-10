@@ -8,9 +8,14 @@ const bcrypt = require("bcryptjs");
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password, faculty } = req.body;
+    const normalizedName = typeof name === "string" ? name.trim() : "";
+    const normalizedEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
+    const normalizedFaculty =
+      typeof faculty === "string" ? faculty.trim() : faculty;
 
     // 1. Basic Field Check
-    if (!name || !email || !password) {
+    if (!normalizedName || !normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields",
@@ -19,7 +24,7 @@ exports.registerUser = async (req, res) => {
 
     // 2. Advanced Email Validation (Security Fix #1)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(normalizedEmail)) {
       return res.status(400).json({
         success: false,
         message: "Please enter a valid email address",
@@ -35,7 +40,7 @@ exports.registerUser = async (req, res) => {
     }
 
     // 4. Check if user exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({
         success: false,
@@ -44,7 +49,12 @@ exports.registerUser = async (req, res) => {
     }
 
     // 5. Create User (Bcrypt hashing happens in the User Model middleware)
-    const user = await User.create({ name, email, password, faculty });
+    const user = await User.create({
+      name: normalizedName,
+      email: normalizedEmail,
+      password,
+      faculty: normalizedFaculty,
+    });
 
     // 6. Generate JWT
     const token = jwt.sign(
@@ -65,6 +75,7 @@ exports.registerUser = async (req, res) => {
         email: user.email,
         role: user.role,
         faculty: user.faculty,
+        total_co2_saved: user.total_co2_saved,
       },
     });
   } catch (error) {
@@ -83,9 +94,11 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
 
     // 1. Basic Validation
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
         message: "Please provide both email and password",
@@ -94,7 +107,7 @@ exports.loginUser = async (req, res) => {
 
     // 2. Find user by email
     // We explicitly use .select('+password') if you set 'select: false' in your model for security
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
 
     // 3. Unified Error Message (Security Fix #8 - Prevent User Enumeration)
     // We check if user exists AND if password matches in one flow
