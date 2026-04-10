@@ -12,9 +12,11 @@ const {
   recalculateCo2Saved,
   getCO2SavingsByTransportMode,
   getCarUsageImpact,
+  getFooterStats,
 } = require("../controllers/commuteController");
 
 // All routes are protected with JWT authentication
+router.get("/footer-stats", getFooterStats);
 router.post("/log", protect, logCommute);
 router.get("/history", protect, getCommuteHistory);
 router.get("/emission-summary", protect, getEmissionSummary);
