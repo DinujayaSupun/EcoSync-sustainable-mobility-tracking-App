@@ -12,6 +12,7 @@ import TripAchievements from './pages/TripAchievements'
 import WeatherSuggestion from './pages/smartCommute/WeatherSuggestion'
 import UserManagement from './pages/UserManagement';
 import Reports from './pages/Reports';
+import AdminSettings from './pages/AdminSettings';
 import AboutUs from './pages/AboutUs';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
@@ -139,6 +140,10 @@ function AppRoutes() {
       <Route path="/admin/challenges" element={
         <AdminProtectedRoute>
           <ChallengeManagement />
+      {/* Admin Settings Route */}
+      <Route path="/admin/settings" element={
+        <AdminProtectedRoute>
+          <AdminSettings />
         </AdminProtectedRoute>
       } />
 
