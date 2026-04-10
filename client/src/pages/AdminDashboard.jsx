@@ -288,6 +288,10 @@ const AdminDashboard = () => {
             </Link>
             <Link
               to="/admin/challenges"
+              className="p-4 border-2 border-emerald-200 rounded-lg hover:bg-emerald-50 transition text-left block">
+              <Map className="text-emerald-600 mb-2" size={28} />
+              <h3 className="font-semibold text-gray-800">Manage Challenges</h3>
+              <p className="text-sm text-gray-600">Update status, rewards and challenge lifecycle</p>
               className="p-4 border-2 border-indigo-200 rounded-lg hover:bg-indigo-50 transition text-left block">
               <Map className="text-indigo-600 mb-2" size={28} />
               <h3 className="font-semibold text-gray-800">Manage Challenges</h3>

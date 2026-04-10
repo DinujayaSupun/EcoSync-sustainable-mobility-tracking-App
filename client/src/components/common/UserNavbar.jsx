@@ -30,6 +30,13 @@ const NAV_ITEMS = [
     active: 'border-emerald-300/40 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg',
   },
   {
+    path: '/challenges',
+    label: 'Challenges',
+    icon: 'emoji_events',
+    base: 'border-emerald-300/40 bg-emerald-800/40 text-emerald-100 hover:bg-emerald-700/50',
+    active: 'border-emerald-300/40 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg',
+  },
+  {
     path: '/commute-history',
     label: 'Trip History',
     icon: 'history',
