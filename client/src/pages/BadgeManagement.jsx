@@ -336,13 +336,13 @@ export default function BadgeManagement() {
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Total Badges</p>
                 <p className="mt-2 text-3xl font-bold text-emerald-900">{badges.length}</p>
               </div>
-              <div className="rounded-2xl border-2 border-blue-200 bg-linear-to-br from-blue-50 via-white to-emerald-50 p-5 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-wider text-blue-700">Loaded State</p>
-                <p className="mt-2 text-3xl font-bold text-blue-900">{loading ? "..." : "Ready"}</p>
+              <div className="rounded-2xl border-2 border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-green-100 p-5 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Loaded State</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{loading ? "..." : "Ready"}</p>
               </div>
-              <div className="rounded-2xl border-2 border-amber-200 bg-linear-to-br from-amber-50 via-white to-lime-50 p-5 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-wider text-amber-700">Catalog Types</p>
-                <p className="mt-2 text-3xl font-bold text-amber-900">{TYPES.length}</p>
+              <div className="rounded-2xl border-2 border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-green-100 p-5 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Catalog Types</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{TYPES.length}</p>
               </div>
             </div>
 
@@ -396,7 +396,7 @@ export default function BadgeManagement() {
                           <td className="px-6 py-4 text-right">
                             <button
                               onClick={() => openEdit(badge)}
-                              className="mr-4 font-semibold text-blue-600 transition hover:text-blue-800"
+                              className="mr-4 font-semibold text-emerald-700 transition hover:text-emerald-900"
                             >
                               Edit
                             </button>
@@ -420,8 +420,8 @@ export default function BadgeManagement() {
 
       {/* Create / Edit Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-emerald-100 bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-4 pt-24">
+          <div className="mx-auto my-4 max-h-[calc(100vh-7rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-emerald-100 bg-white p-6 shadow-xl">
             <h2 className="text-lg font-bold text-gray-900 mb-4">
               {editingId ? "Edit Badge" : "Create Badge"}
             </h2>
