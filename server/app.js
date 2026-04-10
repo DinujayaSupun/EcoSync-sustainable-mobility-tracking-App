@@ -25,6 +25,25 @@ const errorHandler = require("./middleware/error.middleware");
 // Initialize Express app
 const app = express();
 
+const normalizeOrigin = (value) => (value || "").trim().replace(/\/$/, "");
+
+const configuredOrigins = [
+  process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_ORIGIN,
+  ...(process.env.ALLOWED_ORIGINS || "").split(","),
+]
+  .map(normalizeOrigin)
+  .filter(Boolean);
+
+const allowedOrigins = new Set([
+  ...configuredOrigins,
+  "http://localhost:5173",
+  "http://localhost:5174",
+]);
+
+const vercelPreviewPattern = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
+
 // Security middleware
 app.use(helmet());
 
@@ -32,20 +51,23 @@ app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowedOrigins = new Set([
-        process.env.CLIENT_URL || "http://localhost:5173",
-        "http://localhost:5173",
-        "http://localhost:5174",
-      ]);
+      const normalizedOrigin = normalizeOrigin(origin);
 
       // Allow server-to-server tools (no Origin header) and allowed browser origins.
-      if (!origin || allowedOrigins.has(origin)) {
+      if (!normalizedOrigin || allowedOrigins.has(normalizedOrigin)) {
+        return callback(null, true);
+      }
+
+      // Allow Vercel preview/custom deployment URLs.
+      if (vercelPreviewPattern.test(normalizedOrigin)) {
         return callback(null, true);
       }
 
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
