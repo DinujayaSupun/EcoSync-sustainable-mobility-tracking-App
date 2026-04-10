@@ -2,32 +2,19 @@ import { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Save, RotateCcw, Settings, Bell, Shield, Gauge } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
-
-const STORAGE_KEY = 'ecosync_admin_settings';
-
-const defaultSettings = {
-  liveFeedRefreshSeconds: 30,
-  defaultReportWindowDays: 30,
-  emailReportAlerts: true,
-  aiInsightsEnabled: true,
-  strictAdminGuards: true,
-};
+import {
+  defaultAdminSettings,
+  getAdminSettings,
+  saveAdminSettings,
+} from '../utils/adminSettings';
 
 const AdminSettings = () => {
   const { user } = useContext(AuthContext);
-  const [settings, setSettings] = useState(defaultSettings);
+  const [settings, setSettings] = useState(defaultAdminSettings);
   const [savedMessage, setSavedMessage] = useState('');
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-
-      const parsed = JSON.parse(raw);
-      setSettings({ ...defaultSettings, ...parsed });
-    } catch (error) {
-      console.error('Failed to load admin settings:', error);
-    }
+    setSettings(getAdminSettings());
   }, []);
 
   const updateField = (field, value) => {
@@ -35,14 +22,14 @@ const AdminSettings = () => {
   };
 
   const handleSave = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    saveAdminSettings(settings);
     setSavedMessage('Settings saved successfully.');
     setTimeout(() => setSavedMessage(''), 2500);
   };
 
   const handleReset = () => {
-    setSettings(defaultSettings);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultSettings));
+    setSettings(defaultAdminSettings);
+    saveAdminSettings(defaultAdminSettings);
     setSavedMessage('Settings reset to default values.');
     setTimeout(() => setSavedMessage(''), 2500);
   };
