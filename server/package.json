@@ -7,7 +7,13 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "jest",
+    "test": "npm run test:all",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:admin",
+    "test:unit": "jest --config jest.config.js tests/unit",
+    "test:integration": "jest --config jest.config.js tests/integration",
+    "test:admin": "jest --config jest.config.js tests/admin.controller.test.js",
+    "test:coverage": "jest --config jest.config.js --coverage",
+    "test:performance": "npx artillery run ./performance/artillery.yml",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
@@ -41,7 +47,8 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "jest": "^30.2.0",
+    "artillery": "^2.0.30",
+    "jest": "^30.3.0",
     "nodemon": "^3.1.11",
     "supertest": "^7.2.2"
   },
