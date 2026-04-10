@@ -8,24 +8,46 @@ import { useGamificationToast } from "../hooks/useGamificationToast";
 const TRANSPORT_MODES = ["BUS", "TRAIN", "BIKE", "WALK", "CAR", "VAN"];
 const DIFFICULTIES = ["EASY", "MEDIUM", "HARD"];
 const TYPES = ["INDIVIDUAL", "SQUAD"];
-const STATUSES = ["ACTIVE", "INACTIVE"];
+const STATUSES = ["ACTIVE", "INACTIVE", "EXPIRED", "COMPLETED"];
 
 const EMPTY_CREATE_FORM = {
+  title: "",
+  description: "",
+  tagline: "",
   transportMode: "BUS",
   emissionTarget: "",
   durationDays: "",
   difficulty: "EASY",
   type: "INDIVIDUAL",
   rewardPoints: "",
+  status: "ACTIVE",
+  deadline: "",
 };
 
 const EMPTY_EDIT_FORM = {
+  title: "",
+  description: "",
+  tagline: "",
+  transportMode: "BUS",
+  difficulty: "EASY",
+  type: "INDIVIDUAL",
   emissionTarget: "",
   durationDays: "",
   rewardPoints: "",
   status: "ACTIVE",
   deadline: "",
 };
+
+function computeDurationDaysFromDeadline(deadlineValue) {
+  if (!deadlineValue) return "";
+  const deadline = new Date(deadlineValue);
+  if (Number.isNaN(deadline.getTime())) return "";
+
+  const now = new Date();
+  const diffMs = deadline.getTime() - now.getTime();
+  const days = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+  return String(days);
+}
 
 export default function ChallengeManagement() {
   const navigate = useNavigate();
@@ -112,18 +134,29 @@ export default function ChallengeManagement() {
 
   const hasCreateChanges = useMemo(() => {
     return (
+      createForm.title !== EMPTY_CREATE_FORM.title ||
+      createForm.description !== EMPTY_CREATE_FORM.description ||
+      createForm.tagline !== EMPTY_CREATE_FORM.tagline ||
       createForm.transportMode !== EMPTY_CREATE_FORM.transportMode ||
       createForm.emissionTarget !== EMPTY_CREATE_FORM.emissionTarget ||
       createForm.durationDays !== EMPTY_CREATE_FORM.durationDays ||
       createForm.difficulty !== EMPTY_CREATE_FORM.difficulty ||
       createForm.type !== EMPTY_CREATE_FORM.type ||
-      createForm.rewardPoints !== EMPTY_CREATE_FORM.rewardPoints
+      createForm.rewardPoints !== EMPTY_CREATE_FORM.rewardPoints ||
+      createForm.status !== EMPTY_CREATE_FORM.status ||
+      createForm.deadline !== EMPTY_CREATE_FORM.deadline
     );
   }, [createForm]);
 
   const createValidationMessage = useMemo(() => validateCreate(), [createForm]);
 
   function validateCreate() {
+    const title = createForm.title.trim();
+    const tagline = createForm.tagline.trim();
+    const description = createForm.description.trim();
+    if (title && (title.length < 3 || title.length > 120)) return "Title must be 3-120 characters.";
+    if (tagline && (tagline.length < 3 || tagline.length > 180)) return "Tagline must be 3-180 characters.";
+    if (description && (description.length < 10 || description.length > 1500)) return "Description must be 10-1500 characters.";
     if (!TRANSPORT_MODES.includes(createForm.transportMode)) return "Invalid transport mode.";
     const target = Number(createForm.emissionTarget);
     if (!Number.isFinite(target) || target <= 0) return "CO2 saving target must be positive.";
@@ -133,6 +166,11 @@ export default function ChallengeManagement() {
     if (!TYPES.includes(createForm.type)) return "Invalid challenge type.";
     const points = Number(createForm.rewardPoints);
     if (!Number.isInteger(points) || points < 1) return "Reward points must be at least 1.";
+    if (!STATUSES.includes(createForm.status)) return "Invalid status.";
+    if (createForm.deadline) {
+      const date = new Date(createForm.deadline);
+      if (Number.isNaN(date.getTime())) return "Invalid deadline date.";
+    }
     return "";
   }
 
@@ -148,12 +186,17 @@ export default function ChallengeManagement() {
     setCreateSaving(true);
     try {
       await ChallengesAPI.createChallenge({
+        title: createForm.title.trim() || undefined,
+        description: createForm.description.trim() || undefined,
+        tagline: createForm.tagline.trim() || undefined,
         transportMode: createForm.transportMode,
         emissionTarget: Number(createForm.emissionTarget),
         durationDays: Number(createForm.durationDays),
         difficulty: createForm.difficulty,
         type: createForm.type,
         rewardPoints: Number(createForm.rewardPoints),
+        status: createForm.status,
+        deadline: createForm.deadline ? new Date(createForm.deadline).toISOString() : null,
       });
       setCreateOpen(false);
       setCreateForm(EMPTY_CREATE_FORM);
@@ -169,6 +212,12 @@ export default function ChallengeManagement() {
 
   function openEdit(challenge) {
     const initialForm = {
+      title: String(challenge.title ?? ""),
+      description: String(challenge.description ?? ""),
+      tagline: String(challenge.tagline ?? ""),
+      transportMode: String(challenge.transportMode ?? "BUS"),
+      difficulty: String(challenge.difficulty ?? "EASY"),
+      type: String(challenge.type ?? "INDIVIDUAL"),
       emissionTarget: String(challenge.emissionTarget ?? ""),
       durationDays: String(challenge.durationDays ?? ""),
       rewardPoints: String(challenge.rewardPoints ?? ""),
@@ -186,6 +235,12 @@ export default function ChallengeManagement() {
   const hasEditChanges = useMemo(() => {
     if (!editOpen) return false;
     return (
+      editForm.title !== initialEditForm.title ||
+      editForm.description !== initialEditForm.description ||
+      editForm.tagline !== initialEditForm.tagline ||
+      editForm.transportMode !== initialEditForm.transportMode ||
+      editForm.difficulty !== initialEditForm.difficulty ||
+      editForm.type !== initialEditForm.type ||
       editForm.emissionTarget !== initialEditForm.emissionTarget ||
       editForm.durationDays !== initialEditForm.durationDays ||
       editForm.rewardPoints !== initialEditForm.rewardPoints ||
@@ -195,6 +250,15 @@ export default function ChallengeManagement() {
   }, [editForm, initialEditForm, editOpen]);
 
   function validateEdit() {
+    const title = editForm.title.trim();
+    const tagline = editForm.tagline.trim();
+    const description = editForm.description.trim();
+    if (title.length < 3 || title.length > 120) return "Title must be 3-120 characters.";
+    if (tagline.length < 3 || tagline.length > 180) return "Tagline must be 3-180 characters.";
+    if (description.length < 10 || description.length > 1500) return "Description must be 10-1500 characters.";
+    if (!TRANSPORT_MODES.includes(editForm.transportMode)) return "Invalid transport mode.";
+    if (!DIFFICULTIES.includes(editForm.difficulty)) return "Invalid difficulty.";
+    if (!TYPES.includes(editForm.type)) return "Invalid challenge type.";
     const target = Number(editForm.emissionTarget);
     if (!Number.isFinite(target) || target <= 0) return "CO2 saving target must be positive.";
     const days = Number(editForm.durationDays);
@@ -223,6 +287,12 @@ export default function ChallengeManagement() {
     setEditSaving(true);
     try {
       await ChallengesAPI.updateChallenge(editingChallenge._id, {
+        title: editForm.title.trim(),
+        description: editForm.description.trim(),
+        tagline: editForm.tagline.trim(),
+        transportMode: editForm.transportMode,
+        difficulty: editForm.difficulty,
+        type: editForm.type,
         emissionTarget: Number(editForm.emissionTarget),
         durationDays: Number(editForm.durationDays),
         rewardPoints: Number(editForm.rewardPoints),
@@ -315,17 +385,17 @@ export default function ChallengeManagement() {
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Total</p>
                 <p className="mt-2 text-3xl font-bold text-emerald-900">{stats.total}</p>
               </div>
-              <div className="rounded-2xl border-2 border-blue-200 bg-linear-to-br from-blue-50 via-white to-emerald-50 p-5 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-wider text-blue-700">Active</p>
-                <p className="mt-2 text-3xl font-bold text-blue-900">{stats.active}</p>
+              <div className="rounded-2xl border-2 border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-green-100 p-5 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Active</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{stats.active}</p>
               </div>
-              <div className="rounded-2xl border-2 border-amber-200 bg-linear-to-br from-amber-50 via-white to-lime-50 p-5 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-wider text-amber-700">Inactive</p>
-                <p className="mt-2 text-3xl font-bold text-amber-900">{stats.inactive}</p>
+              <div className="rounded-2xl border-2 border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-green-100 p-5 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Inactive</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{stats.inactive}</p>
               </div>
-              <div className="rounded-2xl border-2 border-indigo-200 bg-linear-to-br from-indigo-50 via-white to-blue-50 p-5 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-wider text-indigo-700">Avg Reward</p>
-                <p className="mt-2 text-3xl font-bold text-indigo-900">{stats.avgReward}</p>
+              <div className="rounded-2xl border-2 border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-green-100 p-5 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Avg Reward</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{stats.avgReward}</p>
               </div>
             </div>
 
@@ -386,7 +456,7 @@ export default function ChallengeManagement() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <button onClick={() => openEdit(c)} className="mr-4 font-semibold text-blue-600 transition hover:text-blue-800">Edit</button>
+                            <button onClick={() => openEdit(c)} className="mr-4 font-semibold text-emerald-700 transition hover:text-emerald-900">Edit</button>
                             <button onClick={() => setDeletingId(c._id)} className="font-semibold text-red-500 transition hover:text-red-700">Delete</button>
                           </td>
                         </tr>
@@ -401,10 +471,10 @@ export default function ChallengeManagement() {
       </main>
 
       {createOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-emerald-100 bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-4 pt-24">
+          <div className="mx-auto my-4 max-h-[calc(100vh-7rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-emerald-100 bg-white p-6 shadow-xl">
             <h3 className="mb-1 text-lg font-bold text-gray-900">Create Challenge</h3>
-            <p className="mb-4 text-sm text-gray-600">Configure the challenge settings. Title and description are generated automatically.</p>
+            <p className="mb-4 text-sm text-gray-600">Configure all challenge fields. You can type your own content or leave text fields empty to auto-generate from AI.</p>
 
             <div className="mb-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
               <p className="text-sm font-semibold text-emerald-900">Challenge Summary</p>
@@ -432,6 +502,42 @@ export default function ChallengeManagement() {
             </div>
 
             <form onSubmit={handleCreateSubmit} className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-800">Title (optional)</label>
+                <input
+                  type="text"
+                  value={createForm.title}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, title: e.target.value }))}
+                  maxLength={120}
+                  placeholder="e.g. Green Week Sprint"
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-800">Tagline (optional)</label>
+                <input
+                  type="text"
+                  value={createForm.tagline}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, tagline: e.target.value }))}
+                  maxLength={180}
+                  placeholder="e.g. Make every ride cleaner"
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-800">Description (optional)</label>
+                <textarea
+                  value={createForm.description}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, description: e.target.value }))}
+                  rows={3}
+                  maxLength={1500}
+                  placeholder="Explain the goal and how users can complete this challenge"
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                />
+              </div>
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-gray-800">Transport Mode</label>
@@ -477,10 +583,19 @@ export default function ChallengeManagement() {
                     step="1"
                     value={createForm.durationDays}
                     onChange={(e) => setCreateForm((p) => ({ ...p, durationDays: e.target.value }))}
+                    readOnly={!!createForm.deadline}
+                    disabled={!!createForm.deadline}
                     placeholder="e.g. 7"
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                    className={[
+                      "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm",
+                      createForm.deadline ? "cursor-not-allowed bg-gray-100 text-gray-500" : "",
+                    ].join(" ")}
                   />
-                  <p className="mt-1 text-xs text-gray-500">Deadline is generated from this duration when challenge is created.</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {createForm.deadline
+                      ? "Duration is locked because it is auto-calculated from deadline."
+                      : "Set duration manually, or select a deadline to auto-calculate it."}
+                  </p>
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-gray-800">Reward Points</label>
@@ -507,9 +622,50 @@ export default function ChallengeManagement() {
                 </select>
               </div>
 
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-gray-800">Status</label>
+                  <select
+                    value={createForm.status}
+                    onChange={(e) => setCreateForm((p) => ({ ...p, status: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                  >
+                    {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <label className="block text-sm font-semibold text-gray-800">Deadline (optional)</label>
+                    {createForm.deadline && (
+                      <button
+                        type="button"
+                        onClick={() => setCreateForm((p) => ({ ...p, deadline: "" }))}
+                        className="text-xs font-semibold text-blue-700 hover:text-blue-900"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="date"
+                    value={createForm.deadline}
+                    onChange={(e) => {
+                      const nextDeadline = e.target.value;
+                      setCreateForm((p) => ({
+                        ...p,
+                        deadline: nextDeadline,
+                        durationDays: computeDurationDaysFromDeadline(nextDeadline),
+                      }));
+                    }}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Duration is auto-calculated when you pick a deadline date.</p>
+                </div>
+              </div>
+
               {createError && <p className="text-sm text-red-600">{createError}</p>}
               {!createError && (!hasCreateChanges || createValidationMessage) && (
-                <p className="text-xs text-gray-500">Fill required fields to enable challenge creation.</p>
+                <p className="text-xs text-gray-500">Fill required numeric fields and keep text/date inputs valid to enable challenge creation.</p>
               )}
               <div className="flex justify-end gap-3">
                 <button
@@ -537,8 +693,8 @@ export default function ChallengeManagement() {
       )}
 
       {editOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-emerald-100 bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-4 pt-24">
+          <div className="mx-auto my-4 max-h-[calc(100vh-7rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-emerald-100 bg-white p-6 shadow-xl">
             <h3 className="mb-1 text-lg font-bold text-gray-900">Edit Challenge</h3>
             <p className="mb-4 text-sm text-gray-600">Adjust values below and save your updates.</p>
 
@@ -562,6 +718,72 @@ export default function ChallengeManagement() {
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-800">Title</label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm((p) => ({ ...p, title: e.target.value }))}
+                  maxLength={120}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-800">Tagline</label>
+                <input
+                  type="text"
+                  value={editForm.tagline}
+                  onChange={(e) => setEditForm((p) => ({ ...p, tagline: e.target.value }))}
+                  maxLength={180}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-800">Description</label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
+                  rows={3}
+                  maxLength={1500}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-gray-800">Transport Mode</label>
+                  <select
+                    value={editForm.transportMode}
+                    onChange={(e) => setEditForm((p) => ({ ...p, transportMode: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                  >
+                    {TRANSPORT_MODES.map((m) => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-gray-800">Challenge Type</label>
+                  <select
+                    value={editForm.type}
+                    onChange={(e) => setEditForm((p) => ({ ...p, type: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                  >
+                    {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-gray-800">Difficulty</label>
+                  <select
+                    value={editForm.difficulty}
+                    onChange={(e) => setEditForm((p) => ({ ...p, difficulty: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                  >
+                    {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div>
                 <label className="mb-1 block text-sm font-semibold text-gray-800">CO2 Saving Target (kg)</label>
                 <input
                   type="number"
@@ -583,9 +805,19 @@ export default function ChallengeManagement() {
                     step="1"
                     value={editForm.durationDays}
                     onChange={(e) => setEditForm((p) => ({ ...p, durationDays: e.target.value }))}
+                    readOnly={!!editForm.deadline}
+                    disabled={!!editForm.deadline}
                     placeholder="e.g. 7"
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                    className={[
+                      "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm",
+                      editForm.deadline ? "cursor-not-allowed bg-gray-100 text-gray-500" : "",
+                    ].join(" ")}
                   />
+                    <p className="mt-1 text-xs text-gray-500">
+                      {editForm.deadline
+                        ? "Duration is locked because it is auto-calculated from deadline."
+                        : "Set duration manually, or select a deadline to auto-calculate it."}
+                    </p>
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-gray-800">Reward Points</label>
@@ -638,7 +870,14 @@ export default function ChallengeManagement() {
                 <input
                   type="date"
                   value={editForm.deadline}
-                  onChange={(e) => setEditForm((p) => ({ ...p, deadline: e.target.value }))}
+                  onChange={(e) => {
+                    const nextDeadline = e.target.value;
+                    setEditForm((p) => ({
+                      ...p,
+                      deadline: nextDeadline,
+                      durationDays: computeDurationDaysFromDeadline(nextDeadline),
+                    }));
+                  }}
                   className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
                 />
               </div>

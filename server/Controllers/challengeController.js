@@ -26,38 +26,83 @@ function computeDeadlineFromDuration(durationDays) {
   return deadline;
 }
 
+function computeDurationFromDeadline(deadlineValue) {
+  const deadline = new Date(deadlineValue);
+  if (Number.isNaN(deadline.getTime())) return null;
+  const diffMs = deadline.getTime() - Date.now();
+  return Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+}
+
 exports.createChallenge = async (req, res) => {
   try {
     const {
+      title,
+      description,
+      tagline,
       transportMode,
       emissionTarget,
       durationDays,
       difficulty,
       type,
       rewardPoints,
+      status,
+      deadline,
     } = req.body;
 
-    const aiContent = await generateChallengeContent({
-      transportMode,
-      emissionTarget,
-      durationDays,
-      difficulty,
-      type,
-    });
+    const providedTitle = typeof title === "string" ? title.trim() : "";
+    const providedDescription = typeof description === "string" ? description.trim() : "";
+    const providedTagline = typeof tagline === "string" ? tagline.trim() : "";
 
-    const deadline = computeDeadlineFromDuration(durationDays);
+    let aiContent = null;
+    if (!providedTitle || !providedDescription || !providedTagline) {
+      aiContent = await generateChallengeContent({
+        transportMode,
+        emissionTarget,
+        durationDays,
+        difficulty,
+        type,
+      });
+    }
+
+    const resolvedTitle = providedTitle || aiContent?.title;
+    const resolvedDescription = providedDescription || aiContent?.description;
+    const resolvedTagline = providedTagline || aiContent?.tagline;
+
+    if (!resolvedTitle || !resolvedDescription || !resolvedTagline) {
+      return res.status(400).json({ message: "Challenge title, description, and tagline are required." });
+    }
+
+    let resolvedDurationDays = Number(durationDays);
+    let resolvedDeadline = computeDeadlineFromDuration(resolvedDurationDays);
+    if (deadline !== undefined && deadline !== null && deadline !== "") {
+      const parsedDeadline = new Date(deadline);
+      if (Number.isNaN(parsedDeadline.getTime())) {
+        return res.status(400).json({ message: "Invalid deadline date" });
+      }
+      const computedDuration = computeDurationFromDeadline(parsedDeadline);
+      if (!computedDuration) {
+        return res.status(400).json({ message: "Invalid deadline date" });
+      }
+      resolvedDurationDays = computedDuration;
+      resolvedDeadline = parsedDeadline;
+    }
+
+    if (!Number.isInteger(resolvedDurationDays) || resolvedDurationDays < 1) {
+      return res.status(400).json({ message: "Duration must be at least 1 day" });
+    }
 
     const challenge = await Challenge.create({
-      title: aiContent.title,
-      description: aiContent.description,
-      tagline: aiContent.tagline,
+      title: resolvedTitle,
+      description: resolvedDescription,
+      tagline: resolvedTagline,
       transportMode,
       emissionTarget,
-      durationDays,
+      durationDays: resolvedDurationDays,
       difficulty,
       rewardPoints,
       type,
-      deadline,
+      status: status || "ACTIVE",
+      deadline: resolvedDeadline,
       createdBy: req.user.id,
     });
 
@@ -180,12 +225,39 @@ exports.updateChallenge = async (req, res) => {
       return res.status(404).json({ message: "Challenge not found" });
     }
 
+    if (req.body.title !== undefined) {
+      challenge.title = req.body.title;
+    }
+
+    if (req.body.description !== undefined) {
+      challenge.description = req.body.description;
+    }
+
+    if (req.body.tagline !== undefined) {
+      challenge.tagline = req.body.tagline;
+    }
+
+    if (req.body.transportMode !== undefined) {
+      challenge.transportMode = req.body.transportMode;
+    }
+
+    if (req.body.difficulty !== undefined) {
+      challenge.difficulty = req.body.difficulty;
+    }
+
+    if (req.body.type !== undefined) {
+      challenge.type = req.body.type;
+    }
+
     if (req.body.emissionTarget !== undefined) {
       challenge.emissionTarget = req.body.emissionTarget;
     }
 
+    let nextDurationDays = challenge.durationDays;
+    let hasDurationUpdate = false;
     if (req.body.durationDays !== undefined) {
-      challenge.durationDays = req.body.durationDays;
+      nextDurationDays = req.body.durationDays;
+      hasDurationUpdate = true;
     }
 
     if (req.body.rewardPoints !== undefined) {
@@ -193,11 +265,28 @@ exports.updateChallenge = async (req, res) => {
     }
 
     if (req.body.deadline !== undefined) {
-      challenge.deadline = req.body.deadline === null || req.body.deadline === ""
-        ? null
-        : new Date(req.body.deadline);
+      if (req.body.deadline === null || req.body.deadline === "") {
+        challenge.deadline = null;
+      } else {
+        const parsedDeadline = new Date(req.body.deadline);
+        if (Number.isNaN(parsedDeadline.getTime())) {
+          return res.status(400).json({ message: "Invalid deadline date" });
+        }
+        challenge.deadline = parsedDeadline;
+        const computedDuration = computeDurationFromDeadline(parsedDeadline);
+        nextDurationDays = computedDuration;
+        hasDurationUpdate = true;
+      }
     } else if (req.body.durationDays !== undefined) {
-      challenge.deadline = computeDeadlineFromDuration(challenge.durationDays);
+      challenge.deadline = computeDeadlineFromDuration(nextDurationDays);
+    }
+
+    if (hasDurationUpdate) {
+      const parsedDuration = Number(nextDurationDays);
+      if (!Number.isInteger(parsedDuration) || parsedDuration < 1) {
+        return res.status(400).json({ message: "Duration must be at least 1 day" });
+      }
+      challenge.durationDays = parsedDuration;
     }
 
     if (req.body.status !== undefined) {
