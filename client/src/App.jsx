@@ -140,6 +140,9 @@ function AppRoutes() {
       <Route path="/admin/challenges" element={
         <AdminProtectedRoute>
           <ChallengeManagement />
+        </AdminProtectedRoute>
+      } />
+
       {/* Admin Settings Route */}
       <Route path="/admin/settings" element={
         <AdminProtectedRoute>
