@@ -282,11 +282,14 @@ const AdminDashboard = () => {
               <h3 className="font-semibold text-gray-800">Manage Badges</h3>
               <p className="text-sm text-gray-600">Create, edit and delete badges</p>
             </Link>
-            <button className="p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition text-left">
+            <Link
+              to="/admin/settings"
+              className="p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition text-left block"
+            >
               <Settings className="text-purple-600 mb-2" size={28} />
               <h3 className="font-semibold text-gray-800">System Settings</h3>
               <p className="text-sm text-gray-600">Configure application settings</p>
-            </button>
+            </Link>
           </div>
         </div>
       </main>

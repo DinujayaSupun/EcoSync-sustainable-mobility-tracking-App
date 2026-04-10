@@ -11,6 +11,7 @@ import CommuteHistory from './pages/CommuteHistory'
 import WeatherSuggestion from './pages/smartCommute/WeatherSuggestion'
 import UserManagement from './pages/UserManagement';
 import Reports from './pages/Reports';
+import AdminSettings from './pages/AdminSettings';
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
  
@@ -120,6 +121,13 @@ function AppRoutes() {
       <Route path="/admin/badges" element={
         <AdminProtectedRoute>
           <BadgeManagement />
+        </AdminProtectedRoute>
+      } />
+
+      {/* Admin Settings Route */}
+      <Route path="/admin/settings" element={
+        <AdminProtectedRoute>
+          <AdminSettings />
         </AdminProtectedRoute>
       } />
 

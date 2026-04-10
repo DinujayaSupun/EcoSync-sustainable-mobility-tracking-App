@@ -24,9 +24,7 @@ describe("Admin Controller Tests", () => {
         process.env.MONGODB_URI ||
         process.env.MONGO_URI;
 
-      await mongoose.connect(
-        mongoUri,
-      );
+      await mongoose.connect(mongoUri);
     }
   });
 
@@ -385,7 +383,9 @@ describe("Admin Controller Tests", () => {
 
       expect(res.statusCode).toBe(500);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain("Brevo SMTP credentials not configured");
+      expect(res.body.message).toContain(
+        "Brevo SMTP credentials not configured",
+      );
 
       if (oldKey) process.env.BREVO_SMTP_KEY = oldKey;
       if (oldEmail) process.env.BREVO_SMTP_EMAIL = oldEmail;
