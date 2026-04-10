@@ -29,10 +29,10 @@ function Pill({ active, children, onClick }) {
 }
 
 function statusStyle(status) {
-  if (status === "COMPLETED") return "bg-green-100 text-green-800 border-green-200";
-  if (status === "EXPIRED") return "bg-amber-100 text-amber-800 border-amber-200";
+  if (status === "COMPLETED") return "bg-emerald-100 text-emerald-800 border-emerald-200";
+  if (status === "EXPIRED") return "bg-emerald-100 text-emerald-800 border-emerald-200";
   if (status === "LEFT") return "bg-gray-100 text-gray-700 border-gray-200";
-  return "bg-blue-100 text-blue-800 border-blue-200";
+  return "bg-emerald-100 text-emerald-800 border-emerald-200";
 }
 
 function isExpiredParticipation(participation) {
@@ -381,11 +381,11 @@ export default function Challenges() {
               Welcome, {user?.name}!
             </span>
             <button onClick={() => navigate("/home")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>home</span>Home</button>
-            <button onClick={() => navigate("/weather-suggestion")} className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300 bg-cyan-50 px-3.5 py-2 text-sm font-semibold text-cyan-900 transition hover:bg-cyan-100 hover:border-cyan-400"><span className="material-icons" style={{ fontSize: "17px" }}>cloud</span>Check Weather</button>
-            <button onClick={() => navigate("/badges")} className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-100 hover:border-amber-400"><span className="material-icons" style={{ fontSize: "17px" }}>workspace_premium</span>Badges</button>
-            <button onClick={() => navigate("/leaderboard")} className="inline-flex items-center gap-1.5 rounded-full border border-violet-300 bg-violet-50 px-3.5 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-100 hover:border-violet-400"><span className="material-icons" style={{ fontSize: "17px" }}>leaderboard</span>Leaderboard</button>
-            <button onClick={() => navigate("/challenges")} className="inline-flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-100 px-3.5 py-2 text-sm font-semibold text-indigo-900 transition hover:bg-indigo-200 hover:border-indigo-400"><span className="material-icons" style={{ fontSize: "17px" }}>emoji_events</span>Challenges</button>
-            <button onClick={() => navigate("/commute-history")} className="inline-flex items-center gap-1.5 rounded-full border border-blue-300 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-900 transition hover:bg-blue-100 hover:border-blue-400"><span className="material-icons" style={{ fontSize: "17px" }}>history</span>Trip History</button>
+            <button onClick={() => navigate("/weather-suggestion")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>cloud</span>Check Weather</button>
+            <button onClick={() => navigate("/badges")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>workspace_premium</span>Badges</button>
+            <button onClick={() => navigate("/leaderboard")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>leaderboard</span>Leaderboard</button>
+            <button onClick={() => navigate("/challenges")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400 bg-emerald-100 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-200 hover:border-emerald-500"><span className="material-icons" style={{ fontSize: "17px" }}>emoji_events</span>Challenges</button>
+            <button onClick={() => navigate("/commute-history")} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 hover:border-emerald-400"><span className="material-icons" style={{ fontSize: "17px" }}>history</span>Trip History</button>
             <button onClick={handleLogout} className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-3.5 py-2 text-sm font-semibold text-rose-900 transition hover:bg-rose-100 hover:border-rose-400"><span className="material-icons" style={{ fontSize: "17px" }}>logout</span>Logout</button>
           </div>
         </div>
@@ -401,7 +401,7 @@ export default function Challenges() {
         )}
 
         {autoSyncNotice && (
-          <div className="mb-4 rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm font-medium text-cyan-800">
+          <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
             {autoSyncNotice}
           </div>
         )}
@@ -423,17 +423,17 @@ export default function Challenges() {
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Active</p>
                 <p className="mt-2 text-3xl font-bold text-emerald-900">{stats.active}</p>
               </div>
-              <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
-                <p className="text-xs font-bold uppercase tracking-wider text-indigo-700">Completed</p>
-                <p className="mt-2 text-3xl font-bold text-indigo-900">{stats.completed}</p>
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Completed</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{stats.completed}</p>
               </div>
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-                <p className="text-xs font-bold uppercase tracking-wider text-amber-700">Rewarded Points</p>
-                <p className="mt-2 text-3xl font-bold text-amber-900">{stats.rewarded}</p>
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Rewarded Points</p>
+                <p className="mt-2 text-3xl font-bold text-emerald-900">{stats.rewarded}</p>
               </div>
             </div>
 
-            <div className="mb-6 flex flex-wrap gap-2 border-b border-gray-100 pb-4">
+            <div className="mb-6 flex flex-wrap gap-2 border-b border-emerald-100 pb-4">
               <Pill active={tab === "available"} onClick={() => setTab("available")}>Available</Pill>
               <Pill active={tab === "my"} onClick={() => setTab("my")}>My Challenges</Pill>
               <Pill active={tab === "completed"} onClick={() => setTab("completed")}>Completed</Pill>
@@ -483,7 +483,7 @@ export default function Challenges() {
                         <div key={challenge._id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
                           <div className="mb-3 flex items-center justify-between">
                             <h3 className="text-lg font-bold text-gray-900">{challenge.title}</h3>
-                            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
                               +{challenge.rewardPoints} pts
                             </span>
                           </div>
@@ -514,7 +514,7 @@ export default function Challenges() {
             {tab === "my" && (
               <>
                 {autoSyncing && (
-                  <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm font-medium text-blue-800">
+                  <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-800">
                     Auto-syncing challenge progress from your latest trips...
                   </div>
                 )}
@@ -534,7 +534,7 @@ export default function Challenges() {
                       const target = Number(challenge?.emissionTarget || 1);
                       const percent = Math.min(100, Math.round((current / target) * 100));
                       return (
-                        <div key={challengeId} className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
+                        <div key={challengeId} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
                           <div className="mb-3 flex items-center justify-between">
                             <h3 className="text-lg font-bold text-gray-900">{challenge?.title || "Challenge"}</h3>
                             <span className={[
@@ -555,7 +555,7 @@ export default function Challenges() {
                           </div>
 
                           {isExpired && (
-                            <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                            <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
                               This challenge has expired. You can view progress but cannot sync new progress.
                             </div>
                           )}
@@ -594,13 +594,13 @@ export default function Challenges() {
                       const challenge = participation.challenge;
                       const id = participation.challengeId || challenge?._id;
                       return (
-                        <div key={id} className="rounded-2xl border border-green-100 bg-white p-5 shadow-sm">
+                        <div key={id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
                           <div className="mb-3 flex items-center justify-between">
                             <h3 className="text-lg font-bold text-gray-900">{challenge?.title || "Challenge"}</h3>
-                            <span className="rounded-full border border-green-200 bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-800">COMPLETED</span>
+                            <span className="rounded-full border border-emerald-200 bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">COMPLETED</span>
                           </div>
                           <p className="mb-3 text-sm text-gray-600">{challenge?.description}</p>
-                          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-800">
+                          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-800">
                             <p className="text-sm font-semibold">Reward Received: +{participation.rewardedPoints || 0} points</p>
                             {participation.rewardGrantedAt && (
                               <p className="mt-1 text-xs">
