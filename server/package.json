@@ -3,17 +3,12 @@
   "version": "1.0.0",
   "description": "Sustainability Project Backend API",
   "main": "index.js",
-  "directories": {
-    "test": "tests"
-  },
+  "type": "commonjs",
   "scripts": {
-    "test": "npm run test:all",
-    "test:all": "npm run test:unit && npm run test:integration && npm run test:admin",
-    "test:unit": "jest --config jest.config.js tests/unit",
-    "test:integration": "jest --config jest.config.js tests/integration",
-    "test:admin": "jest --config jest.config.js tests/admin.controller.test.js",
-    "test:coverage": "jest --config jest.config.js --coverage",
-    "test:performance": "npx artillery run ./performance/artillery.yml",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "jest"
+    "test": "jest",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
@@ -22,9 +17,7 @@
     "backend",
     "api"
   ],
-  "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@sendgrid/mail": "^8.1.6",
@@ -41,14 +34,21 @@
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.1.0",
     "mongoose": "^9.1.6",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0",
+    "supertest": "^7.2.2",
+    "nodemon": "^3.1.11"
     "nodemailer": "^8.0.1",
     "openai": "^6.25.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "artillery": "^2.0.30",
-    "jest": "^30.3.0",
+    "jest": "^30.2.0",
     "nodemon": "^3.1.11",
     "supertest": "^7.2.2"
   },
