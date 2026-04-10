@@ -15,7 +15,6 @@ const {
   validateObjectId,
   handleValidation,
 } = require("../middleware/validation.middleware");
-const { validate } = require("../middleware/validate.middleware");
 
 router.post(
   "/calculate",

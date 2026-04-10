@@ -1,34 +1,63 @@
-const CarbonRecord = require("../models/CarbonRecord");
-const {
-  calculateEmissionSaved,
-  getGreenestOption,
-} = require("../services/carbon.service");
+const CarbonRecord = require("../Models/carbonRecord");
 
 const {
   getUserTotalSaved,
   forecastMonthlySavings,
   getUserPercentile,
-} = require("../services/analytics.service");
+} = require("../Services/analytics.service");
 
 // CREATE
+const {
+  calculateEmission,
+  calculateEmissionSaved,
+  calculateEfficiencyScore,
+  generateRecommendation,
+  compareAllOptions,
+} = require("../Services/carbon.service"); 
+
+// CREATE + CALCULATE
 const createCarbonRecord = async (req, res, next) => {
   try {
     const { userId, vehicleType, distance } = req.body;
 
-    const emissionSaved = calculateEmissionSaved(vehicleType, distance);
-    const recommendation = getGreenestOption(distance);
+    // 1️⃣ Calculate emission produced
+    const emissionProduced = calculateEmission(vehicleType, distance);
 
+    // 2️⃣ Calculate emission saved vs worst option
+    const emissionSaved = calculateEmissionSaved(vehicleType, distance);
+
+    // 3️⃣ Calculate efficiency score
+    const efficiencyScore = calculateEfficiencyScore(
+      emissionProduced,
+      distance,
+    );
+
+    // 4️⃣ Generate recommendation
+    const recommendation = generateRecommendation(vehicleType, distance);
+
+    // 5️⃣ Compare all transport options
+    const comparison = compareAllOptions(vehicleType, distance);
+
+    // 6️⃣ Save record in DB
     const record = await CarbonRecord.create({
       userId,
       vehicleType,
       distance,
+      emissionProduced,
       emissionSaved,
     });
 
     res.status(201).json({
       success: true,
+      message: "Carbon record created successfully",
       record,
-      recommendation,
+      analytics: {
+        emissionProduced,
+        emissionSaved,
+        efficiencyScore,
+        recommendation,
+        comparison,
+      },
     });
   } catch (err) {
     next(err);
@@ -81,28 +110,47 @@ const updateRecord = async (req, res, next) => {
     const { id } = req.params;
     const { vehicleType, distance } = req.body;
 
-    let updateData = {};
+    const record = await CarbonRecord.findById(id);
 
-    if (vehicleType && distance !== undefined) {
-      const emissionSaved = calculateEmissionSaved(vehicleType, distance);
-      updateData = { vehicleType, distance, emissionSaved };
-    }
-
-    const updatedRecord = await CarbonRecord.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
-
-    if (!updatedRecord) {
+    if (!record) {
       return res.status(404).json({
         success: false,
         message: "Carbon record not found",
       });
     }
 
+    let updatedVehicle = vehicleType || record.vehicleType;
+    let updatedDistance =
+      distance !== undefined ? distance : record.distance;
+
+    // Recalculate everything properly
+    const emissionProduced = calculateEmission(
+      updatedVehicle,
+      updatedDistance
+    );
+
+    const emissionSaved = calculateEmissionSaved(
+      updatedVehicle,
+      updatedDistance
+    );
+
+    const efficiencyScore = calculateEfficiencyScore(
+      emissionProduced,
+      updatedDistance
+    );
+
+    record.vehicleType = updatedVehicle;
+    record.distance = updatedDistance;
+    record.emissionProduced = emissionProduced;
+    record.emissionSaved = emissionSaved;
+    record.efficiencyScore = efficiencyScore;
+
+    await record.save();
+
     res.json({
       success: true,
       message: "Carbon record updated successfully",
-      updatedRecord,
+      updatedRecord: record,
     });
   } catch (err) {
     next(err);

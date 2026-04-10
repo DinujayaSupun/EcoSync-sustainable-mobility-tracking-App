@@ -17,6 +17,8 @@ import AboutUs from './pages/AboutUs';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import ContactSupport from './pages/ContactSupport';
+import Challenges from './pages/Challenges';
+import ChallengeDetails from './pages/ChallengeDetails';
 import { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
  
@@ -24,7 +26,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
 import Badges from "./pages/Badges";
 import Leaderboard from "./pages/Leaderboard";
 import BadgeManagement from "./pages/BadgeManagement";
-import Challenges from "./pages/Challenges";
 import ChallengeManagement from "./pages/ChallengeManagement";
 
  //🛡️ Admin Guard Component
@@ -173,6 +174,51 @@ function AppRoutes() {
         element={
           <UserProtectedRoute>
             <Challenges />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/challenges/:id"
+        element={
+          <UserProtectedRoute>
+            <ChallengeDetails />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/about-us"
+        element={
+          <UserProtectedRoute>
+            <AboutUs />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/privacy-policy"
+        element={
+          <UserProtectedRoute>
+            <PrivacyPolicy />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/terms-and-conditions"
+        element={
+          <UserProtectedRoute>
+            <TermsAndConditions />
+          </UserProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/contact-support"
+        element={
+          <UserProtectedRoute>
+            <ContactSupport />
           </UserProtectedRoute>
         }
       />
