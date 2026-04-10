@@ -26,8 +26,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
 import Badges from "./pages/Badges";
 import Leaderboard from "./pages/Leaderboard";
 import BadgeManagement from "./pages/BadgeManagement";
-import AdminChallenges from './pages/AdminChallenges';
-import Challenges from "./pages/Challenges";
 import ChallengeManagement from "./pages/ChallengeManagement";
 
  //🛡️ Admin Guard Component
@@ -142,7 +140,6 @@ function AppRoutes() {
 
       <Route path="/admin/challenges" element={
         <AdminProtectedRoute>
-          <AdminChallenges />
           <ChallengeManagement />
         </AdminProtectedRoute>
       } />
@@ -221,7 +218,7 @@ function AppRoutes() {
         path="/contact-support"
         element={
           <UserProtectedRoute>
-            <Challenges />
+            <ContactSupport />
           </UserProtectedRoute>
         }
       />
