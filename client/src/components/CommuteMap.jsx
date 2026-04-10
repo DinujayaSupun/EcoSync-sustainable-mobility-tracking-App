@@ -110,7 +110,7 @@ const LocateControl = ({ onLocate }) => {
         // Reverse geocode with Nominatim
         try {
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1&zoom=18`
           );
           const data = await res.json();
           const name = data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
@@ -125,7 +125,7 @@ const LocateControl = ({ onLocate }) => {
         alert('Unable to retrieve your location. Please allow location access.');
         setLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 

@@ -56,7 +56,6 @@ const UserNavbar = ({ userName, onLogout }) => {
             </div>
             <div className="text-left leading-tight">
               <h1 className="text-2xl font-extrabold tracking-tight text-white">EcoSync</h1>
-              <p className="text-xs font-semibold text-emerald-200">Smarter, cleaner commuting</p>
             </div>
           </button>
 

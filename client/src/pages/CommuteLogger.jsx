@@ -20,6 +20,7 @@ const CommuteLogger = () => {
   const [startCoords, setStartCoords] = useState(null);
   const [endCoords, setEndCoords] = useState(null);
   const [liveCoords, setLiveCoords] = useState(null);
+  const [useLiveStart, setUseLiveStart] = useState(false);
   const [liveLocating, setLiveLocating] = useState(false);
 
   const [result, setResult] = useState(null);
@@ -51,6 +52,11 @@ const CommuteLogger = () => {
   };
 
   const handleChange = (e) => {
+    if (e.target.name === 'startLocation') {
+      setUseLiveStart(false);
+      setLiveCoords(null);
+    }
+
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -59,6 +65,8 @@ const CommuteLogger = () => {
 
   const handleCoordSelect = (fieldName, lat, lon) => {
     if (fieldName === 'startLocation') {
+      setUseLiveStart(false);
+      setLiveCoords(null);
       setStartCoords([lat, lon]);
     } else if (fieldName === 'destination') {
       setEndCoords([lat, lon]);
@@ -76,17 +84,8 @@ const CommuteLogger = () => {
       async (pos) => {
         const { latitude: lat, longitude: lon } = pos.coords;
         setLiveCoords([lat, lon]);
-        setStartCoords([lat, lon]);
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
-          );
-          const data = await res.json();
-          const name = data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-          setFormData((prev) => ({ ...prev, startLocation: name }));
-        } catch {
-          setFormData((prev) => ({ ...prev, startLocation: `${lat.toFixed(5)}, ${lon.toFixed(5)}` }));
-        }
+        setUseLiveStart(true);
+        setFormData((prev) => ({ ...prev, startLocation: `${lat.toFixed(6)}, ${lon.toFixed(6)}` }));
         setLiveLocating(false);
       },
       (err) => {
@@ -94,16 +93,18 @@ const CommuteLogger = () => {
         alert('Unable to retrieve your location. Please allow location access.');
         setLiveLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
   // Callback from LocateControl button inside the map
   const handleMapLocate = (lat, lon, name) => {
     setLiveCoords([lat, lon]);
-    setStartCoords([lat, lon]);
-    setFormData((prev) => ({ ...prev, startLocation: name }));
+    setUseLiveStart(true);
+    setFormData((prev) => ({ ...prev, startLocation: `${lat.toFixed(6)}, ${lon.toFixed(6)}` }));
   };
+
+  const effectiveStartCoords = useLiveStart && liveCoords ? liveCoords : startCoords;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -112,7 +113,15 @@ const CommuteLogger = () => {
     setResult(null);
 
     try {
-      const { data } = await API.post('/commute/log', formData);
+      const payload = {
+        ...formData,
+        startLat: effectiveStartCoords ? effectiveStartCoords[0] : undefined,
+        startLon: effectiveStartCoords ? effectiveStartCoords[1] : undefined,
+        destLat: endCoords ? endCoords[0] : undefined,
+        destLon: endCoords ? endCoords[1] : undefined,
+      };
+
+      const { data } = await API.post('/commute/log', payload);
       setResult(data.data);
       
       // Trigger automatic refresh across all components watching for commute updates
@@ -128,6 +137,8 @@ const CommuteLogger = () => {
       });
       setStartCoords(null);
       setEndCoords(null);
+      setLiveCoords(null);
+      setUseLiveStart(false);
       
       // Show success result for 4 seconds, then clear it
       setTimeout(() => {
@@ -154,7 +165,7 @@ const CommuteLogger = () => {
       <div className="mb-6 overflow-hidden rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm sm:mb-7">
         <p className="mb-3 text-sm font-medium text-emerald-700"><span className="material-icons" style={{fontSize: '18px', verticalAlign: 'middle', marginRight: '4px', display: 'inline-flex'}}>location_on</span>Search and select locations below to pin them on the map</p>
         <CommuteMap
-          startCoords={startCoords}
+          startCoords={effectiveStartCoords}
           endCoords={endCoords}
           startLabel={formData.startLocation}
           endLabel={formData.destination}
