@@ -392,6 +392,27 @@ describe("Admin Controller Tests", () => {
     });
   });
 
+  describe("POST /api/admin/ai-insights", () => {
+    it("should reject AI insights request without token", async () => {
+      const res = await request(app).post("/api/admin/ai-insights").send({});
+
+      expect(res.statusCode).toBe(401);
+    });
+
+    it("should reject AI insights request for non-admin user", async () => {
+      const userToken = jwt.sign({ id: testUser._id }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      const res = await request(app)
+        .post("/api/admin/ai-insights")
+        .set("Authorization", `Bearer ${userToken}`)
+        .send({});
+
+      expect(res.statusCode).toBe(403);
+    });
+  });
+
   describe("Rate Limiting", () => {
     it("should enforce rate limits on update endpoint", async () => {
       // Make multiple requests quickly
