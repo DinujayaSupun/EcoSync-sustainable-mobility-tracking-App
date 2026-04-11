@@ -31,6 +31,30 @@ const validateUserUpdate = [
     .withMessage("Role must be either 'user' or 'admin'"),
 ];
 
+// User create validation
+const validateUserCreate = [
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ min: 2, max: 100 })
+    .withMessage("Name must be between 2 and 100 characters"),
+  body("email").trim().isEmail().withMessage("Invalid email format"),
+  body("password")
+    .isString()
+    .withMessage("Password must be a string")
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long"),
+  body("faculty")
+    .optional({ nullable: true })
+    .isString()
+    .withMessage("Faculty must be a string"),
+  body("role")
+    .optional()
+    .isIn(["user", "admin"])
+    .withMessage("Role must be either 'user' or 'admin'"),
+];
+
 // Email report validation
 const validateEmailReport = [
   body("startDate")
@@ -81,6 +105,7 @@ module.exports = {
   validateCarbonCreate,
   validateObjectId,
   validateUserId,
+  validateUserCreate,
   validateUserUpdate,
   validateEmailReport,
   validateAtLeastOneField,

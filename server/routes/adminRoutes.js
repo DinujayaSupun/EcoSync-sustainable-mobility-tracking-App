@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   getAdminStats,
+  createUser,
   getAllUsers,
   updateUser,
   deleteUser,
@@ -14,6 +15,7 @@ const {
 const { protect, isAdmin } = require("../middleware/authMiddleware");
 const {
   validateUserId,
+  validateUserCreate,
   validateUserUpdate,
   validateEmailReport,
   validateAtLeastOneField,
@@ -570,6 +572,26 @@ router.get("/stats", protect, isAdmin, getAdminStats);
  *                   example: Failed to retrieve users
  */
 router.get("/users", protect, isAdmin, getAllUsers);
+
+router.post(
+  "/users",
+  protect,
+  isAdmin,
+  strictAdminLimiter,
+  logActivity("CREATE", "USER", (req) => ({
+    targetName: req.body.name,
+    description: `Created user ${req.body.name || "account"}`,
+    changes: {
+      name: req.body.name,
+      email: req.body.email,
+      role: req.body.role || "user",
+      faculty: req.body.faculty,
+    },
+  })),
+  validateUserCreate,
+  validate,
+  createUser,
+);
 
 /**
  * @swagger

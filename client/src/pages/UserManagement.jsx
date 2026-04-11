@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Trash2, UserCog, Mail, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Trash2, UserCog, Mail, Search, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 import API from '../api/axios';
 
 const UserManagement = () => {
@@ -8,11 +8,21 @@ const UserManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newRole, setNewRole] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(null);
   const [validationErrors, setValidationErrors] = useState([]);
+  const [createValidationErrors, setCreateValidationErrors] = useState([]);
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    faculty: '',
+    role: 'user',
+  });
   const [successMessage, setSuccessMessage] = useState('');
   
   // Search & Pagination States
@@ -68,6 +78,107 @@ const UserManagement = () => {
     setNewRole(user.role);
     setValidationErrors([]);
     setEditModalOpen(true);
+  };
+
+  const openCreateModal = () => {
+    setCreateForm({
+      name: '',
+      email: '',
+      password: '',
+      faculty: '',
+      role: 'user',
+    });
+    setCreateValidationErrors([]);
+    setCreateModalOpen(true);
+  };
+
+  const closeCreateModal = () => {
+    if (isCreating) return;
+    setCreateModalOpen(false);
+    setCreateValidationErrors([]);
+  };
+
+  const handleCreateFormChange = (field, value) => {
+    setCreateForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const validateCreateForm = () => {
+    const errors = [];
+    const normalizedEmail = createForm.email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!createForm.name.trim()) {
+      errors.push({ field: 'name', message: 'Name is required' });
+    } else if (createForm.name.trim().length < 2) {
+      errors.push({ field: 'name', message: 'Name must be at least 2 characters' });
+    }
+
+    if (!normalizedEmail) {
+      errors.push({ field: 'email', message: 'Email is required' });
+    } else if (!emailRegex.test(normalizedEmail)) {
+      errors.push({ field: 'email', message: 'Please enter a valid email' });
+    }
+
+    if (!createForm.password) {
+      errors.push({ field: 'password', message: 'Password is required' });
+    } else if (createForm.password.length < 8) {
+      errors.push({ field: 'password', message: 'Password must be at least 8 characters long' });
+    }
+
+    if (createForm.faculty && createForm.faculty.trim().length < 2) {
+      errors.push({ field: 'faculty', message: 'Faculty must be at least 2 characters if provided' });
+    }
+
+    if (!['user', 'admin'].includes(createForm.role)) {
+      errors.push({ field: 'role', message: 'Role must be user or admin' });
+    }
+
+    setCreateValidationErrors(errors);
+    return errors.length === 0;
+  };
+
+  const handleCreateUser = async () => {
+    if (!validateCreateForm()) return;
+
+    setIsCreating(true);
+    setCreateValidationErrors([]);
+    setError(null);
+
+    try {
+      const payload = {
+        name: createForm.name.trim(),
+        email: createForm.email.trim().toLowerCase(),
+        password: createForm.password,
+        faculty: createForm.faculty.trim(),
+        role: createForm.role,
+      };
+
+      const res = await API.post('/admin/users', payload);
+
+      if (res.data?.success && res.data?.user) {
+        setUsers((prev) => [res.data.user, ...prev]);
+        setSuccessMessage(`Successfully created user: ${res.data.user.name}`);
+        closeCreateModal();
+        setTimeout(() => setSuccessMessage(''), 5000);
+      } else {
+        throw new Error(res.data?.message || 'Create failed');
+      }
+    } catch (err) {
+      console.error('Create Error:', err);
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        setCreateValidationErrors(err.response.data.errors);
+      } else {
+        setCreateValidationErrors([
+          {
+            field: 'general',
+            message:
+              err.response?.data?.message || err.message || 'Failed to create user',
+          },
+        ]);
+      }
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   // Validate role selection
@@ -277,6 +388,13 @@ const UserManagement = () => {
               <p className="text-purple-100 text-sm mt-1">Manage account roles, permissions, and user lifecycle.</p>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={openCreateModal}
+                className="inline-flex items-center rounded-lg bg-white px-4 py-2 font-medium text-purple-700 transition hover:bg-purple-50"
+              >
+                <UserPlus size={16} className="mr-2" />
+                Create User
+              </button>
               <span className="bg-white/20 text-white px-4 py-1.5 rounded-full text-sm font-semibold border border-white/30">
                 {users.length} Total Users
               </span>
@@ -634,6 +752,134 @@ const UserManagement = () => {
               </div>
             </div>
           </div>
+          </div>
+        )}
+
+        {createModalOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-900/45 backdrop-blur-[2px] flex items-center justify-center p-4">
+            <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+              <div className="bg-linear-to-r from-purple-600 to-indigo-600 px-6 py-5 text-white">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-purple-100">User Provisioning</p>
+                    <h3 className="mt-1 text-2xl font-bold">Create User</h3>
+                    <p className="mt-1 text-sm text-purple-100">Add a new user account with role and profile details.</p>
+                  </div>
+                  <button
+                    onClick={closeCreateModal}
+                    disabled={isCreating}
+                    className="rounded-lg border border-white/30 px-2.5 py-1.5 text-sm font-semibold text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Close create user modal"
+                  >
+                    X
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                {createValidationErrors.length > 0 && (
+                  <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4">
+                    <p className="text-sm font-semibold text-red-800 mb-1">Validation Errors:</p>
+                    <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
+                      {createValidationErrors.map((error, index) => (
+                        <li key={index}>{error.message}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label htmlFor="create-user-name" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">Name</label>
+                    <input
+                      id="create-user-name"
+                      type="text"
+                      value={createForm.name}
+                      onChange={(e) => handleCreateFormChange('name', e.target.value)}
+                      className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-800 transition-all focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                      placeholder="Enter full name"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="create-user-email" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">Email</label>
+                    <input
+                      id="create-user-email"
+                      type="email"
+                      value={createForm.email}
+                      onChange={(e) => handleCreateFormChange('email', e.target.value)}
+                      className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-800 transition-all focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                      placeholder="user@university.edu"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="create-user-password" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">Password</label>
+                    <input
+                      id="create-user-password"
+                      type="password"
+                      value={createForm.password}
+                      onChange={(e) => handleCreateFormChange('password', e.target.value)}
+                      className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-800 transition-all focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                      placeholder="Minimum 8 characters"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="create-user-faculty" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">Faculty</label>
+                    <input
+                      id="create-user-faculty"
+                      type="text"
+                      value={createForm.faculty}
+                      onChange={(e) => handleCreateFormChange('faculty', e.target.value)}
+                      className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-800 transition-all focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                      placeholder="Engineering"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="create-user-role" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">Role</label>
+                    <select
+                      id="create-user-role"
+                      value={createForm.role}
+                      onChange={(e) => handleCreateFormChange('role', e.target.value)}
+                      className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-800 transition-all focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                  <button
+                    onClick={closeCreateModal}
+                    disabled={isCreating}
+                    className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateUser}
+                    disabled={isCreating}
+                    className={`rounded-xl px-5 py-2.5 font-semibold transition-colors flex items-center justify-center gap-2 ${
+                      isCreating
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm'
+                    }`}
+                  >
+                    {isCreating ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Creating...</span>
+                      </>
+                    ) : (
+                      'Create Account'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

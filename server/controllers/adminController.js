@@ -82,6 +82,114 @@ exports.getAdminStats = async (req, res) => {
   }
 };
 
+// CREATE a user (admin only)
+exports.createUser = async (req, res) => {
+  try {
+    const { name, email, password, faculty, role } = req.body;
+    const normalizedName = typeof name === "string" ? name.trim() : "";
+    const normalizedEmail =
+      typeof email === "string" ? email.trim().toLowerCase() : "";
+    const normalizedFaculty =
+      typeof faculty === "string" ? faculty.trim() : faculty;
+    const normalizedRole =
+      typeof role === "string" ? role.trim().toLowerCase() : "user";
+
+    if (!normalizedName || !normalizedEmail || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email, and password are required",
+        errors: [
+          {
+            field: "body",
+            message: "Please provide name, email, and password",
+          },
+        ],
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format",
+        errors: [
+          { field: "email", message: "Please provide a valid email address" },
+        ],
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: "Password too short",
+        errors: [
+          {
+            field: "password",
+            message: "Password must be at least 8 characters long",
+          },
+        ],
+      });
+    }
+
+    if (!["user", "admin"].includes(normalizedRole)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role",
+        errors: [
+          { field: "role", message: "Role must be either 'user' or 'admin'" },
+        ],
+      });
+    }
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already in use",
+        errors: [
+          {
+            field: "email",
+            message: `Email '${normalizedEmail}' is already registered`,
+          },
+        ],
+      });
+    }
+
+    const user = await User.create({
+      name: normalizedName,
+      email: normalizedEmail,
+      password,
+      faculty: normalizedFaculty,
+      role: normalizedRole,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        faculty: user.faculty,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error("Create user error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Create failed due to server error",
+      errors: [
+        {
+          field: "server",
+          message: "An unexpected error occurred. Please try again later.",
+        },
+      ],
+    });
+  }
+};
+
 // GET all users
 exports.getAllUsers = async (req, res) => {
   try {
