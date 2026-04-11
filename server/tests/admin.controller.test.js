@@ -97,6 +97,63 @@ describe("Admin Controller Tests", () => {
     });
   });
 
+  describe("POST /api/admin/users", () => {
+    it("should create a user successfully", async () => {
+      const payload = {
+        name: "Created User",
+        email: "created.user@test.com",
+        password: "password123",
+        faculty: "Business",
+        role: "user",
+      };
+
+      const res = await request(app)
+        .post("/api/admin/users")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(payload);
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body).toHaveProperty("success", true);
+      expect(res.body.user.email).toBe(payload.email);
+      expect(res.body.user).not.toHaveProperty("password");
+
+      const dbUser = await User.findOne({ email: payload.email });
+      expect(dbUser).toBeTruthy();
+      expect(dbUser.role).toBe("user");
+    });
+
+    it("should reject duplicate email", async () => {
+      const res = await request(app)
+        .post("/api/admin/users")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({
+          name: "Duplicate User",
+          email: "user@test.com",
+          password: "password123",
+          role: "user",
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain("Email already in use");
+    });
+
+    it("should reject short passwords", async () => {
+      const res = await request(app)
+        .post("/api/admin/users")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({
+          name: "Weak User",
+          email: "weak.user@test.com",
+          password: "1234567",
+          role: "user",
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+  });
+
   describe("PUT /api/admin/users/:id", () => {
     it("should update user role successfully", async () => {
       const res = await request(app)

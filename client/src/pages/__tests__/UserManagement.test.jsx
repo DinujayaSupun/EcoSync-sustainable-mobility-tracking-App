@@ -7,6 +7,7 @@ import API from '../../api/axios';
 vi.mock('../../api/axios', () => ({
   default: {
     get: vi.fn(),
+    post: vi.fn(),
     put: vi.fn(),
     delete: vi.fn(),
   },
@@ -75,6 +76,60 @@ describe('UserManagement', () => {
 
     expect(
       await screen.findByText("Successfully updated Bob User's role to admin"),
+    ).toBeInTheDocument();
+  });
+
+  it('creates a user via create modal', async () => {
+    API.post.mockResolvedValueOnce({
+      data: {
+        success: true,
+        user: {
+          _id: 'u3',
+          name: 'Charlie New',
+          email: 'charlie@test.com',
+          role: 'user',
+          faculty: 'Business',
+        },
+      },
+    });
+
+    render(
+      <MemoryRouter>
+        <UserManagement />
+      </MemoryRouter>,
+    );
+
+    await screen.findByText('Alice Admin');
+
+    fireEvent.click(screen.getByRole('button', { name: /create user/i }));
+
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: 'Charlie New' },
+    });
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'charlie@test.com' },
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: 'password123' },
+    });
+    fireEvent.change(screen.getByLabelText(/faculty/i), {
+      target: { value: 'Business' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(API.post).toHaveBeenCalledWith('/admin/users', {
+        name: 'Charlie New',
+        email: 'charlie@test.com',
+        password: 'password123',
+        faculty: 'Business',
+        role: 'user',
+      });
+    });
+
+    expect(
+      await screen.findByText('Successfully created user: Charlie New'),
     ).toBeInTheDocument();
   });
 
