@@ -18,6 +18,14 @@ This platform logs commute activity, calculates carbon impact, and boosts engage
 - Testing Instruction Report: [docs/TESTING_INSTRUCTIONS_REPORT.md](docs/TESTING_INSTRUCTIONS_REPORT.md)
 - Interactive API schemas and examples: `/api-docs` (Swagger)
 
+## ✅ Testing Highlights
+
+- End-to-end test expansion completed through Step 1 to Step 5
+- Backend status: 14 suites, 96 tests passed
+- Frontend status: 14 files, 36 tests passed
+- Includes module coverage for Commute, Challenges, Leaderboard, Reports, Weather/Smart Commute, Badges, Achievements, Auth, and admin lifecycle flows
+- Full evidence and execution guide: [docs/TESTING_INSTRUCTIONS_REPORT.md](docs/TESTING_INSTRUCTIONS_REPORT.md)
+
 ## ✨ Table of Contents
 
 1. [Overview](#-overview)
@@ -469,25 +477,59 @@ Admin routes use dedicated limiters in `server/middleware/rateLimiter.js`.
 
 ## 🧫 Testing
 
-### Backend (Jest)
+### Quick Run Commands
+
+Backend (full suite):
 
 ```bash
 cd server
 npm test
 ```
 
-- Jest config: `server/jest.config.js`
-- Setup file: `server/tests/setup.js`
-- Tests include unit/integration style files under `server/tests`
+Backend security-focused suites:
 
-### Frontend (Vitest)
+```bash
+cd server
+npm run test:security
+```
+
+Backend performance gate:
+
+```bash
+cd server
+npm run test:perf
+```
+
+Frontend (full suite):
 
 ```bash
 cd client
 npm test
-# watch mode
+```
+
+Frontend watch mode:
+
+```bash
+cd client
 npm run test:watch
 ```
+
+### Current Coverage Expansion (Completed)
+
+- Step 1: Commute + Challenges
+- Step 2: Leaderboard + Reports
+- Step 3: Weather + Smart Commute
+- Step 4: Badges + Achievements
+- Step 5: Auth + Badge Admin Lifecycle
+
+### Latest Verified Status
+
+- Backend: 14 suites, 96 tests passed
+- Frontend: 14 files, 36 tests passed
+
+For the complete testing evidence pack (module map, files, environment setup, and checklist), see:
+
+- [docs/TESTING_INSTRUCTIONS_REPORT.md](docs/TESTING_INSTRUCTIONS_REPORT.md)
 
 ## 🐳 Docker
 
