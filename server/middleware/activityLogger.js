@@ -1,4 +1,5 @@
 const ActivityLog = require("../models/ActivityLog");
+const User = require("../models/User");
 
 /**
  * Middleware to log admin activities
@@ -64,24 +65,63 @@ const createActivityLog = async (
   details = {},
 ) => {
   try {
+    // Supports both signatures:
+    // 1) createActivityLog(adminUser, action, targetType, details)
+    // 2) createActivityLog({ adminId, action, targetType, ...details })
+    let resolvedAdmin = adminUser;
+    let resolvedAction = action;
+    let resolvedTargetType = targetType;
+    let resolvedDetails = details;
+
+    if (
+      adminUser &&
+      typeof adminUser === "object" &&
+      adminUser.adminId &&
+      !action
+    ) {
+      const payload = adminUser;
+      resolvedAction = payload.action;
+      resolvedTargetType = payload.targetType;
+      resolvedDetails = {
+        targetId: payload.targetId,
+        targetName: payload.targetName,
+        description: payload.description,
+        changes: payload.changes,
+        ipAddress: payload.ipAddress,
+        userAgent: payload.userAgent,
+        status: payload.status,
+      };
+
+      resolvedAdmin = await User.findById(payload.adminId).select(
+        "_id name email",
+      );
+    }
+
+    if (!resolvedAdmin || !resolvedAdmin._id) {
+      throw new Error("Invalid admin user");
+    }
+
     const logEntry = {
-      admin: adminUser._id,
-      adminName: adminUser.name,
-      adminEmail: adminUser.email,
-      action,
-      targetType,
-      targetId: details.targetId || null,
-      targetName: details.targetName || null,
-      description: details.description || `${action} ${targetType}`,
-      changes: details.changes || null,
-      ipAddress: details.ipAddress || null,
-      userAgent: details.userAgent || null,
-      status: details.status || "SUCCESS",
+      admin: resolvedAdmin._id,
+      adminName: resolvedAdmin.name,
+      adminEmail: resolvedAdmin.email,
+      action: resolvedAction,
+      targetType: resolvedTargetType,
+      targetId: resolvedDetails.targetId || null,
+      targetName: resolvedDetails.targetName || null,
+      description:
+        resolvedDetails.description ||
+        `${resolvedAction} ${resolvedTargetType}`,
+      changes: resolvedDetails.changes || null,
+      ipAddress: resolvedDetails.ipAddress || null,
+      userAgent: resolvedDetails.userAgent || null,
+      status: resolvedDetails.status || "SUCCESS",
     };
 
-    await ActivityLog.create(logEntry);
+    return await ActivityLog.create(logEntry);
   } catch (error) {
     console.error("Failed to create activity log:", error);
+    throw error;
   }
 };
 

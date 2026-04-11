@@ -300,6 +300,13 @@ const AdminDashboard = () => {
               <h3 className="font-semibold text-gray-800">System Settings</h3>
               <p className="text-sm text-gray-600">Configure application settings</p>
             </Link>
+            <Link
+              to="/admin/activity-logs"
+              className="p-4 border-2 border-indigo-200 rounded-lg hover:bg-indigo-50 transition text-left block">
+              <BarChart3 className="text-indigo-600 mb-2" size={28} />
+              <h3 className="font-semibold text-gray-800">Audit Logs</h3>
+              <p className="text-sm text-gray-600">Review admin activity history</p>
+            </Link>
           </div>
         </div>
       </main>

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const User = require("./User");
 
 const activityLogSchema = new mongoose.Schema(
   {
@@ -9,11 +10,11 @@ const activityLogSchema = new mongoose.Schema(
     },
     adminName: {
       type: String,
-      required: true,
+      required: false,
     },
     adminEmail: {
       type: String,
-      required: true,
+      required: false,
     },
     action: {
       type: String,
@@ -23,11 +24,20 @@ const activityLogSchema = new mongoose.Schema(
     targetType: {
       type: String,
       required: true,
-      enum: ["USER", "REPORT", "SETTINGS", "SYSTEM"],
+      enum: [
+        "USER",
+        "REPORT",
+        "SETTINGS",
+        "SYSTEM",
+        "User",
+        "Report",
+        "Settings",
+        "System",
+      ],
     },
     targetId: {
       type: String,
-      default: null,
+      default: undefined,
     },
     targetName: {
       type: String,
@@ -35,7 +45,7 @@ const activityLogSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: true,
+      required: false,
     },
     changes: {
       type: mongoose.Schema.Types.Mixed,
@@ -64,5 +74,19 @@ const activityLogSchema = new mongoose.Schema(
 activityLogSchema.index({ admin: 1, createdAt: -1 });
 activityLogSchema.index({ action: 1, createdAt: -1 });
 activityLogSchema.index({ createdAt: -1 });
+
+activityLogSchema.pre("validate", async function () {
+  if (!this.description && this.action && this.targetType) {
+    this.description = `${this.action} ${this.targetType}`;
+  }
+
+  if (this.admin && (!this.adminName || !this.adminEmail)) {
+    const adminUser = await User.findById(this.admin).select("name email");
+    if (adminUser) {
+      if (!this.adminName) this.adminName = adminUser.name;
+      if (!this.adminEmail) this.adminEmail = adminUser.email;
+    }
+  }
+});
 
 module.exports = mongoose.model("ActivityLog", activityLogSchema);
