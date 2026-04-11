@@ -18,6 +18,14 @@ This platform logs commute activity, calculates carbon impact, and boosts engage
 - Testing Instruction Report: [docs/TESTING_INSTRUCTIONS_REPORT.md](docs/TESTING_INSTRUCTIONS_REPORT.md)
 - Interactive API schemas and examples: `/api-docs` (Swagger)
 
+## ✅ Testing Highlights
+
+- End-to-end test expansion completed through Step 1 to Step 5
+- Backend status: 14 suites, 96 tests passed
+- Frontend status: 14 files, 36 tests passed
+- Includes module coverage for Commute, Challenges, Leaderboard, Reports, Weather/Smart Commute, Badges, Achievements, Auth, and admin lifecycle flows
+- Full evidence and execution guide: [docs/TESTING_INSTRUCTIONS_REPORT.md](docs/TESTING_INSTRUCTIONS_REPORT.md)
+
 ## ✨ Table of Contents
 
 1. [Overview](#-overview)
