@@ -11,6 +11,13 @@ This platform logs commute activity, calculates carbon impact, and boosts engage
   <img src="https://img.shields.io/badge/Docs-Swagger-85EA2D?logo=swagger&logoColor=black" alt="Swagger" />
 </p>
 
+## 📚 Assignment Documentation Pack
+
+- API Endpoint Documentation: [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md)
+- Deployment Report: [docs/DEPLOYMENT_REPORT.md](docs/DEPLOYMENT_REPORT.md)
+- Testing Instruction Report: [docs/TESTING_INSTRUCTIONS_REPORT.md](docs/TESTING_INSTRUCTIONS_REPORT.md)
+- Interactive API schemas and examples: `/api-docs` (Swagger)
+
 ## ✨ Table of Contents
 
 1. [Overview](#-overview)
@@ -234,6 +241,52 @@ npm install
 cd ../client
 npm install
 ```
+
+## 🛠️ Step-by-Step Setup Guide
+
+1. Clone the repository and open it in your editor.
+2. Install backend dependencies:
+
+```bash
+cd server
+npm install
+```
+
+3. Install frontend dependencies:
+
+```bash
+cd ../client
+npm install
+```
+
+4. Create environment files:
+
+- `server/.env` using the variables in the Environment Variables section.
+- `client/.env` with `VITE_API_URL=http://localhost:5000/api`.
+
+5. Start MongoDB:
+
+- Local service, or
+- Docker: `docker-compose up -d`
+
+6. Run backend:
+
+```bash
+cd server
+npm run dev
+```
+
+7. Run frontend in a second terminal:
+
+```bash
+cd client
+npm run dev
+```
+
+8. Open the app:
+
+- Frontend: `http://localhost:5173`
+- Swagger docs: `http://localhost:5000/api-docs`
 
 ## ▶️ Running the System
 
