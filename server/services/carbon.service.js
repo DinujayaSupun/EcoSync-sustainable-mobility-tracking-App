@@ -1,11 +1,17 @@
-const EMISSION_FACTORS = require("../utils/emissionFactors");
+const {
+  emissionFactors: EMISSION_FACTORS,
+} = require("../utils/emissionFactors");
+
+const BASELINE_VEHICLE = "PETROL_CAR";
 
 // 1️⃣ Calculate emission for selected vehicle
 const calculateEmission = (vehicleType, distance) => {
   const factor = EMISSION_FACTORS[vehicleType];
 
   if (!factor && factor !== 0) {
-    throw new Error("Invalid vehicle type");
+    const error = new Error("Invalid vehicle type");
+    error.status = 400;
+    throw error;
   }
 
   return factor * distance;
@@ -21,7 +27,7 @@ const compareAllOptions = (selectedVehicle, distance) => {
     return {
       vehicle,
       emission,
-      difference: selectedEmission - emission, 
+      difference: selectedEmission - emission,
       // positive = selected is worse
       // negative = selected is better
     };
@@ -29,22 +35,19 @@ const compareAllOptions = (selectedVehicle, distance) => {
 
   return {
     selectedEmission,
-    comparisons
+    comparisons,
   };
 };
 
 // 3️⃣ Calculate efficiency score (0 - 100)
 const calculateEfficiencyScore = (selectedEmission, distance) => {
   const worstEmission = Math.max(
-    ...Object.values(EMISSION_FACTORS).map(
-      (factor) => factor * distance
-    )
+    ...Object.values(EMISSION_FACTORS).map((factor) => factor * distance),
   );
 
   if (worstEmission === 0) return 100;
 
-  const score =
-    ((worstEmission - selectedEmission) / worstEmission) * 100;
+  const score = ((worstEmission - selectedEmission) / worstEmission) * 100;
 
   return Math.round(score);
 };
@@ -52,17 +55,33 @@ const calculateEfficiencyScore = (selectedEmission, distance) => {
 // 4️⃣ Calculate how much emission saved compared to worst option
 const calculateEmissionSaved = (selectedVehicle, distance) => {
   const selectedEmission = calculateEmission(selectedVehicle, distance);
+  const baselineEmission = calculateEmission(BASELINE_VEHICLE, distance);
 
-  const worstEmission = Math.max(
-    ...Object.values(EMISSION_FACTORS).map(
-      (factor) => factor * distance
-    )
-  );
-
-  return worstEmission - selectedEmission;
+  return Math.max(0, baselineEmission - selectedEmission);
 };
 
-// 5️⃣ Generate smart recommendation
+// 5️⃣ Return the best possible option against a baseline car
+const getGreenestOption = (distance) => {
+  const baselineEmission = calculateEmission(BASELINE_VEHICLE, distance);
+
+  let bestOption = BASELINE_VEHICLE;
+  let lowestEmission = baselineEmission;
+
+  Object.entries(EMISSION_FACTORS).forEach(([vehicle, factor]) => {
+    const emission = factor * distance;
+    if (emission < lowestEmission) {
+      lowestEmission = emission;
+      bestOption = vehicle;
+    }
+  });
+
+  return {
+    bestOption,
+    potentialSaving: Math.max(0, baselineEmission - lowestEmission),
+  };
+};
+
+// 6️⃣ Generate smart recommendation
 const generateRecommendation = (selectedVehicle, distance) => {
   const { comparisons } = compareAllOptions(selectedVehicle, distance);
 
@@ -83,5 +102,6 @@ module.exports = {
   compareAllOptions,
   calculateEfficiencyScore,
   calculateEmissionSaved,
-  generateRecommendation
+  getGreenestOption,
+  generateRecommendation,
 };

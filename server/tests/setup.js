@@ -1,5 +1,5 @@
 // Load environment variables for testing
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 // Set test environment
 process.env.NODE_ENV = "test";
@@ -7,6 +7,15 @@ process.env.NODE_ENV = "test";
 // Mock environment variables if not set
 if (!process.env.JWT_SECRET) {
   process.env.JWT_SECRET = "test-jwt-secret-key-for-testing";
+}
+
+// Normalize MongoDB URI aliases used inconsistently across test files.
+if (!process.env.MONGODB_URI && process.env.MONGO_URI) {
+  process.env.MONGODB_URI = process.env.MONGO_URI;
+}
+if (!process.env.MONGODB_URI_TEST) {
+  process.env.MONGODB_URI_TEST =
+    process.env.MONGO_URI_TEST || process.env.MONGODB_URI;
 }
 
 if (
@@ -33,13 +42,15 @@ global.testUtils = {
   wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 };
 
-// Suppress console logs during tests (optional)
-if (process.env.SUPPRESS_TEST_LOGS === "true") {
+// Suppress noisy logs during tests by default.
+// Set SUPPRESS_TEST_LOGS=false to re-enable logging when debugging failures.
+if (process.env.SUPPRESS_TEST_LOGS !== "false") {
   global.console = {
     ...console,
     log: jest.fn(),
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
+    error: jest.fn(),
   };
 }
