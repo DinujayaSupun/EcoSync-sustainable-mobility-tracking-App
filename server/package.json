@@ -8,6 +8,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "jest --runInBand",
+    "test:security": "jest --runInBand tests/integration/jwt.security.integration.test.js tests/integration/admin.filters.integration.test.js",
+    "test:perf": "npx artillery run performance/artillery.yml --output performance/results.json && node scripts/assertPerformance.js performance/results.json",
     "seed:gamification": "node scripts/seedGamification.js"
   },
   "keywords": [
