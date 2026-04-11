@@ -1,10 +1,10 @@
 # Testing Instruction Report
 
-This report maps directly to assignment testing documentation requirements.
+This report maps directly to assignment testing documentation requirements and reflects the completed step-by-step expansion of test coverage.
 
-## 1) How to Run Unit Tests
+## 1) How to Run Tests
 
-## Backend unit tests (Jest)
+### Backend tests (Jest)
 
 From project root:
 
@@ -13,14 +13,26 @@ cd server
 npm test
 ```
 
+Additional backend test scripts:
+
+```bash
+cd server
+npm run test:security
+```
+
+```bash
+cd server
+npm run test:perf
+```
+
 Notes:
 
 - Test runner: Jest
 - Config file: server/jest.config.js
 - Setup file: server/tests/setup.js
-- Match pattern: tests/\*_/_.test.js
+- Default execution mode: runInBand (serial) for DB-test stability
 
-## Frontend unit tests (Vitest)
+### Frontend tests (Vitest)
 
 From project root:
 
@@ -38,19 +50,20 @@ npm run test:watch
 
 ## 2) Integration Testing Setup and Execution
 
-Integration tests in this project are supported by:
+Integration testing in this project uses:
 
-- Jest + Supertest test files under server/tests/integration and server/tests/\*.test.js
-- HTTP request collections in server/tests/\*.http for manual or REST client testing
+- Jest + Supertest for backend API integration tests
+- Vitest + React Testing Library for frontend integration-style page tests
+- Optional manual HTTP flows in server/tests/\*.http
 
-## Automated integration execution
+### Automated integration execution
 
 ```bash
 cd server
 npm test
 ```
 
-## Manual integration execution with HTTP files
+### Manual integration execution with HTTP files
 
 Use VS Code REST Client, Postman, or Thunder Client with:
 
@@ -62,45 +75,100 @@ Recommended flow:
 
 1. Run backend server on localhost:5000.
 2. Register a test user.
-3. Login to get JWT token.
+3. Login to obtain a JWT token.
 4. Inject token in protected request headers.
-5. Execute endpoint sequence and verify responses.
+5. Execute endpoint sequence and validate status/payloads.
 
-## 3) Performance Testing Setup and Execution
+## 3) Coverage Expansion (Completed Steps)
+
+### Step 1: Commute + Challenges
+
+Backend:
+
+- server/tests/integration/commute.integration.test.js
+- server/tests/integration/challenges.integration.test.js
+
+Frontend:
+
+- client/src/pages/**tests**/CommuteHistory.test.jsx
+- client/src/pages/**tests**/Challenges.test.jsx
+
+### Step 2: Leaderboard + Reports
+
+Backend:
+
+- server/tests/integration/leaderboard.integration.test.js
+
+Frontend:
+
+- client/src/pages/**tests**/Leaderboard.test.jsx
+- client/src/pages/**tests**/Reports.test.jsx
+
+### Step 3: Weather + Smart Commute
+
+Backend:
+
+- server/tests/integration/weather.smart-commute.integration.test.js
+
+Frontend:
+
+- client/src/pages/**tests**/WeatherSuggestion.test.jsx
+
+### Step 4: Badges + Achievements
+
+Backend:
+
+- server/tests/integration/badges.achievements.integration.test.js
+
+Frontend:
+
+- client/src/pages/**tests**/Badges.test.jsx
+- client/src/pages/**tests**/TripAchievements.test.jsx
+
+### Step 5: Auth + Badge Admin Lifecycle
+
+Backend:
+
+- server/tests/integration/badges.admin.lifecycle.integration.test.js
+
+Frontend:
+
+- client/src/pages/**tests**/Login.test.jsx
+- client/src/pages/**tests**/Register.test.jsx
+
+## 4) Performance Testing Setup and Execution
 
 Performance scenario file:
 
 - server/performance/artillery.yml
 
-Default performance profile includes:
+Performance assertion gate script:
 
-- warm-up phase
-- ramp-up phase
-- sustained load phase
+- server/scripts/assertPerformance.js
 
-## Run performance test with Artillery
-
-From project root (if Artillery is installed globally):
+Run performance flow:
 
 ```bash
-artillery run server/performance/artillery.yml
+cd server
+npm run test:perf
 ```
 
-If Artillery is not installed globally, run with npx:
+Validation gate checks:
 
-```bash
-npx artillery run server/performance/artillery.yml
-```
+- p95 latency threshold
+- p99 latency threshold
+- 2xx success presence
+- 5xx error absence
 
-## 4) Testing Environment Configuration Details
+## 5) Testing Environment Configuration Details
 
-## Required services
+### Required services
 
 - Node.js 18+
 - npm 8+
 - MongoDB instance (local, Docker, or Atlas)
 
-## Backend testing env variables
+### Backend env variables
 
 Create server/.env for test execution:
 
@@ -112,7 +180,7 @@ JWT_SECRET=replace_with_a_long_secure_secret
 CLIENT_URL=http://localhost:5173
 ```
 
-## Frontend testing env variables
+### Frontend env variables
 
 Optional but recommended in client/.env:
 
@@ -120,7 +188,7 @@ Optional but recommended in client/.env:
 VITE_API_URL=http://localhost:5000/api
 ```
 
-## Docker-supported local database
+### Docker-supported local database
 
 Start database services:
 
@@ -134,16 +202,19 @@ Stop services:
 docker-compose down
 ```
 
-## Validation checklist before running tests
+## 6) Latest Verified Results
 
-- Server dependencies installed.
-- Client dependencies installed.
-- Database reachable.
-- Env variables configured.
-- Backend server starts successfully.
+Latest full-run status after Step 5:
 
-## Expected outcomes
+- Backend: 14 test suites, 96 tests passed
+- Frontend: 14 test files, 36 tests passed
 
-- Unit and integration tests execute through Jest/Vitest commands.
-- Manual endpoint tests return expected status codes and JSON responses.
-- Performance test generates throughput, latency, and error-rate metrics.
+## 7) Validation Checklist Before Submission
+
+- Server dependencies installed
+- Client dependencies installed
+- Database reachable
+- Env variables configured
+- Backend tests pass (npm test in server)
+- Frontend tests pass (npm test in client)
+- Optional performance gate passes (npm run test:perf in server)
