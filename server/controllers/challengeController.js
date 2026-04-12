@@ -1,8 +1,14 @@
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
 const Challenge = require("../models/Challenges/challenges");
 const { generateChallengeContent } = require("../services/chatgpt.service");
 
 const Participation = require("../models/Challenges/participation.model");
 const Commute = require("../models/Commute");
+
+const EVIDENCE_DIR = path.join(__dirname, "../uploads/progress-evidence");
+fs.mkdirSync(EVIDENCE_DIR, { recursive: true });
 
 const CHALLENGE_MODE_TO_COMMUTE_TYPE = {
   BUS: "Bus",
@@ -12,6 +18,32 @@ const CHALLENGE_MODE_TO_COMMUTE_TYPE = {
   CAR: "Car",
   VAN: "Car",
 };
+
+function saveEvidenceFile(dataUrl, originalName) {
+  const match = /^data:(.+);base64,(.+)$/.exec(dataUrl);
+  if (!match) {
+    throw new Error("Invalid evidence file data URL");
+  }
+
+  const [, mimeType, base64Data] = match;
+  const buffer = Buffer.from(base64Data, "base64");
+  if (!buffer.length) {
+    throw new Error("Evidence file data is empty");
+  }
+
+  const safeExt = path.extname(originalName) || `.${mimeType.split("/")[1] || "bin"}`;
+  const fileName = `${Date.now()}-${crypto.randomBytes(8).toString("hex")}${safeExt}`;
+  const filePath = path.join(EVIDENCE_DIR, fileName);
+  fs.writeFileSync(filePath, buffer);
+
+  return {
+    url: `/uploads/progress-evidence/${fileName}`,
+    name: path.basename(originalName),
+    type: mimeType,
+    size: buffer.length,
+    uploadedAt: new Date(),
+  };
+}
 
 const EXPIRED_MESSAGE = "This challenge has expired.";
 
@@ -441,6 +473,10 @@ exports.updateProgress = async (req, res) => {
   try {
     const autoSync = req.body.auto === true || req.body.auto === "true";
     const manualProgress = Number(req.body.progress);
+    const evidenceNote = typeof req.body.evidenceNote === "string" ? req.body.evidenceNote.trim() : "";
+    const evidenceFile = req.body.evidenceFile;
+    const evidenceFileName = req.body.evidenceFileName;
+    const evidenceFileType = req.body.evidenceFileType;
 
     if (
       !autoSync &&
@@ -480,6 +516,30 @@ exports.updateProgress = async (req, res) => {
 
     if (challenge.status !== "ACTIVE") {
       return res.status(404).json({ message: "Challenge not available" });
+    }
+
+    if (!autoSync && (evidenceFile || evidenceNote)) {
+      try {
+        participation.evidence = participation.evidence || [];
+        if (evidenceFile) {
+          const savedEvidence = saveEvidenceFile(evidenceFile, evidenceFileName || `proof-${Date.now()}`);
+          participation.evidence.push({
+            ...savedEvidence,
+            note: evidenceNote || "",
+          });
+        } else if (evidenceNote) {
+          participation.evidence.push({
+            url: null,
+            name: null,
+            type: null,
+            size: 0,
+            note: evidenceNote,
+            uploadedAt: new Date(),
+          });
+        }
+      } catch (e) {
+        return res.status(400).json({ message: e.message || "Invalid evidence file format" });
+      }
     }
 
     let progressIncrement = manualProgress;
