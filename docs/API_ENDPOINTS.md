@@ -258,17 +258,25 @@ Content-Type: application/json
 
 All admin endpoints require Admin JWT.
 
-| Method | Endpoint             | Auth      | Request Format                            | Success Response Format          |
-| ------ | -------------------- | --------- | ----------------------------------------- | -------------------------------- |
-| GET    | /admin/stats         | Admin JWT | Optional query filters                    | Dashboard stats summary          |
-| GET    | /admin/users         | Admin JWT | Optional query/search                     | User list for admin panel        |
-| PUT    | /admin/users/:id     | Admin JWT | Body: name/email/faculty/role (validated) | Updated user                     |
-| DELETE | /admin/users/:id     | Admin JWT | Path param: id                            | Deletion confirmation            |
-| GET    | /admin/recent-trips  | Admin JWT | Query: limit                              | Recent trip feed                 |
-| GET    | /admin/report        | Admin JWT | Query: date range/faculty filters         | Aggregated sustainability report |
-| POST   | /admin/email-report  | Admin JWT | Body: email report payload                | Email send status                |
-| POST   | /admin/ai-insights   | Admin JWT | Body: report context/options              | AI-generated insights            |
-| GET    | /admin/activity-logs | Admin JWT | Query: page, limit, filters               | Paginated activity audit logs    |
+CRUD coverage for user management in this module:
+
+- Create: POST /admin/users
+- Read: GET /admin/users
+- Update: PUT /admin/users/:id
+- Delete: DELETE /admin/users/:id
+
+| Method | Endpoint             | Auth      | Request Format                             | Success Response Format          |
+| ------ | -------------------- | --------- | ------------------------------------------ | -------------------------------- |
+| POST   | /admin/users         | Admin JWT | Body: name, email, password, faculty, role | Created user                     |
+| GET    | /admin/stats         | Admin JWT | Optional query filters                     | Dashboard stats summary          |
+| GET    | /admin/users         | Admin JWT | Optional query/search                      | User list for admin panel        |
+| PUT    | /admin/users/:id     | Admin JWT | Body: name/email/faculty/role (validated)  | Updated user                     |
+| DELETE | /admin/users/:id     | Admin JWT | Path param: id                             | Deletion confirmation            |
+| GET    | /admin/recent-trips  | Admin JWT | Query: limit                               | Recent trip feed                 |
+| GET    | /admin/report        | Admin JWT | Query: date range/faculty filters          | Aggregated sustainability report |
+| POST   | /admin/email-report  | Admin JWT | Body: email report payload                 | Email send status                |
+| POST   | /admin/ai-insights   | Admin JWT | Body: report context/options               | AI-generated insights            |
+| GET    | /admin/activity-logs | Admin JWT | Query: page, limit, filters                | Paginated activity audit logs    |
 
 Example request:
 
