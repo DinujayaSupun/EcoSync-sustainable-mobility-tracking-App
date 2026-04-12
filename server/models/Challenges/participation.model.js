@@ -24,6 +24,16 @@ const participationSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
+    evidence: [
+      {
+        url: String,
+        name: String,
+        type: String,
+        size: Number,
+        note: String,
+        uploadedAt: Date,
+      }
+    ],
     rewardedPoints: {
       type: Number,
       default: 0

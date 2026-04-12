@@ -80,11 +80,36 @@ exports.validateProgressUpdate = [
     .isBoolean()
     .withMessage("auto must be true or false")
     .toBoolean(),
+  body("evidenceNote")
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 500 })
+    .withMessage("Evidence note must be 1-500 characters"),
+  body("evidenceFile")
+    .optional()
+    .isString()
+    .withMessage("Evidence file must be a base64 data URL string"),
+  body("evidenceFileName")
+    .optional()
+    .isString()
+    .withMessage("Evidence file name must be a string"),
+  body("evidenceFileType")
+    .optional()
+    .isString()
+    .withMessage("Evidence file type must be a string"),
   body().custom((value) => {
     const hasProgress = value.progress !== undefined && value.progress !== null && value.progress !== "";
     const auto = value.auto === true;
+    const hasEvidenceNote = typeof value.evidenceNote === "string" && value.evidenceNote.trim() !== "";
+    const hasEvidenceFile = value.evidenceFile !== undefined && value.evidenceFile !== null && value.evidenceFile !== "";
     if (!hasProgress && !auto) {
       throw new Error("Provide a positive progress value or set auto=true");
+    }
+    if (!auto && !hasEvidenceNote && !hasEvidenceFile) {
+      throw new Error("Provide evidence note or file when updating progress manually");
+    }
+    if (hasEvidenceFile && (!value.evidenceFileName || !value.evidenceFileType)) {
+      throw new Error("Evidence file name and type are required when uploading proof");
     }
     return true;
   }),
