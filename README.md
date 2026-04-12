@@ -200,11 +200,11 @@ MONGO_URI=mongodb://localhost:27017/sustainability-project
 JWT_SECRET=replace_with_a_long_secure_secret
 CLIENT_URL=http://localhost:5173
 
-# AI and optional integrations
-OPENAI_API_KEY=
-GEMINI_API_KEY=
-OPENWEATHER_API_KEY=
-UNSPLASH_ACCESS_KEY=
+# AI and optional integrations (defaults)
+OPENAI_API_KEY=your_openai_key_here
+GEMINI_API_KEY=your_gemini_key_here
+OPENWEATHER_API_KEY=your_openweather_key_here
+UNSPLASH_ACCESS_KEY=your_unsplash_key_here
 USE_MOCK=false
 
 # Email reporting (Brevo SMTP)
@@ -235,6 +235,8 @@ VITE_API_URL=https://application-framework-project-se.onrender.com/api
 - `client/src/api/axios.js` falls back to `http://localhost:5000/api` when `VITE_API_URL` is not set.
 - JWT token is expected in `localStorage` key `token`.
 - For deployed frontend/backend communication, set server `CLIENT_URL` (or `ALLOWED_ORIGINS`) to `https://ecosync-pi.vercel.app`.
+- Leave optional API keys empty if those integrations are not required.
+- Set `USE_MOCK=false` only when real integration keys are configured and ready to use.
 
 ## 📦 Installation
 
@@ -438,6 +440,7 @@ Mounted route groups from `server/app.js`:
 
 #### Admin
 
+- `POST /api/admin/users`
 - `GET /api/admin/stats`
 - `GET /api/admin/users`
 - `PUT /api/admin/users/:id`
