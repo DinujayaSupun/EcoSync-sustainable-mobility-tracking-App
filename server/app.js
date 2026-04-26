@@ -27,6 +27,8 @@ const errorHandler = require("./middleware/error.middleware");
 // Initialize Express app
 const app = express();
 
+app.set('trust proxy', 1);
+
 const normalizeOrigin = (value) => (value || "").trim().replace(/\/$/, "");
 
 const configuredOrigins = [
