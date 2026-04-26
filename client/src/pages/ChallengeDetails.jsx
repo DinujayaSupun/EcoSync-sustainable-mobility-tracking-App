@@ -32,11 +32,6 @@ export default function ChallengeDetails() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [banner, setBanner] = useState('');
-  const [progressInput, setProgressInput] = useState('');
-  const [evidenceNote, setEvidenceNote] = useState('');
-  const [evidenceFile, setEvidenceFile] = useState(null);
-  const [evidenceFileName, setEvidenceFileName] = useState('');
-  const [evidenceFileType, setEvidenceFileType] = useState('');
 
   const participation = useMemo(
     () => myChallenges.find((row) => String(row?.challenge?._id || row?.challenge) === String(id)),
@@ -47,14 +42,6 @@ export default function ChallengeDetails() {
     logout();
     navigate('/login');
   };
-
-  const readFileAsDataUrl = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error('Failed to read evidence file'));
-      reader.readAsDataURL(file);
-    });
 
   const loadData = async () => {
     setLoading(true);
@@ -100,48 +87,6 @@ export default function ChallengeDetails() {
       await loadData();
     } catch (leaveError) {
       setBanner(leaveError?.response?.data?.message || 'Unable to leave challenge.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleUpdateProgress = async () => {
-    const value = Number(progressInput);
-    const trimmedNote = evidenceNote.trim();
-
-    if (!value || value <= 0) {
-      setBanner('Progress must be a positive value.');
-      return;
-    }
-
-    if (!trimmedNote && !evidenceFile) {
-      setBanner('Provide an evidence note or upload a proof image.');
-      return;
-    }
-
-    setBusy(true);
-    setBanner('');
-    try {
-      const payload = {
-        progress: value,
-        evidenceNote: trimmedNote || undefined,
-      };
-      if (evidenceFile) {
-        payload.evidenceFile = evidenceFile;
-        payload.evidenceFileName = evidenceFileName;
-        payload.evidenceFileType = evidenceFileType || 'application/octet-stream';
-      }
-
-      await ChallengesAPI.updateProgress(id, payload);
-      setProgressInput('');
-      setEvidenceNote('');
-      setEvidenceFile(null);
-      setEvidenceFileName('');
-      setEvidenceFileType('');
-      setBanner('Progress updated successfully.');
-      await loadData();
-    } catch (updateError) {
-      setBanner(updateError?.response?.data?.message || 'Unable to update progress.');
     } finally {
       setBusy(false);
     }
@@ -257,83 +202,14 @@ export default function ChallengeDetails() {
                   />
                 </div>
                 <p className="text-xs text-emerald-800">{progress} / {target} kg CO2 ({progressPercent}%)</p>
-
-                <div className="mt-4 space-y-3 rounded-xl border border-emerald-100 bg-white p-4">
-                  <div className="grid grid-cols-1 gap-3">
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      value={progressInput}
-                      onChange={(event) => setProgressInput(event.target.value)}
-                      placeholder="Add progress (kg CO2)"
-                      className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                    />
-                    <textarea
-                      rows={3}
-                      value={evidenceNote}
-                      onChange={(event) => setEvidenceNote(event.target.value)}
-                      placeholder="Evidence note (describe what proof you are submitting)"
-                      className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                    />
-                    <label className="flex flex-col gap-2 text-sm text-gray-700">
-                      <span>Upload proof image (optional)</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (event) => {
-                          const file = event.target.files?.[0];
-                          if (!file) {
-                            setEvidenceFile(null);
-                            setEvidenceFileName('');
-                            return;
-                          }
-                          if (file.size > 5 * 1024 * 1024) {
-                            setBanner('Proof image must be 5MB or smaller.');
-                            event.target.value = '';
-                            return;
-                          }
-                          try {
-                            const dataUrl = await readFileAsDataUrl(file);
-                            setEvidenceFile(dataUrl);
-                            setEvidenceFileName(file.name);
-                            setEvidenceFileType(file.type);
-                          } catch {
-                            setBanner('Unable to read proof image. Please try a different file.');
-                          }
-                        }}
-                        className="text-sm text-gray-700"
-                      />
-                      {evidenceFileName && (
-                        <span className="text-xs text-gray-500">Selected: {evidenceFileName}</span>
-                      )}
-                    </label>
-                  </div>
-
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="text-xs text-gray-500">
-                      Evidence note or proof image is required for manual progress updates.
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={handleUpdateProgress}
-                        disabled={busy}
-                        className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
-                      >
-                        Update
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleLeave}
-                        disabled={busy}
-                        className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60"
-                      >
-                        Leave
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleLeave}
+                  disabled={busy}
+                  className="mt-4 rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60"
+                >
+                  Leave Challenge
+                </button>
               </div>
             )}
           </div>

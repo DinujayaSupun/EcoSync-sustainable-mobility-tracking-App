@@ -61,8 +61,6 @@ export default function Challenges() {
   const [leavingId, setLeavingId] = useState("");
   const [autoSyncing, setAutoSyncing] = useState(false);
   const [autoSyncNotice, setAutoSyncNotice] = useState("");
-  const [manualUpdates, setManualUpdates] = useState({});
-  const [manualUpdatingId, setManualUpdatingId] = useState("");
 
   const { toast, showToast } = useGamificationToast();
   const [expiredActionNotice, setExpiredActionNotice] = useState("");
@@ -92,14 +90,6 @@ export default function Challenges() {
     logout();
     navigate("/login");
   }
-
-  const readFileAsDataUrl = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Failed to read evidence file"));
-      reader.readAsDataURL(file);
-    });
 
   async function loadAvailableAndRecommended() {
     const params = {
@@ -216,66 +206,6 @@ export default function Challenges() {
       }
     } finally {
       setLeavingId("");
-    }
-  }
-
-  function updateManualState(challengeId, field, value) {
-    setManualUpdates((prev) => ({
-      ...prev,
-      [challengeId]: {
-        ...(prev[challengeId] || {}),
-        [field]: value,
-      },
-    }));
-  }
-
-  async function handleManualUpdate(challengeId) {
-    const state = manualUpdates[challengeId] || {};
-    const progressValue = Number(state.progress);
-    const note = String(state.evidenceNote || "").trim();
-    const hasFile = Boolean(state.evidenceFile);
-
-    if (!progressValue || progressValue <= 0) {
-      showToast("error", "Progress must be a positive number.");
-      return;
-    }
-
-    if (!note && !hasFile) {
-      showToast("error", "Provide an evidence note or upload a proof image.");
-      return;
-    }
-
-    const payload = {
-      progress: progressValue,
-      evidenceNote: note || undefined,
-    };
-
-    if (hasFile) {
-      payload.evidenceFile = state.evidenceFile;
-      payload.evidenceFileName = state.evidenceFileName;
-      payload.evidenceFileType = state.evidenceFileType || "application/octet-stream";
-    }
-
-    setManualUpdatingId(challengeId);
-    try {
-      await ChallengesAPI.updateProgress(challengeId, payload);
-      await refreshChallengeState();
-      setManualUpdates((prev) => ({
-        ...prev,
-        [challengeId]: {
-          ...prev[challengeId],
-          progress: "",
-          evidenceNote: "",
-          evidenceFile: null,
-          evidenceFileName: "",
-          evidenceFileType: "",
-        },
-      }));
-      showToast("success", "Progress submitted with evidence.");
-    } catch (e) {
-      showToast("error", e?.response?.data?.message || "Failed to submit progress.");
-    } finally {
-      setManualUpdatingId("");
     }
   }
 
@@ -577,7 +507,6 @@ export default function Challenges() {
                       const current = Number(participation.progress || 0);
                       const target = Number(challenge?.emissionTarget || 1);
                       const percent = Math.min(100, Math.round((current / target) * 100));
-                      const manualState = manualUpdates[challengeId] || {};
                       return (
                         <div key={challengeId} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
                           <div className="mb-3 flex items-center justify-between">
@@ -621,74 +550,6 @@ export default function Challenges() {
                           >
                             {leavingId === challengeId ? "Leaving..." : "Leave Challenge"}
                           </button>
-
-                          {!isExpired && (
-                            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                              <p className="mb-3 text-sm font-semibold text-slate-900">Submit progress evidence</p>
-                              <div className="grid gap-3">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  step="0.1"
-                                  value={manualState.progress || ""}
-                                  onChange={(event) => updateManualState(challengeId, "progress", event.target.value)}
-                                  placeholder="Progress increment (days)"
-                                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                                />
-                                <textarea
-                                  rows={2}
-                                  value={manualState.evidenceNote || ""}
-                                  onChange={(event) => updateManualState(challengeId, "evidenceNote", event.target.value)}
-                                  placeholder="Evidence note"
-                                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                                />
-                                <label className="flex flex-col gap-2 text-sm text-gray-700">
-                                  <span>Upload proof image of the ticket (optional)</span>
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={async (event) => {
-                                      const file = event.target.files?.[0];
-                                      if (!file) {
-                                        updateManualState(challengeId, "evidenceFile", null);
-                                        updateManualState(challengeId, "evidenceFileName", "");
-                                        updateManualState(challengeId, "evidenceFileType", "");
-                                        return;
-                                      }
-                                      if (file.size > 5 * 1024 * 1024) {
-                                        showToast("error", "Proof image must be 5MB or smaller.");
-                                        event.target.value = "";
-                                        return;
-                                      }
-                                      try {
-                                        const dataUrl = await readFileAsDataUrl(file);
-                                        updateManualState(challengeId, "evidenceFile", dataUrl);
-                                        updateManualState(challengeId, "evidenceFileName", file.name);
-                                        updateManualState(challengeId, "evidenceFileType", file.type);
-                                      } catch {
-                                        showToast("error", "Unable to read proof image. Please try a different file.");
-                                      }
-                                    }}
-                                    className="text-sm text-gray-700"
-                                  />
-                                  {manualState.evidenceFileName ? (
-                                    <span className="text-xs text-gray-500">Selected: {manualState.evidenceFileName}</span>
-                                  ) : null}
-                                </label>
-                              </div>
-                              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                <p className="text-xs text-gray-500">Evidence note or a proof upload is required for manual progress updates.</p>
-                                <button
-                                  type="button"
-                                  onClick={() => handleManualUpdate(challengeId)}
-                                  disabled={manualUpdatingId === challengeId}
-                                  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
-                                >
-                                  {manualUpdatingId === challengeId ? "Submitting..." : "Submit Evidence"}
-                                </button>
-                              </div>
-                            </div>
-                          )}
 
                           {participation.evidence?.length > 0 && (
                             <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
