@@ -287,30 +287,30 @@ const WeatherSuggestion = () => {
 
       <main className="px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-7xl">
-        <div className="overflow-hidden rounded-3xl border border-[#10A5F5]/25 bg-white shadow-lg">
-          <div className="bg-linear-to-r from-[#0C71E0] to-[#0859C6] px-6 py-6 text-white sm:px-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#CFEFFF]">Overview</p>
+        <div className="overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-lg">
+          <div className="bg-linear-to-r from-emerald-700 to-green-600 px-6 py-6 text-white sm:px-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100">Overview</p>
             <h1 className="mt-1 text-3xl font-bold sm:text-4xl">
               <span className="material-icons" style={{fontSize: '34px', verticalAlign: 'middle', marginRight: '8px'}}>cloud</span>
               Weather-Based Transport Suggestion
             </h1>
-            <p className="mt-2 text-sm text-[#DDF5FF] sm:text-base">
+            <p className="mt-2 text-sm text-emerald-50 sm:text-base">
               Get eco-friendly transport recommendations based on current weather conditions
             </p>
           </div>
 
           <div className="space-y-6 p-5 sm:p-7">
-            <div className="rounded-3xl border border-[#10A5F5]/35 bg-white p-5 shadow-sm sm:p-6">
+            <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-2xl font-bold text-[#0859C6]">My Location Weather</h2>
-                  <p className="text-sm text-[#0C71E0]">Actual weather based on your live GPS coordinates</p>
+                  <h2 className="text-2xl font-bold text-emerald-700">My Location Weather</h2>
+                  <p className="text-sm text-emerald-600">Actual weather based on your live GPS coordinates</p>
                 </div>
                 <button
                   type="button"
                   onClick={loadMyLocationWeather}
                   disabled={localWeatherLoading}
-                  className="rounded-full bg-[#0C71E0] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0859C6] disabled:bg-gray-400"
+                  className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:bg-gray-400"
                 >
                   {localWeatherLoading ? 'Refreshing...' : 'Refresh My Weather'}
                 </button>
@@ -324,21 +324,21 @@ const WeatherSuggestion = () => {
 
               {localWeather && (
                 <>
-                  <div className="mb-4 grid grid-cols-1 gap-4 rounded-2xl border border-[#10A5F5]/25 bg-linear-to-r from-[#00FFFF]/8 to-[#00DBFF]/8 p-4 md:grid-cols-2">
+                  <div className="mb-4 grid grid-cols-1 gap-4 rounded-2xl border border-emerald-100 bg-linear-to-r from-emerald-50/60 to-green-50/60 p-4 md:grid-cols-2">
                     <div className="flex items-center gap-3">
-                      <span className="material-icons text-[#0C71E0]" style={{ fontSize: '42px' }}>
+                      <span className="material-icons text-emerald-600" style={{ fontSize: '42px' }}>
                         {getWeatherIcon(activeDailyWeather?.condition || localWeather.weatherCondition)}
                       </span>
                       <div>
-                        <div className="text-5xl font-bold leading-none text-[#0859C6]">
+                        <div className="text-5xl font-bold leading-none text-emerald-700">
                           {activeDailyWeather ? activeDailyWeather.maxTemp : Math.round(localWeather.temperature)}
                           <span className="ml-1 text-2xl">°C</span>
                         </div>
-                        <div className="mt-1 text-sm capitalize text-[#0C71E0]">
+                        <div className="mt-1 text-sm capitalize text-emerald-600">
                           {activeDailyWeather ? activeDailyWeather.description : localWeather.description}
                         </div>
                         {activeDailyWeather && (
-                          <div className="mt-1 text-xs font-semibold text-[#0859C6]">
+                          <div className="mt-1 text-xs font-semibold text-emerald-700">
                             {activeDailyWeather.dateLong}
                           </div>
                         )}
@@ -346,26 +346,26 @@ const WeatherSuggestion = () => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="rounded-lg border border-[#10A5F5]/20 bg-white px-3 py-2">
-                        <p className="text-xs uppercase tracking-wide text-[#0C71E0]">Humidity</p>
-                        <p className="font-semibold text-[#0859C6]">{localWeather.humidity ?? '--'}%</p>
+                      <div className="rounded-lg border border-emerald-100 bg-white px-3 py-2">
+                        <p className="text-xs uppercase tracking-wide text-emerald-600">Humidity</p>
+                        <p className="font-semibold text-emerald-700">{localWeather.humidity ?? '--'}%</p>
                       </div>
-                      <div className="rounded-lg border border-[#10A5F5]/20 bg-white px-3 py-2">
-                        <p className="text-xs uppercase tracking-wide text-[#0C71E0]">Wind</p>
-                        <p className="font-semibold text-[#0859C6]">{Math.round((localWeather.windSpeed || 0) * 3.6)} km/h</p>
+                      <div className="rounded-lg border border-emerald-100 bg-white px-3 py-2">
+                        <p className="text-xs uppercase tracking-wide text-emerald-600">Wind</p>
+                        <p className="font-semibold text-emerald-700">{Math.round((localWeather.windSpeed || 0) * 3.6)} km/h</p>
                       </div>
-                      <div className="rounded-lg border border-[#10A5F5]/20 bg-white px-3 py-2">
-                        <p className="text-xs uppercase tracking-wide text-[#0C71E0]">Day</p>
-                        <p className="font-semibold text-[#0859C6]">{activeDailyWeather?.dayLabel || formatDayLabel()}</p>
+                      <div className="rounded-lg border border-emerald-100 bg-white px-3 py-2">
+                        <p className="text-xs uppercase tracking-wide text-emerald-600">Day</p>
+                        <p className="font-semibold text-emerald-700">{activeDailyWeather?.dayLabel || formatDayLabel()}</p>
                       </div>
-                      <div className="rounded-lg border border-[#10A5F5]/20 bg-white px-3 py-2">
-                        <p className="text-xs uppercase tracking-wide text-[#0C71E0]">Time</p>
-                        <p className="font-semibold text-[#0859C6]">{formatHourLabel()}</p>
+                      <div className="rounded-lg border border-emerald-100 bg-white px-3 py-2">
+                        <p className="text-xs uppercase tracking-wide text-emerald-600">Time</p>
+                        <p className="font-semibold text-emerald-700">{formatHourLabel()}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mb-3 flex items-center gap-2 border-b border-[#10A5F5]/25 pb-2 text-sm font-semibold text-[#0C71E0]">
+                  <div className="mb-3 flex items-center gap-2 border-b border-emerald-100 pb-2 text-sm font-semibold text-emerald-600">
                     {['temperature', 'precipitation', 'wind'].map((tab) => (
                       <button
                         key={tab}
@@ -373,8 +373,8 @@ const WeatherSuggestion = () => {
                         onClick={() => setWeatherMetricTab(tab)}
                         className={`rounded-full px-3 py-1 capitalize transition-colors ${
                           weatherMetricTab === tab
-                            ? 'bg-[#0C71E0] text-white'
-                            : 'bg-[#00FFFF]/12 text-[#0C71E0] hover:bg-[#00DBFF]/20'
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
                         }`}
                       >
                         {tab}
@@ -383,7 +383,7 @@ const WeatherSuggestion = () => {
                   </div>
 
                   {activeHourlySeries.length > 0 && (
-                    <div className="mb-4 rounded-2xl border border-[#10A5F5]/20 bg-[#00FFFF]/6 p-4">
+                    <div className="mb-4 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
                       <div className="flex h-36 items-end gap-3 overflow-x-auto pb-2">
                         {activeHourlySeries.map((point, idx) => {
                           const value = weatherMetricTab === 'temperature'
@@ -412,10 +412,10 @@ const WeatherSuggestion = () => {
                                 }
                               }}
                             >
-                              <div className="mb-2 text-xs font-semibold text-[#0C71E0] leading-none">
+                              <div className="mb-2 text-xs font-semibold text-emerald-600 leading-none">
                                 {value}{weatherMetricTab === 'temperature' ? '°' : weatherMetricTab === 'precipitation' ? '%' : ''}
                               </div>
-                              <div className="mx-auto w-9 rounded-t-md bg-linear-to-t from-[#10A5F5] to-[#00DBFF]" style={{ height: `${height}px` }} />
+                              <div className="mx-auto w-9 rounded-t-md bg-linear-to-t from-emerald-600 to-emerald-500" style={{ height: `${height}px` }} />
                               <div className="mt-2 text-xs text-gray-600 leading-none">{point.timeLabel}</div>
                             </button>
                           );
@@ -440,16 +440,16 @@ const WeatherSuggestion = () => {
                           }}
                           className={`cursor-pointer rounded-xl border p-2 text-center transition-all hover:-translate-y-0.5 hover:shadow-md ${
                             activeDailyWeather?.date === day.date
-                              ? 'border-[#0C71E0]/60 bg-[#00DBFF]/18 shadow-md ring-2 ring-[#10A5F5]/20'
-                              : 'border-[#10A5F5]/20 bg-white'
+                              ? 'border-emerald-600/60 bg-emerald-100/60 shadow-md ring-2 ring-emerald-100'
+                              : 'border-emerald-100 bg-white'
                           }`}
                         >
-                          <p className="text-sm font-semibold text-[#0859C6]">{day.dayLabel}</p>
-                          <p className="text-[11px] text-[#0C71E0]">{day.dateLabel}</p>
-                          <span className="material-icons mt-1 text-[#0C71E0]" style={{ fontSize: '24px' }}>
+                          <p className="text-sm font-semibold text-emerald-700">{day.dayLabel}</p>
+                          <p className="text-[11px] text-emerald-600">{day.dateLabel}</p>
+                          <span className="material-icons mt-1 text-emerald-600" style={{ fontSize: '24px' }}>
                             {getWeatherIcon(day.condition)}
                           </span>
-                          <p className="mt-1 text-sm font-medium text-[#0859C6]">{day.maxTemp}° {day.minTemp}°</p>
+                          <p className="mt-1 text-sm font-medium text-emerald-700">{day.maxTemp}° {day.minTemp}°</p>
                           <p className="mt-1 text-[11px] capitalize text-gray-600">{day.description}</p>
                         </div>
                       ))}
@@ -464,7 +464,7 @@ const WeatherSuggestion = () => {
           {/* Left Column - Form */}
           <div className="space-y-6">
             {/* Map */}
-            <div className="rounded-2xl border border-[#10A5F5]/30 bg-[#00FFFF]/8 p-4 shadow-sm">
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 shadow-sm">
               <p className="mb-2 text-sm text-gray-600"><span className="material-icons" style={{fontSize: '18px', verticalAlign: 'middle', marginRight: '4px', display: 'inline-flex'}}>location_on</span>Select locations below to see them on the map</p>
               <CommuteMap
                 startCoords={effectiveStartCoords}
@@ -476,7 +476,7 @@ const WeatherSuggestion = () => {
               />
             </div>
             {/* Get Suggestion Form */}
-            <div className="rounded-2xl border border-[#10A5F5]/30 bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
               <h2 className="mb-4 text-xl font-semibold text-gray-800">
                 Get Weather Suggestion
               </h2>
@@ -489,7 +489,7 @@ const WeatherSuggestion = () => {
                       type="button"
                       onClick={handleLocateMe}
                       disabled={liveLocating}
-                      className="flex items-center gap-1 text-sm text-[#0C71E0] hover:text-[#0859C6] disabled:text-gray-400 transition-colors"
+                      className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 disabled:text-gray-400 transition-colors"
                     >
                       {liveLocating ? (
                         <><span className="material-icons" style={{fontSize: '18px'}}>hourglass_empty</span> Locating...</>
@@ -529,7 +529,7 @@ const WeatherSuggestion = () => {
                         ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
                         : loading
                         ? 'bg-gray-400 text-white'
-                        : 'bg-[#0C71E0] text-white hover:bg-[#0859C6]'
+                        : 'bg-emerald-600 text-white hover:bg-emerald-700'
                     }`}
                     title={!user ? 'Login required to save suggestions' : ''}
                   >
@@ -540,7 +540,7 @@ const WeatherSuggestion = () => {
                     type="button"
                     onClick={handleQuickCheck}
                     disabled={loading}
-                    className="rounded-lg bg-[#10A5F5] px-4 py-2 text-white transition-colors hover:bg-[#0C71E0] disabled:bg-gray-400"
+                    className="rounded-lg bg-emerald-500 px-4 py-2 text-white transition-colors hover:bg-emerald-600 disabled:bg-gray-400"
                   >
                     Quick Check
                   </button>
@@ -550,9 +550,9 @@ const WeatherSuggestion = () => {
 
             {/* Current Weather Display */}
             {currentWeather && (
-              <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-600 via-blue-600 to-indigo-700 p-6 text-white shadow-xl">
+              <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-emerald-600 via-emerald-600 to-green-700 p-6 text-white shadow-xl">
                 <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-                <div className="pointer-events-none absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-cyan-200/20 blur-2xl" />
+                <div className="pointer-events-none absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-emerald-200/20 blur-2xl" />
 
                 <div className="relative">
                   <h3 className="mb-5 text-xl font-semibold">Current Suggestion</h3>
@@ -566,7 +566,7 @@ const WeatherSuggestion = () => {
                         </span>
                       </span>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.18em] text-blue-100">Condition</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-emerald-100">Condition</p>
                         <p className="text-base font-semibold">{currentWeather.weatherCondition}</p>
                       </div>
                     </div>
@@ -575,13 +575,13 @@ const WeatherSuggestion = () => {
                       <div className="text-4xl font-bold leading-none">
                         {currentWeather.temperature?.toFixed(1)}°C
                       </div>
-                      <div className="mt-1 text-sm text-blue-100">Current temperature</div>
+                      <div className="mt-1 text-sm text-emerald-100">Current temperature</div>
                     </div>
                   </div>
 
                   {/* Recommended transport */}
                   <div className="mb-4 rounded-2xl border border-white/25 bg-white/15 p-4 backdrop-blur-sm">
-                    <div className="mb-2 text-xs uppercase tracking-[0.18em] text-blue-100">Recommended Transport</div>
+                    <div className="mb-2 text-xs uppercase tracking-[0.18em] text-emerald-100">Recommended Transport</div>
                     <div className="flex items-center gap-2 text-2xl font-semibold text-white">
                       <span className="material-icons" style={{fontSize: '30px'}}>
                         {getTransportIcon(currentWeather.suggestedTransport)}
@@ -591,7 +591,7 @@ const WeatherSuggestion = () => {
 
                     {/* Show secondary weather-only suggestion when distance overrides */}
                     {currentWeather.adjustmentReason === 'distance-adjusted' && currentWeather.weatherTransport && currentWeather.weatherTransport !== currentWeather.suggestedTransport && (
-                      <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs text-blue-50">
+                      <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs text-emerald-50">
                         <span className="material-icons" style={{fontSize: '14px'}}>
                           {getTransportIcon(currentWeather.weatherTransport)}
                         </span>
@@ -629,13 +629,13 @@ const WeatherSuggestion = () => {
                         <span className="material-icons mb-1 block" style={{fontSize: '20px'}}>
                           {item.icon}
                         </span>
-                        <div className="text-xs font-medium text-blue-50">{item.label}</div>
+                        <div className="text-xs font-medium text-emerald-50">{item.label}</div>
                       </div>
                     ))}
                   </div>
 
                   {currentWeather.humidity != null && (
-                    <div className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm text-blue-50">
+                    <div className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm text-emerald-50">
                       <span className="material-icons" style={{fontSize: '16px'}}>water_drop</span>
                       Humidity: {currentWeather.humidity}%
                     </div>
@@ -646,51 +646,51 @@ const WeatherSuggestion = () => {
           </div>
 
           {/* Right Column - History */}
-            <div className="relative overflow-hidden rounded-3xl border border-[#10A5F5]/35 bg-linear-to-br from-white via-[#00FFFF]/8 to-[#00DBFF]/12 p-6 shadow-lg shadow-[#10A5F5]/20">
-            <div className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-[#10A5F5]/25 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-[#00DBFF]/25 blur-3xl" />
+            <div className="relative overflow-hidden rounded-3xl border border-emerald-100 bg-linear-to-br from-white via-emerald-50/40 to-green-50/40 p-6 shadow-lg shadow-emerald-100/20">
+            <div className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-emerald-200/25 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-emerald-200/25 blur-3xl" />
 
             <div className="relative mb-5 flex items-center justify-between gap-3">
-              <h2 className="flex items-center gap-2 text-xl font-bold text-[#0859C6] sm:text-2xl">
-                <span className="material-icons rounded-xl bg-[#0859C6] p-1.5 text-white" style={{ fontSize: '18px' }}>history</span>
+              <h2 className="flex items-center gap-2 text-xl font-bold text-emerald-700 sm:text-2xl">
+                <span className="material-icons rounded-xl bg-emerald-700 p-1.5 text-white" style={{ fontSize: '18px' }}>history</span>
                 Recent Suggestions
               </h2>
-              <span className="rounded-full border border-[#10A5F5]/40 bg-white px-3 py-1 text-xs font-semibold tracking-wide text-[#0C71E0]">
+              <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold tracking-wide text-emerald-600">
                 {user ? `${suggestions.length} items` : 'Private'}
               </span>
             </div>
 
             <div className="relative space-y-3 max-h-150 overflow-y-auto pr-1">
               {!user ? (
-                <div className="rounded-2xl border border-[#10A5F5]/35 bg-white/80 px-5 py-8 text-center text-gray-600 shadow-sm">
-                  <p className="mb-2 text-lg font-semibold text-[#0859C6]">
+                <div className="rounded-2xl border border-emerald-100 bg-white/80 px-5 py-8 text-center text-gray-600 shadow-sm">
+                  <p className="mb-2 text-lg font-semibold text-emerald-700">
                     <span className="material-icons" style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>lock</span>
                     Login Required
                   </p>
                   <p className="text-sm">Log in to view your suggestion history</p>
                   <button
                     onClick={() => navigate('/login')}
-                    className="mt-4 mx-auto flex items-center justify-center gap-1 rounded-full bg-[#0C71E0] px-4 py-2 text-white transition-colors hover:bg-[#0859C6]"
+                    className="mt-4 mx-auto flex items-center justify-center gap-1 rounded-full bg-emerald-600 px-4 py-2 text-white transition-colors hover:bg-emerald-700"
                   >
                     <span className="material-icons" style={{ fontSize: '18px' }}>login</span>Go to Login
                   </button>
                 </div>
               ) : suggestions.length === 0 ? (
-                <div className="rounded-2xl border border-[#10A5F5]/35 bg-white/80 px-5 py-8 text-center text-gray-600 shadow-sm">
-                  <p className="font-semibold text-[#0859C6]">No suggestions yet</p>
+                <div className="rounded-2xl border border-emerald-100 bg-white/80 px-5 py-8 text-center text-gray-600 shadow-sm">
+                  <p className="font-semibold text-emerald-700">No suggestions yet</p>
                   <p className="mt-2 text-sm">Create your first weather-based suggestion</p>
                 </div>
               ) : (
                 suggestions.map((suggestion) => (
                   <div
                     key={suggestion._id}
-                    className="group rounded-2xl border border-[#10A5F5]/30 bg-white/90 p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                    className="group rounded-2xl border border-emerald-100 bg-white/90 p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                   >
                     <div className="mb-2 flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <div className="mb-2 flex items-center gap-2">
-                          <span className="rounded-xl border border-[#10A5F5]/25 bg-[#00FFFF]/12 p-1.5" style={{ fontSize: '24px' }}>
-                            <span className="material-icons text-[#0C71E0]" style={{ fontSize: '24px', display: 'inline-block' }}>
+                          <span className="rounded-xl border border-emerald-100 bg-emerald-50 p-1.5" style={{ fontSize: '24px' }}>
+                            <span className="material-icons text-emerald-600" style={{ fontSize: '24px', display: 'inline-block' }}>
                               {getWeatherIcon(suggestion.weatherCondition)}
                             </span>
                           </span>
@@ -704,7 +704,7 @@ const WeatherSuggestion = () => {
                           <p><span className="font-semibold text-gray-900">To:</span> {suggestion.destination}</p>
                         </div>
 
-                        <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#10A5F5]/35 bg-[#00FFFF]/12 px-3 py-1 text-[#0C71E0]">
+                        <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
                           <span className="material-icons" style={{ fontSize: '20px' }}>
                             {getTransportIcon(suggestion.suggestedTransport)}
                           </span>
@@ -719,7 +719,7 @@ const WeatherSuggestion = () => {
                             </span>
                           )}
                           {suggestion.adjustmentReason === 'distance-adjusted' && (
-                            <span className="inline-flex items-center gap-1 rounded-full border border-[#10A5F5]/35 bg-[#00DBFF]/20 px-2.5 py-0.5 text-xs text-[#0859C6]">
+                            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-100 px-2.5 py-0.5 text-xs text-emerald-700">
                               <span className="material-icons" style={{ fontSize: '12px' }}>check_circle</span>Distance Adjusted
                             </span>
                           )}
@@ -740,7 +740,7 @@ const WeatherSuggestion = () => {
                       </button>
                     </div>
 
-                    <div className="mt-2 border-t border-[#10A5F5]/20 pt-2 text-xs text-gray-500">
+                    <div className="mt-2 border-t border-emerald-100 pt-2 text-xs text-gray-500">
                       {new Date(suggestion.createdAt).toLocaleString()}
                     </div>
                   </div>
@@ -751,55 +751,55 @@ const WeatherSuggestion = () => {
             </div>
 
             {/* Info Section */}
-            <div className="relative overflow-hidden rounded-3xl border border-[#10A5F5]/35 bg-linear-to-br from-[#00FFFF]/10 via-white to-[#00DBFF]/12 p-6 shadow-lg shadow-[#10A5F5]/20 sm:p-7">
-              <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#10A5F5]/25 blur-2xl" />
-              <div className="pointer-events-none absolute -bottom-20 -left-12 h-44 w-44 rounded-full bg-[#00DBFF]/25 blur-2xl" />
+            <div className="relative overflow-hidden rounded-3xl border border-emerald-100 bg-linear-to-br from-emerald-50/30 via-white to-green-50/30 p-6 shadow-lg shadow-emerald-100/20 sm:p-7">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-emerald-200/25 blur-2xl" />
+              <div className="pointer-events-none absolute -bottom-20 -left-12 h-44 w-44 rounded-full bg-emerald-200/25 blur-2xl" />
 
               <div className="relative mb-5 flex items-center justify-between gap-3">
-                <h3 className="flex items-center gap-2 text-xl font-bold text-[#0859C6] sm:text-2xl">
-                  <span className="material-icons rounded-xl bg-[#0859C6] p-1.5 text-white" style={{ fontSize: '18px' }}>lightbulb</span>
+                <h3 className="flex items-center gap-2 text-xl font-bold text-emerald-700 sm:text-2xl">
+                  <span className="material-icons rounded-xl bg-emerald-700 p-1.5 text-white" style={{ fontSize: '18px' }}>lightbulb</span>
                   How It Works
                 </h3>
-                <span className="rounded-full border border-[#10A5F5]/40 bg-white px-3 py-1 text-xs font-semibold tracking-wide text-[#0C71E0]">
+                <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold tracking-wide text-emerald-600">
                   Smart Recommendation Logic
                 </span>
               </div>
 
               <div className="relative grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <div className="rounded-2xl border border-[#10A5F5]/35 bg-white/90 p-5 shadow-sm backdrop-blur-sm">
-                  <p className="mb-3 flex items-center gap-2 font-semibold text-[#0859C6]">
-                    <span className="material-icons rounded-lg bg-[#00FFFF]/16 p-1 text-[#0C71E0]" style={{ fontSize: '18px' }}>cloud</span>
+                <div className="rounded-2xl border border-emerald-100 bg-white/90 p-5 shadow-sm backdrop-blur-sm">
+                  <p className="mb-3 flex items-center gap-2 font-semibold text-emerald-700">
+                    <span className="material-icons rounded-lg bg-emerald-100 p-1 text-emerald-600" style={{ fontSize: '18px' }}>cloud</span>
                     Weather Rules
                   </p>
-                  <ul className="space-y-3 text-sm text-[#0859C6]">
-                    <li className="rounded-lg border border-[#10A5F5]/25 bg-[#00FFFF]/10 px-3 py-2">
+                  <ul className="space-y-3 text-sm text-emerald-700">
+                    <li className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2">
                       <strong>Bad weather</strong> (Rain/Storm/Fog): weather always wins and suggests safe transit.
                     </li>
-                    <li className="rounded-lg border border-[#10A5F5]/25 bg-[#00FFFF]/10 px-3 py-2">
+                    <li className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2">
                       <strong>Good weather</strong> (Clear/Clouds): distance takes priority for the best mode.
                     </li>
                   </ul>
                 </div>
 
-                <div className="rounded-2xl border border-[#10A5F5]/35 bg-white/90 p-5 shadow-sm backdrop-blur-sm">
-                  <p className="mb-3 flex items-center gap-2 font-semibold text-[#0859C6]">
-                    <span className="material-icons rounded-lg bg-[#00FFFF]/16 p-1 text-[#0C71E0]" style={{ fontSize: '18px' }}>straighten</span>
+                <div className="rounded-2xl border border-emerald-100 bg-white/90 p-5 shadow-sm backdrop-blur-sm">
+                  <p className="mb-3 flex items-center gap-2 font-semibold text-emerald-700">
+                    <span className="material-icons rounded-lg bg-emerald-100 p-1 text-emerald-600" style={{ fontSize: '18px' }}>straighten</span>
                     Distance Rules (good weather)
                   </p>
-                  <ul className="space-y-2.5 text-sm text-[#0859C6]">
-                    <li className="flex items-center justify-between rounded-lg border border-[#10A5F5]/25 bg-[#00FFFF]/10 px-3 py-2">
+                  <ul className="space-y-2.5 text-sm text-emerald-700">
+                    <li className="flex items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2">
                       <span className="font-semibold">0-2 km</span>
                       <span className="flex items-center gap-2"><span className="material-icons" style={{ fontSize: '16px' }}>directions_walk</span>Walking</span>
                     </li>
-                    <li className="flex items-center justify-between rounded-lg border border-[#10A5F5]/25 bg-[#00FFFF]/10 px-3 py-2">
+                    <li className="flex items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2">
                       <span className="font-semibold">2-5 km</span>
                       <span className="flex items-center gap-2"><span className="material-icons" style={{ fontSize: '16px' }}>directions_bike</span>Cycling</span>
                     </li>
-                    <li className="flex items-center justify-between rounded-lg border border-[#10A5F5]/25 bg-[#00FFFF]/10 px-3 py-2">
+                    <li className="flex items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2">
                       <span className="font-semibold">5-10 km</span>
                       <span className="flex items-center gap-2"><span className="material-icons" style={{ fontSize: '16px' }}>local_taxi</span>Tuk-Tuk</span>
                     </li>
-                    <li className="flex items-center justify-between rounded-lg border border-[#10A5F5]/25 bg-[#00FFFF]/10 px-3 py-2">
+                    <li className="flex items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2">
                       <span className="font-semibold">10+ km</span>
                       <span className="flex items-center gap-2"><span className="material-icons" style={{ fontSize: '16px' }}>directions_bus</span>Bus</span>
                     </li>
@@ -807,9 +807,9 @@ const WeatherSuggestion = () => {
                 </div>
               </div>
 
-              <div className="relative mt-5 rounded-2xl border border-[#10A5F5]/35 bg-white/85 p-4 text-sm text-[#0859C6] shadow-sm">
+              <div className="relative mt-5 rounded-2xl border border-emerald-100 bg-white/85 p-4 text-sm text-emerald-700 shadow-sm">
                 <p className="flex items-start gap-2.5">
-                  <span className="material-icons mt-0.5 rounded-md bg-[#00FFFF]/16 p-1 text-[#0C71E0]" style={{ fontSize: '16px' }}>bolt</span>
+                  <span className="material-icons mt-0.5 rounded-md bg-emerald-100 p-1 text-emerald-600" style={{ fontSize: '16px' }}>bolt</span>
                   <span><strong>Quick Check</strong> gives instant weather without saving history. Select both origin and destination for distance-aware suggestions.</span>
                 </p>
               </div>
